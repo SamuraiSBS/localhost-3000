@@ -1,0 +1,31 @@
+/* Specimen layout only; reusable component rules live in foundation.css. */
+body { margin: 0; }
+main:focus { outline: none; }
+.wordmark { font-weight: var(--weight-heading); text-decoration: none; }
+.intro { padding-block: var(--space-24); max-width: var(--measure-prose); }
+.intro h1 { margin: 0 0 var(--space-8); }
+.lead { font-size: var(--type-lead); margin-block: 0 var(--space-8); }
+.specimen { border-top: var(--border-width) solid var(--color-border); padding-block: var(--space-12); }
+.specimen h2 { margin-block: 0 var(--space-6); }
+.section-copy { max-width: var(--measure-prose); margin-bottom: var(--space-8); }
+.surface-example { display: flex; flex-wrap: wrap; margin-block: var(--space-8); }
+.tone { flex: 1 1 12rem; min-height: 9rem; padding: var(--space-6); display: flex; align-items: flex-end; }
+.tone--bg { background: var(--color-bg); outline: var(--border-width) solid var(--color-border); outline-offset: -1px; }
+.tone--surface { background: var(--color-surface); }
+.tone--raised { background: var(--color-surface-raised); }
+.control-layout { display: flex; flex-wrap: wrap; gap: var(--space-12); align-items: start; }
+#specimen-form { display: grid; gap: var(--space-6); flex: 1 1 20rem; min-width: 0; }
+#specimen-form .ds-button { justify-self: start; }
+.sample-area { flex: 1 1 20rem; min-width: 0; }
+.sample-area > p { margin-top: var(--space-6); }
+.ds-panel h3 { font-size: var(--type-lead); margin-top: 0; }
+#sample-text { margin-bottom: 0; }
+#sample-text[data-size="lead"] { font-size: var(--type-lead); }
+.button-row { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-block: var(--space-12) var(--space-4); }
+footer p { max-width: var(--measure-prose); margin: 0; }
+
+@media (max-width: 40rem) {
+  .intro { padding-block: var(--space-16); }
+  .control-layout { gap: var(--space-8); }
+  .ds-dialog { padding: var(--space-6); }
+}

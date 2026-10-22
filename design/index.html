@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="localhost3000 — Digital Ruins / Lost Signal.">
+    <title>localhost3000</title>
+    <link rel="icon" href="data:,">
+    <link rel="preload" href="assets/fonts/jetbrains-mono-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="fonts.css">
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="foundation.css">
+    <link rel="stylesheet" href="scene.css">
+    <script src="scene.js" type="module"></script>
+  </head>
+  <body class="ds-root">
+    <a class="ds-skip ds-button" href="#workspace">К рабочей области</a>
+    <main>
+      <section class="entry" id="entry" aria-labelledby="entry-title">
+        <div class="entry__composition">
+          <img class="entry__ruins" src="assets/columns.webp" srcset="assets/columns-768.webp 768w, assets/columns.webp 1536w" sizes="(max-width: 600px) 92vw, 720px" width="1536" height="1024" alt="Три повреждённые колонны, высеченные мелкими светлыми точками в темноте" fetchpriority="high">
+          <h1 id="entry-title" class="entry__wordmark" tabindex="-1"><img src="assets/wordmark.svg" width="710" height="110" alt="localhost3000"><span class="forced-wordmark">localhost3000</span></h1>
+          <a class="ds-button ds-button--secondary enter-button" href="#workspace">ENTER SYSTEM<span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+      <section class="workspace" id="workspace" aria-labelledby="workspace-title" tabindex="-1">
+        <header class="ds-terminal">
+          <div class="ds-container ds-terminal__inner">
+            <a class="compact-mark" href="#entry" aria-label="localhost3000 — на главную"><img src="assets/wordmark-compact.svg" width="190" height="28" alt="localhost3000"><span class="forced-wordmark">localhost3000</span></a>
+            <nav aria-label="Навигация оболочки"><a href="#entry">На главную</a></nav>
+          </div>
+        </header>
+        <div class="ds-container workspace__content">
+          <h2 id="workspace-title" tabindex="-1">Пространство для задачи.</h2>
+          <p class="workspace__intro">Здесь появится основной сценарий после получения технического задания.</p>
+          <div class="workspace__actions">
+            <a class="ds-button ds-button--secondary" href="preview.html">Основа интерфейса</a>
+            <button class="ds-button ds-button--secondary" id="open-material" type="button" hidden>Посмотреть Prism Glass</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <dialog class="material-dialog" id="material-dialog" aria-labelledby="material-title" aria-describedby="material-description">
+      <div class="material-dialog__header">
+        <div><h2 id="material-title">Prism Glass</h2><p id="material-description">Преломление света на архитектурной подложке.</p></div>
+        <form method="dialog"><button class="ds-button ds-button--secondary" autofocus>Закрыть</button></form>
+      </div>
+      <div class="prism-stage" id="prism-stage" data-renderer="fallback">
+        <img class="prism-stage__image" src="assets/columns-768.webp" width="768" height="512" alt="" aria-hidden="true">
+        <canvas class="prism-stage__canvas" id="prism-canvas" aria-hidden="true"></canvas>
+        <div class="prism-lens" id="prism-lens">
+          <div class="prism-lens__copy"><h3>Свет меняет форму.</h3><p>Текст остаётся чётким. Оптический слой преломляет только изображение под панелью.</p></div>
+        </div>
+      </div>
+      <div class="material-dialog__footer">
+        <label class="material-switch"><input type="checkbox" id="refraction-toggle" checked>Оптическое преломление</label>
+        <p class="ds-hint" id="material-fallback">Показана непрозрачная панель: эффект недоступен или отключён для этого устройства.</p>
+      </div>
+    </dialog>
+  </body>
+</html>

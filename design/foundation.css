@@ -1,0 +1,187 @@
+/* Import tokens.css once, before this stylesheet. Opt in with .ds-root. */
+.ds-root,
+.ds-root *,
+.ds-root *::before,
+.ds-root *::after {
+  box-sizing: border-box;
+}
+
+.ds-root {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: var(--weight-body) var(--type-body) / var(--leading-body) var(--font-content);
+  overflow-wrap: anywhere;
+}
+
+.ds-root :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+.ds-root :where(h1, h2, h3) {
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-heading);
+  font-weight: var(--weight-heading);
+  text-wrap: balance;
+}
+
+.ds-root h1 { font-size: var(--type-title); }
+.ds-root h2 { font-size: var(--type-heading); }
+.ds-root :where(p, li) { text-wrap: pretty; }
+.ds-root :where(a) { color: inherit; text-underline-offset: 0.25em; }
+
+.ds-root :focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.ds-container {
+  width: min(100%, var(--layout-max));
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+.ds-terminal {
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-family: var(--font-terminal);
+}
+
+.ds-terminal__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+  padding-block: var(--space-4);
+}
+
+.ds-terminal nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.ds-terminal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min);
+}
+
+.ds-terminal [aria-current] {
+  text-decoration-thickness: 2px;
+}
+
+.ds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-min);
+  min-width: var(--control-min);
+  max-width: 100%;
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width) solid var(--color-action-bg);
+  border-radius: var(--radius-control);
+  background: var(--color-action-bg);
+  color: var(--color-action-text);
+  font-weight: var(--weight-label);
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+
+.ds-button--secondary {
+  border-color: var(--color-border-control);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+@media (hover: hover) {
+  .ds-button:hover:not(:disabled) { background: var(--color-action-hover); }
+  .ds-button--secondary:hover:not(:disabled) { background: var(--color-surface-raised); }
+}
+
+.ds-button:active:not(:disabled) { border-color: var(--color-border-control); }
+.ds-button:disabled {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.ds-field { display: grid; gap: var(--space-2); }
+.ds-label { font-weight: var(--weight-label); }
+.ds-hint { margin: 0; color: var(--color-text-secondary); }
+.ds-error { margin: 0; color: var(--color-text); font-weight: var(--weight-label); }
+
+.ds-input,
+.ds-select {
+  width: 100%;
+  min-height: var(--control-min);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.ds-input::placeholder { color: var(--color-text-secondary); opacity: 1; }
+.ds-input[aria-invalid="true"] { border-width: 2px; border-color: var(--color-text); }
+.ds-input:disabled,
+.ds-select:disabled { color: var(--color-text-secondary); cursor: not-allowed; }
+
+.ds-panel {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border-radius: var(--radius-flat);
+}
+
+/* Deliberately opaque: blur/gradient alone must not be called Prism Glass. */
+.ds-dialog {
+  width: min(36rem, calc(100% - var(--page-gutter) * 2));
+  max-height: calc(100dvh - var(--page-gutter) * 2);
+  padding: var(--space-8);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-floating);
+  background: var(--glass-fallback);
+  color: var(--color-text);
+  overflow-y: auto;
+}
+
+.ds-dialog::backdrop { background: var(--dialog-backdrop); }
+.ds-dialog h2 { margin-top: 0; }
+.ds-dialog p { margin-block: var(--space-6); }
+
+.ds-skip {
+  position: fixed;
+  inset-block-start: var(--space-4);
+  inset-inline-start: var(--space-4);
+  z-index: var(--layer-tooltip);
+}
+
+.ds-skip:not(:focus) {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.ds-root [hidden] { display: none !important; }
+
+@media (forced-colors: active) {
+  .ds-root { background: Canvas; color: CanvasText; }
+  .ds-root :focus-visible { outline-color: Highlight; }
+  .ds-button,
+  .ds-input,
+  .ds-select,
+  .ds-dialog { border-color: ButtonText; }
+  .ds-button:disabled { border-color: GrayText; color: GrayText; }
+  .ds-input[aria-invalid="true"] { border-color: Highlight; }
+}
