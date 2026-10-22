@@ -1,7 +1,7 @@
-name: lazyum-autumn-hack
+name: localhost-3000
 services:
   app:
-    image: ${APP_IMAGE:-lazyum-autumn-hack:local}
+    image: ${APP_IMAGE:-localhost-3000:local}
     build:
       context: .
       args:

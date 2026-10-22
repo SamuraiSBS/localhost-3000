@@ -30,7 +30,7 @@ while IFS= read -r key; do
 done < "$PUBLIC_KEY"
 chmod 0600 /home/deploy/.ssh/authorized_keys
 chown deploy:deploy /home/deploy/.ssh/authorized_keys
-install -d -m 0750 -o deploy -g deploy /opt/lazyum /opt/lazyum/releases /opt/lazyum/state
+install -d -m 0750 -o deploy -g deploy /opt/localhost-3000 /opt/localhost-3000/releases /opt/localhost-3000/state
 ufw allow from "$ADMIN_CIDR" to any port 22 proto tcp
 ufw allow 80/tcp
 ufw allow 443/tcp

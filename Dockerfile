@@ -1,6 +1,6 @@
 FROM python:3.13-alpine@sha256:c50ccfb66e5cc97a610dcd0b9597de6ef5b52c96280b51997b353a0fc87a8361
 ARG VCS_REF=local
-LABEL org.opencontainers.image.source="https://github.com/SamuraiSBS/lazyum-autumn-hack"
+LABEL org.opencontainers.image.source="https://github.com/SamuraiSBS/localhost-3000"
 LABEL org.opencontainers.image.revision=$VCS_REF
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOST=0.0.0.0 PORT=3000 APP_REVISION=$VCS_REF
 WORKDIR /app

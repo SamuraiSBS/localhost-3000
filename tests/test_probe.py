@@ -30,7 +30,7 @@ class ProbeTests(unittest.TestCase):
     def test_page(self):
         with urllib.request.urlopen(self.url, timeout=3) as response:
             self.assertEqual(response.status, 200)
-            self.assertIn("Lazyum Autumn Hack — Infrastructure Ready", response.read().decode())
+            self.assertIn("localhost-3000 — Infrastructure Ready", response.read().decode())
 
     def test_health_and_revision(self):
         with urllib.request.urlopen(self.url + "/healthz?probe=1", timeout=3) as response:

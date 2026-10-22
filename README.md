@@ -1,4 +1,6 @@
-# Lazyum Autumn Hack
+# localhost-3000
+
+Репозиторий: [SamuraiSBS/localhost-3000](https://github.com/SamuraiSBS/localhost-3000). Локальная папка: `D:\localhost-3000`.
 
 Подготовка к хакатону до публикации ТЗ. Продукт и его стек пока не выбраны. `infra/probe` — временное приложение для проверки инфраструктуры.
 

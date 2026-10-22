@@ -1,6 +1,6 @@
 ---
 name: mvp-builder
-description: Implement a planned Lazyum MVP slice and verify its user journey after challenge and architecture selection.
+description: Implement a planned localhost-3000 MVP slice and verify its user journey after challenge and architecture selection.
 ---
 
 Read docs/implementation-plan.md and the relevant evaluation scenario. Resolve missing challenge/prebuilt-code rules before product development.

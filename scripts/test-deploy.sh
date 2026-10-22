@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SOURCE=$PWD
-export DEPLOY_PROJECT_NAME=lazyum-deploy-test
+export DEPLOY_PROJECT_NAME=localhost-3000-deploy-test
 ROOT=$(mktemp -d)
 cleanup() {
   docker compose --project-name "$DEPLOY_PROJECT_NAME" -f "$SOURCE/compose.yaml" down --volumes >/dev/null 2>&1 || true
@@ -20,10 +20,10 @@ printf 'SITE_ADDRESS=:80\nHTTP_PORT=18880\nBIND_ADDRESS=127.0.0.1\n' > "$ROOT/.e
 FIRST=${REVISION:-1111111111111111111111111111111111111111}
 SECOND=2222222222222222222222222222222222222222
 BAD=3333333333333333333333333333333333333333
-docker build --build-arg VCS_REF="$FIRST" -t lazyum-deploy-test:first .
-IMAGE_ONE=$(docker image inspect --format '{{.Id}}' lazyum-deploy-test:first)
-docker build --build-arg VCS_REF="$SECOND" -t lazyum-deploy-test:second .
-IMAGE_TWO=$(docker image inspect --format '{{.Id}}' lazyum-deploy-test:second)
+docker build --build-arg VCS_REF="$FIRST" -t localhost-3000-deploy-test:first .
+IMAGE_ONE=$(docker image inspect --format '{{.Id}}' localhost-3000-deploy-test:first)
+docker build --build-arg VCS_REF="$SECOND" -t localhost-3000-deploy-test:second .
+IMAGE_TWO=$(docker image inspect --format '{{.Id}}' localhost-3000-deploy-test:second)
 bash "$ROOT/releases/one/scripts/deploy.sh" "$ROOT" "$IMAGE_ONE" "$FIRST" http://127.0.0.1:18880 local
 test ! -e "$ROOT/previous"
 bash "$ROOT/releases/two/scripts/deploy.sh" "$ROOT" "$IMAGE_TWO" "$SECOND" http://127.0.0.1:18880 local

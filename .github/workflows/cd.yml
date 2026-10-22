@@ -72,7 +72,7 @@ jobs:
           [[ "$DEPLOY_PORT" =~ ^[0-9]{1,5}$ ]]
           [[ "$PUBLIC_URL" =~ ^https?://[a-zA-Z0-9.:-]+/?$ ]]
           image=$(cat .state/artifact/image.txt)
-          release="/opt/lazyum/releases/${REVISION}-${RUN_ID}"
+          release="/opt/localhost-3000/releases/${REVISION}-${RUN_ID}"
           ssh_opts=(-i ~/.ssh/deploy_key -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
           # Keep registry credentials in a temporary server-side Docker config only.
           printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
@@ -81,11 +81,11 @@ jobs:
           scp -i ~/.ssh/deploy_key -P "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes \
             .state/release.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$release/release.tar.gz"
           ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "tar -xzf '$release/release.tar.gz' -C '$release'; bash '$release/scripts/deploy.sh' /opt/lazyum '$image' '$REVISION' '$PUBLIC_URL'"
+            "tar -xzf '$release/release.tar.gz' -C '$release'; bash '$release/scripts/deploy.sh' /opt/localhost-3000 '$image' '$REVISION' '$PUBLIC_URL'"
           if ! python scripts/smoke.py "$PUBLIC_URL" --revision "$REVISION"; then
             echo 'External smoke failed; requesting rollback of the same revision' >&2
             ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-              "test \"\$(cat /opt/lazyum/current/revision)\" = '$REVISION' && bash /opt/lazyum/current/scripts/rollback.sh /opt/lazyum"
+              "test \"\$(cat /opt/localhost-3000/current/revision)\" = '$REVISION' && bash /opt/localhost-3000/current/scripts/rollback.sh /opt/localhost-3000"
             exit 1
           fi
       - name: Remove local SSH key

@@ -1,6 +1,6 @@
 ---
 name: hackathon-planner
-description: Analyze the published Lazyum challenge and judging rules; choose its MVP, architecture and delivery plan.
+description: Analyze the published hackathon challenge and judging rules; choose its MVP, architecture and delivery plan.
 ---
 
 Read docs/challenge.md, rules.md and evaluation.md. If the sources are missing, record gaps and request them instead of inventing requirements.
