@@ -82,7 +82,12 @@ jobs:
             .state/release.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$release/release.tar.gz"
           ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
             "tar -xzf '$release/release.tar.gz' -C '$release'; bash '$release/scripts/deploy.sh' /opt/lazyum '$image' '$REVISION' '$PUBLIC_URL'"
-          python scripts/smoke.py "$PUBLIC_URL" --revision "$REVISION"
+          if ! python scripts/smoke.py "$PUBLIC_URL" --revision "$REVISION"; then
+            echo 'External smoke failed; requesting rollback of the same revision' >&2
+            ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "test \"\$(cat /opt/lazyum/current/revision)\" = '$REVISION' && bash /opt/lazyum/current/scripts/rollback.sh /opt/lazyum"
+            exit 1
+          fi
       - name: Remove local SSH key
         if: always()
         run: rm -f ~/.ssh/deploy_key

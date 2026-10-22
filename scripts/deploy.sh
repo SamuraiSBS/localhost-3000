@@ -18,7 +18,11 @@ test -f "$ROOT/.env"
 mkdir -p "$ROOT/state"
 exec 9>"$ROOT/state/deploy.lock"
 flock -n 9 || { echo 'Another deployment is running' >&2; exit 1; }
-PREVIOUS=$(readlink -f "$ROOT/current" || true)
+PREVIOUS=
+if [[ -L "$ROOT/current" ]]; then
+  PREVIOUS=$(readlink -f "$ROOT/current")
+  [[ "$PREVIOUS" = "$ROOT"/releases/* && -f "$PREVIOUS/image.env" ]] || { echo 'Invalid current release pointer' >&2; exit 2; }
+fi
 [[ "$PREVIOUS" != "$RELEASE" ]] || { echo 'Release directory already current' >&2; exit 2; }
 umask 077
 printf 'APP_IMAGE=%s\n' "$IMAGE" > "$RELEASE/image.env"

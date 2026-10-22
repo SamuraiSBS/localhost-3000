@@ -25,6 +25,8 @@ python scripts/smoke.py http://127.0.0.1:8080
 Linux/macOS: `bash scripts/dev.sh start|stop|logs|status|update|check`.
 Страница: `http://127.0.0.1:8080`; health: `/healthz` (статус + revision). Локальные порты доступны только с этого компьютера.
 
+На подготовленном компьютере порт задан в локальном `.env`: `http://127.0.0.1:3080` (8080 занят). Локальный `compose.override.yaml` также решает исчерпание Docker address pools, сохраняя сети других проектов; детали в `docs/infrastructure.md`.
+
 ## Работа команды
 
 Короткая ветка от `main` → осмысленные коммиты → PR → зелёный `verify` → squash merge. Не коммитить `.env`, ключи, логи и состояние деплоя. Правила Codex: [AGENTS.md](AGENTS.md); навыки: `.agents/skills`.

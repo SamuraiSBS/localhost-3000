@@ -25,6 +25,7 @@ IMAGE_ONE=$(docker image inspect --format '{{.Id}}' lazyum-deploy-test:first)
 docker build --build-arg VCS_REF="$SECOND" -t lazyum-deploy-test:second .
 IMAGE_TWO=$(docker image inspect --format '{{.Id}}' lazyum-deploy-test:second)
 bash "$ROOT/releases/one/scripts/deploy.sh" "$ROOT" "$IMAGE_ONE" "$FIRST" http://127.0.0.1:18880 local
+test ! -e "$ROOT/previous"
 bash "$ROOT/releases/two/scripts/deploy.sh" "$ROOT" "$IMAGE_TWO" "$SECOND" http://127.0.0.1:18880 local
 if bash "$ROOT/releases/bad/scripts/deploy.sh" "$ROOT" "$IMAGE_ONE" "$BAD" http://127.0.0.1:18880 local; then
   echo 'Incorrect release was accepted' >&2; exit 1
