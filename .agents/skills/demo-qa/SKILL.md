@@ -1,0 +1,12 @@
+---
+name: demo-qa
+description: Verify Lazyum jury journeys, browser behavior and demo readiness against the real evaluation criteria.
+---
+
+Read docs/demo.md and evaluation.md. Test the actual deployed revision. API assertions do not replace browser acceptance.
+
+Use the available browser tool for the key user journey at narrow/wide widths; inspect visible failures and relevant network/console errors. Verify essential negative/empty states, external integration behavior and permitted demo data.
+
+Record each scenario as passed, failed or not run with environment and revision. scripts/smoke.py only verifies the temporary probe contract and must change with the product. Keep fictional fixtures visibly fictional; never fabricate a completed run.
+
+Rehearse the time-limited jury story, reset steps and network-loss fallback. Fix blocking problems in scope and update demo.md with evidence and remaining blockers.

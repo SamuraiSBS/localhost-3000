@@ -1,0 +1,77 @@
+name: CI
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'infra/**', 'docs/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - name: Offline checks
+        run: |
+          python scripts/check.py
+          git diff --check
+          for file in scripts/*.sh; do bash -n "$file"; done
+      - name: Build and smoke through reverse proxy
+        env:
+          VCS_REF: ${{ github.sha }}
+        run: |
+          docker compose config --quiet
+          docker compose -f compose.yaml -f compose.production.yaml config --quiet
+          docker compose up -d --build --wait --wait-timeout 90
+          python scripts/smoke.py http://127.0.0.1:8080 --revision "$VCS_REF"
+      - name: Container diagnostics
+        if: failure()
+        run: docker compose logs --tail 100
+      - name: Clean up smoke stack
+        if: always()
+        run: docker compose down
+      - name: Exercise deployment and rollback
+        env:
+          REVISION: ${{ github.sha }}
+        run: bash scripts/test-deploy.sh
+  publish:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and publish immutable image
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${REPOSITORY,,}"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+          docker build --build-arg VCS_REF="$REVISION" -t "$image:$REVISION" .
+          docker push "$image:$REVISION"
+          docker inspect --format '{{index .RepoDigests 0}}' "$image:$REVISION" > image.txt
+          docker logout ghcr.io
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: deployment-image
+          path: image.txt
+          retention-days: 7
