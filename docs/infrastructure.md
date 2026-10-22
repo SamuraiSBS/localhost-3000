@@ -12,8 +12,8 @@
 - Docker/Desktop: сборка и локальный Compose пройдены; app healthy, reverse proxy и smoke на `http://127.0.0.1:3080` успешны. Python и Caddy закреплены digest.
 - GitHub CLI: реальный приватный репозиторий и admin-доступ подтверждены.
 - GitHub MCP: get_repo 404, доступ коннектора к этому репозиторию не подтверждён.
-- CI: реальные runs успешны, включая build, proxy smoke, обновление, автоматический и ручной откат. [Первый CI](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39790558262), [проверка первого PR](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39791434313).
-- Первый main CI и GHCR publish успешны: [run 39792016635](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39792016635), commit `aa860ab73773d4a703256cd22fbb35068968e357`, image digest `sha256:3e22783f412d1800b094774fb84c60bf2afe7eef169f1b60f9ba34a33823aa0b`. Финальный workflow также проверяет приватность пакета и повторное чтение опубликованного digest.
+- CI до переименования: реальные runs успешны, включая build, proxy smoke, обновление, автоматический и ручной откат. [Первый CI](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39790558262), [проверка первого PR](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39791434313).
+- Main CI/GHCR до переименования: [run 39792016635](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39792016635), commit `aa860ab73773d4a703256cd22fbb35068968e357`, image digest `sha256:3e22783f412d1800b094774fb84c60bf2afe7eef169f1b60f9ba34a33823aa0b`. Эти проверки подтверждают старый namespace.
 - VPS/SSH/CD/DNS/HTTPS/публичная страница: не выполнены, VM отсутствует.
 - Повторный публичный деплой с изменённым текстом: не выполнен.
 - Страница проверена во встроенном браузере (узкая панель); проверка на отдельном широком viewport не выполнялась. Вторым изменением обновлён подзаголовок о состоянии стенда; это локальная проверка обновления, а не публичный CD.
@@ -40,6 +40,12 @@ Environment `production` ограничен веткой main через deploym
 
 Название проекта и локальной папки: `localhost-3000`. Репозиторий переименован с сохранением истории: https://github.com/SamuraiSBS/localhost-3000.git. Будущие релизы используют `/opt/localhost-3000`; Compose и локальный образ — `localhost-3000`.
 
-Перечисленные выше CI/GHCR/Docker проверки выполнены до переименования. Публикация образа в новом GHCR namespace требует отдельного успешного CI; прежний digest не подтверждает наличие образа под новым именем.
+Перечисленные выше CI/GHCR/Docker проверки выполнены до переименования. Старый digest не подтверждает наличие образа в новом GHCR namespace.
 
-После переименования локально повторно пройдены: `python scripts/check.py` (4 HTTP-теста), `git diff --check`, actionlint, проверка local/production Compose, сборка `localhost-3000:local` и запуск через `scripts/dev.ps1 start`. App нового Compose-проекта healthy, proxy запущен; HTTP smoke прошёл. Smoke через `http://127.0.0.1:3080` и браузер подтвердили заголовок `localhost-3000 — Infrastructure Ready`. Новый CI/GHCR и публичный деплой пока не запускались.
+После переименования локально повторно пройдены: `python scripts/check.py` (4 HTTP-теста), `git diff --check`, actionlint, проверка local/production Compose, сборка `localhost-3000:local` и запуск через `scripts/dev.ps1 start`. App нового Compose-проекта healthy, proxy запущен; HTTP smoke прошёл. Smoke через `http://127.0.0.1:3080` и браузер подтвердили заголовок `localhost-3000 — Infrastructure Ready`.
+
+PR [#6](https://github.com/SamuraiSBS/localhost-3000/pull/6) объединён squash-коммитом `fae89b218d1673bf6189f61261e4509e7814fc22` 2026-10-22. [PR CI run 39809750211](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39809750211): verify успешно, включая offline checks, Docker build/proxy smoke и тест деплоя/отката.
+
+После слияния [main CI run 39810198794](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39810198794) завершился успешно: verify и publish прошли. Опубликованный образ: `ghcr.io/samuraisbs/localhost-3000@sha256:7466cc9bea467bd08922dc0f636dd81f1b11f87b84b5fc637e42c45a27870af8`. Publish проверил private visibility пакета и pull этого же digest с run-scoped `GITHUB_TOKEN`.
+
+[CD run 39810672585](https://github.com/SamuraiSBS/localhost-3000/actions/runs/39810672585) пропущен; `DEPLOY_ENABLED=false`, VM нет. Это подтверждает CI и публикацию GHCR-образа, но не публичный деплой, DNS, HTTPS или серверную приёмку.
