@@ -1,6 +1,6 @@
 ---
 name: demo-qa
-description: Verify Lazyum jury journeys, browser behavior and demo readiness against the real evaluation criteria.
+description: Verify localhost-3000 jury journeys, browser behavior and demo readiness against the real evaluation criteria.
 ---
 
 Read docs/demo.md and evaluation.md. Test the actual deployed revision. API assertions do not replace browser acceptance.

@@ -22,9 +22,9 @@ VM пока не создана. Домен от пользователя: `loca
 sudo bash bootstrap-ubuntu.sh ADMIN_PUBLIC_IP/32 /path/to/deploy.pub
 ```
 
-Подставлять реальные значения. Скрипт устанавливает Docker из официального apt-репозитория, создаёт deploy-пользователя и `/opt/lazyum`, включает Docker при загрузке и настраивает UFW. Сначала проверить вход deploy-ключом во второй сессии. Не менять существующую production VM этим скриптом без проверки её служб и правил доступа.
+Подставлять реальные значения. Скрипт устанавливает Docker из официального apt-репозитория, создаёт deploy-пользователя и `/opt/localhost-3000`, включает Docker при загрузке и настраивает UFW. Сначала проверить вход deploy-ключом во второй сессии. Не менять существующую production VM этим скриптом без проверки её служб и правил доступа.
 
-Под пользователем deploy создать `/opt/lazyum/.env` из `.env.production.example`, `chmod 600`. Для первого теста без домена использовать `SITE_ADDRESS=:80`, публичный URL `http://REAL_IP`. После DNS переключить на домен.
+Под пользователем deploy создать `/opt/localhost-3000/.env` из `.env.production.example`, `chmod 600`. Для первого теста без домена использовать `SITE_ADDRESS=:80`, публичный URL `http://REAL_IP`. После DNS переключить на домен.
 
 ## DNS и TLS
 
@@ -59,13 +59,13 @@ CI проверяет PR без deployment secrets. Успешный CI push `ma
 
 ## Эксплуатация и откат
 
-Релизы: `/opt/lazyum/releases/SHA-RUN_ID`. `current`/`previous` — симлинки принятых версий. Подготовленный image digest и предыдущие образы не удалять до окончания хакатона.
+Релизы: `/opt/localhost-3000/releases/SHA-RUN_ID`. `current`/`previous` — симлинки принятых версий. Подготовленный image digest и предыдущие образы не удалять до окончания хакатона.
 
 ```bash
-cd /opt/lazyum/current
-docker compose --project-name lazyum-autumn-hack --env-file /opt/lazyum/.env --env-file image.env -f compose.yaml -f compose.production.yaml ps
-docker compose --project-name lazyum-autumn-hack --env-file /opt/lazyum/.env --env-file image.env -f compose.yaml -f compose.production.yaml logs --tail 100 -f
-bash scripts/rollback.sh /opt/lazyum
+cd /opt/localhost-3000/current
+docker compose --project-name localhost-3000 --env-file /opt/localhost-3000/.env --env-file image.env -f compose.yaml -f compose.production.yaml ps
+docker compose --project-name localhost-3000 --env-file /opt/localhost-3000/.env --env-file image.env -f compose.yaml -f compose.production.yaml logs --tail 100 -f
+bash scripts/rollback.sh /opt/localhost-3000
 ```
 
 deploy.sh сериализует деплои через flock, подтягивает образ до изменения служб, проверяет контейнеры и exact revision через внешний URL. При ошибке возвращает предыдущие image + compose + proxy config и проверяет их. Ошибка первого деплоя останавливает неработающий стенд; прежней версии тогда ещё нет. Если сам откат неуспешен, скрипт возвращает ошибку и требует диагностики. Данные БД отсутствуют; после ТЗ нужны согласованные backup/restore и backward-compatible миграции. Caddy-тома при обычной остановке не удалять.

@@ -1,6 +1,6 @@
 ---
 name: devops-deploy
-description: Build, deploy, diagnose or roll back Lazyum containers with the project release scripts and Yandex VM runbook.
+description: Build, deploy, diagnose or roll back localhost-3000 containers with the project release scripts and Yandex VM runbook.
 ---
 
 Read docs/infrastructure.md and deployment.md. Verify the target, access, current release and local/production mode.

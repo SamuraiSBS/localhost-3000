@@ -17,7 +17,7 @@ for attempt in range(args.attempts):
         if args.revision:
             assert health["revision"] == args.revision, "Unexpected release revision"
         with urllib.request.urlopen(args.url, timeout=5) as response:
-            assert "Lazyum Autumn Hack — Infrastructure Ready" in response.read().decode(), "Wrong page"
+            assert "localhost-3000 — Infrastructure Ready" in response.read().decode(), "Wrong page"
         print(f"Smoke passed: {args.url}; revision={health['revision']}")
         break
     except Exception as error:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ROOT=${1:?Usage: rollback.sh /opt/lazyum}
+ROOT=${1:?Usage: rollback.sh /opt/localhost-3000}
 ROOT=$(realpath "$ROOT")
 TARGET=$(readlink -f "$ROOT/previous")
 [[ "$TARGET" = "$ROOT"/releases/* && -f "$TARGET/image.env" ]] || { echo 'No accepted previous release' >&2; exit 1; }

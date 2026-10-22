@@ -35,7 +35,7 @@ dc() {
   if [[ "$(cat "$release/deploy-mode")" = production ]]; then
     files+=(-f "$release/compose.production.yaml")
   fi
-  docker compose --project-name "${DEPLOY_PROJECT_NAME:-lazyum-autumn-hack}" --env-file "$ROOT/.env" --env-file "$release/image.env" "${files[@]}" "$@"
+  docker compose --project-name "${DEPLOY_PROJECT_NAME:-localhost-3000}" --env-file "$ROOT/.env" --env-file "$release/image.env" "${files[@]}" "$@"
 }
 dc "$RELEASE" config --quiet
 # Pull/inspect before touching the running application.
