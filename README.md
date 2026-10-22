@@ -15,7 +15,7 @@ python infra/probe/server.py
 Контейнеры на Windows:
 
 ```powershell
-Copy-Item .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 ./scripts/dev.ps1 start
 python scripts/smoke.py http://127.0.0.1:8080
 ./scripts/dev.ps1 logs

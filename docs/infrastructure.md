@@ -12,10 +12,11 @@
 - Docker/Desktop: сборка и локальный Compose пройдены; app healthy, reverse proxy и smoke на `http://127.0.0.1:3080` успешны. Python и Caddy закреплены digest.
 - GitHub CLI: реальный приватный репозиторий и admin-доступ подтверждены.
 - GitHub MCP: get_repo 404, доступ коннектора к этому репозиторию не подтверждён.
-- CI: первые реальные runs успешны, включая build, proxy smoke, обновление, автоматический и ручной откат. [Первый CI](https://github.com/SamuraiSBS/lazyum-autumn-hack/actions/runs/39790558262). После финальных изменений нужен повторный зелёный PR-check.
-- GHCR publish: требует merge в main; пока не подтверждён.
+- CI: реальные runs успешны, включая build, proxy smoke, обновление, автоматический и ручной откат. [Первый CI](https://github.com/SamuraiSBS/lazyum-autumn-hack/actions/runs/39790558262), [проверка первого PR](https://github.com/SamuraiSBS/lazyum-autumn-hack/actions/runs/39791434313).
+- Первый main CI и GHCR publish успешны: [run 39792016635](https://github.com/SamuraiSBS/lazyum-autumn-hack/actions/runs/39792016635), commit `aa860ab73773d4a703256cd22fbb35068968e357`, image digest `sha256:3e22783f412d1800b094774fb84c60bf2afe7eef169f1b60f9ba34a33823aa0b`. Финальный workflow также проверяет приватность пакета и повторное чтение опубликованного digest.
 - VPS/SSH/CD/DNS/HTTPS/публичная страница: не выполнены, VM отсутствует.
 - Повторный публичный деплой с изменённым текстом: не выполнен.
+- Страница проверена во встроенном браузере (узкая панель); проверка на отдельном широком viewport не выполнялась. Вторым изменением обновлён подзаголовок о состоянии стенда; это локальная проверка обновления, а не публичный CD.
 
 ## Зависимости от пользователя
 
@@ -28,6 +29,8 @@ DNS A на момент проверки: `localhost-3000.ru → 81.26.176.123`.
 Порты 8080 и 18080 заняты другими контейнерами. Для этого компьютера в локальном `.env` выбран свободный `HTTP_PORT=3080`; пример для чистой машины сохраняет 8080.
 
 GitHub: настроены squash merge, удаление слитых веток, environment `production`, repository variable `DEPLOY_ENABLED=false`. API защиты main вернул HTTP 403: на текущем тарифе для приватного репозитория требуется Pro. Видимость и тариф сохранены. PR-процесс описан, техническое enforcement защиты недоступно.
+
+Environment `production` ограничен веткой main через deployment branch policy (API подтвердил настройку). GitHub Actions закреплены на официальных v7 commit SHA; Dependabot объединяет будущие обновления Actions в один PR. Локально actionlint и bash syntax checks пройдены.
 
 ## Границы готовности
 
