@@ -1,0 +1,104 @@
+/* Digital Ruins / Lost Signal. The single executable token source. */
+:root {
+  color-scheme: dark;
+
+  --color-bg: #050505;
+  --color-surface: #141414;
+  --color-surface-raised: #242424;
+  --color-border: #343434;
+  --color-border-control: #797979;
+  --color-text: #f1f1f1;
+  --color-text-secondary: #9d9d9d;
+  --color-art: #e3e3e3;
+  --color-focus: var(--color-text);
+  --color-action-bg: var(--color-text);
+  --color-action-text: var(--color-bg);
+  --color-action-hover: var(--color-art);
+
+  /* Optical anchors only; never a default button/surface gradient. */
+  --prism-red: #ff7070;
+  --prism-orange: #ffb270;
+  --prism-yellow: #f4e99a;
+  --prism-green: #a0e6b4;
+  --prism-cyan: #9bdfef;
+  --prism-blue: #9faeff;
+  --prism-violet: #d4acff;
+
+  /* Self-hosted in fonts.css; native fallback remains functional. */
+  --font-content: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --font-terminal: var(--font-content);
+  --type-body: 1rem;
+  --type-lead: 1.25rem;
+  --type-heading: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --type-title: clamp(2rem, 1.4rem + 2.5vw, 3.5rem);
+  --leading-body: 1.65;
+  --leading-heading: 1.25;
+  --tracking-heading: -0.02em;
+  --weight-body: 400;
+  --weight-label: 500;
+  --weight-heading: 500;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --layout-max: 76rem;
+  --measure-prose: 68ch;
+  --control-min: 2.75rem;
+
+  --radius-flat: 0;
+  --radius-control: 0.125rem;
+  --radius-floating: 0.75rem;
+  --radius-optical: 1.5rem;
+  --border-width: 1px;
+  --focus-width: 2px;
+  --focus-offset: 4px;
+
+  --layer-base: 0;
+  --layer-dropdown: 10;
+  --layer-sticky: 20;
+  --layer-backdrop: 30;
+  --layer-modal: 40;
+  --layer-toast: 50;
+  --layer-tooltip: 60;
+
+  --motion-fast: 140ms;
+  --motion-panel: 240ms;
+  --motion-enter: 800ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shared static optical sampler parameters; displacement is in CSS px. */
+  --glass-tint: rgb(241 241 241 / 4%);
+  --glass-edge: rgb(241 241 241 / 12%);
+  --glass-blur: 10px;
+  --glass-displacement: 26;
+  --glass-dispersion: 0.6;
+  --glass-scrim: rgb(5 5 5 / 88%);
+  --glass-fallback: var(--color-surface);
+  --dialog-backdrop: rgb(5 5 5 / 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-panel: 0ms;
+    --motion-enter: 0ms;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-tint: var(--glass-fallback);
+    --glass-scrim: var(--glass-fallback);
+    --glass-blur: 0px;
+    --glass-displacement: 0;
+    --glass-dispersion: 0;
+    --dialog-backdrop: var(--color-bg);
+  }
+}

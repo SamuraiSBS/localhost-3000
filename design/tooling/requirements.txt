@@ -1,0 +1,2 @@
+# Build-time font export only; never required by the probe or product runtime.
+fonttools[woff]==4.67.0

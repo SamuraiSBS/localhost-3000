@@ -1,0 +1,21 @@
+{
+  "sources": {
+    "JetBrainsMono.ttf": {
+      "url": "https://raw.githubusercontent.com/google/fonts/6e4b84c976cadb3c49a40fd9a1c203e4f7fcf2da/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf",
+      "bytes": 187208,
+      "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
+    },
+    "JetBrainsMono-OFL.txt": {
+      "url": "https://raw.githubusercontent.com/google/fonts/6e4b84c976cadb3c49a40fd9a1c203e4f7fcf2da/ofl/jetbrainsmono/OFL.txt",
+      "bytes": 4399,
+      "sha256": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    }
+  },
+  "outputs": {
+    "jetbrains-mono-variable.woff2": {
+      "source": "JetBrainsMono.ttf",
+      "bytes": 71736,
+      "sha256": "7b7f3419196f675a973d30cb70078749120caddea86c8547ebf54a8db2ca13af"
+    }
+  }
+}

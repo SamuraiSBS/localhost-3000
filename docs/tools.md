@@ -13,3 +13,7 @@
 Skills проекта лежат в `.agents/skills` и валидируются bundled skill-creator. Они используют проектные документы и команды, не заменяют доступные специализированные навыки UI, документов или браузера. Уже открытый чат может потребовать перезагрузки каталога навыков; файлы также можно явно читать по пути.
 
 Источники: [OpenAI skills](https://learn.chatgpt.com/docs/build-skills), [Compose health ordering](https://docs.docker.com/compose/how-tos/startup-order/), [GitHub environments](https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments), [Caddy HTTPS](https://caddyserver.com/docs/automatic-https).
+
+## Дизайн и графика
+
+Актуальный аудит от 2026-10-22: [design/IMPLEMENTATION_GUIDE.md](design/IMPLEMENTATION_GUIDE.md). ImageGen реально создал включённые колонны; Figma identity/auth read успешен, запись файла не выполнялась; Pencil не подключился к приложению. Изолированные Node Playwright tests прошли в Edge/Firefox/WebKit. FontTools и Sharp используются только для сборки ассетов. Рецепты: [design/EFFECTS.md](design/EFFECTS.md); результаты и границы: [design/VERIFICATION.md](design/VERIFICATION.md). Эти инструменты не входят в runtime probe или его CI-зависимости.
