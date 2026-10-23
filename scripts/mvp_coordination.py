@@ -23,6 +23,8 @@ ACTIVE = {"reserved", "bound", "in_progress", "awaiting_review", "changes_reques
 CLOSED = {"accepted", "released", "cancelled"}
 READ_ONLY = {"status", "next", "check"}
 HANDOFF_EVIDENCE_KIND = "mvp_orchestrator_handoff_authorization"
+SNAPSHOT_EVIDENCE_KIND = "mvp_separate_workspace_snapshot"
+SNAPSHOT_AUTH_SOURCE = "direct_user_reply_in_current_chat"
 TARGET = re.compile(r"^/root(?:/[a-z][a-z0-9_]*)*$")
 RUNTIME_KEYS = {"status", "evidence"}
 PROTECTED = {".git", ".agent-state", ".state", ".agents", ".codex", ".venv", "node_modules", "__pycache__", ".pytest_cache"}
@@ -163,6 +165,17 @@ class Coordinator:
                             "executable": bool(before.st_mode & stat.S_IXUSR)}
         return result
 
+    def exact_manifest(self, files):
+        """Return a finite, portable path/mode/hash/size snapshot manifest."""
+        current = self.manifest(files)
+        result = []
+        for name in files:
+            entry = current[name]
+            require(entry.get("kind") == "file", "snapshot_missing_file", f"Snapshot file must exist: {name}")
+            result.append({"path": name, "mode": "100755" if entry["executable"] else "100644",
+                           "sha256": entry["sha256"], "size": entry["size"]})
+        return result
+
     def inventory(self):
         names = self.git("ls-files", "-z", "--cached", "--others", "--exclude-standard").split(b"\0")
         safe = []
@@ -235,7 +248,7 @@ class Coordinator:
 
     def empty(self):
         return {"schema_version": 1, "root": self.identity, "git_common_dir": self.git_identity, "revision": 0,
-                "orchestrator": None, "attempts": [], "gates": {}, "events": []}
+                "orchestrator": None, "attempts": [], "gates": {}, "snapshots": [], "events": []}
 
     def read(self):
         no_reparse(self.state_path)
@@ -249,6 +262,8 @@ class Coordinator:
                     "workspace_mismatch", "Ledger belongs to another workspace")
             require(isinstance(state.get("attempts"), list) and isinstance(state.get("events"), list) and isinstance(state.get("gates"), dict),
                     "corrupt_state", "Malformed ledger collections")
+            snapshots = state.setdefault("snapshots", [])
+            require(isinstance(snapshots, list), "corrupt_state", "Malformed snapshot collection")
             ids, live_tasks = set(), set()
             for attempt in state["attempts"]:
                 require(isinstance(attempt, dict) and attempt.get("status") in ACTIVE | CLOSED and attempt.get("id") not in ids,
@@ -259,6 +274,61 @@ class Coordinator:
                 if attempt["status"] in ACTIVE:
                     require(attempt["task_id"] not in live_tasks, "corrupt_state", "Duplicate active task")
                     live_tasks.add(attempt["task_id"])
+            snapshot_ids, snapshot_paths = set(), set()
+            for snapshot in snapshots:
+                require(isinstance(snapshot, dict) and all(key in snapshot for key in
+                        ("id", "source_chat", "files", "manifest", "authorization", "evidence", "actor", "run_id", "recorded_at", "reason")),
+                        "corrupt_state", "Incomplete snapshot record")
+                uuid_text(snapshot["id"])
+                require(snapshot["id"] not in snapshot_ids, "corrupt_state", "Duplicate snapshot ID")
+                snapshot_ids.add(snapshot["id"])
+                require(isinstance(snapshot["files"], list) and snapshot["files"], "corrupt_state", "Snapshot requires exact files")
+                files = [self.path(value) for value in snapshot["files"]]
+                require(files == sorted(set(files)), "corrupt_state", "Snapshot paths must be sorted and unique")
+                require(not any(self.overlap(first, second) for index, first in enumerate(files) for second in files[index + 1:]),
+                        "corrupt_state", "Snapshot paths overlap")
+                require(not any(self.overlap(name, prior) for name in files for prior in snapshot_paths),
+                        "corrupt_state", "Snapshot records cannot replace or overlap prior paths")
+                snapshot_paths.update(files)
+                require(isinstance(snapshot["manifest"], list) and len(snapshot["manifest"]) == len(files),
+                        "corrupt_state", "Snapshot manifest does not match paths")
+                for name, entry in zip(files, snapshot["manifest"]):
+                    require(isinstance(entry, dict) and set(entry) == {"path", "mode", "sha256", "size"}
+                            and entry.get("path") == name and entry.get("mode") in {"100644", "100755"}
+                            and isinstance(entry.get("sha256"), str) and re.fullmatch(r"[0-9a-f]{64}", entry["sha256"])
+                            and type(entry.get("size")) is int and entry["size"] >= 0,
+                            "corrupt_state", "Malformed snapshot manifest entry")
+                source = snapshot["source_chat"]
+                require(isinstance(source, dict) and all(key in source for key in ("id", "title", "status", "root"))
+                        and nonempty(source.get("title")) and source.get("status") == "completed"
+                        and source.get("root") == str(self.root), "corrupt_state", "Malformed snapshot source chat")
+                uuid_text(source["id"])
+                authorization = snapshot["authorization"]
+                require(isinstance(authorization, dict) and authorization.get("source") == SNAPSHOT_AUTH_SOURCE
+                        and authorization.get("authorized") is True and nonempty(authorization.get("user_authorization")),
+                        "corrupt_state", "Malformed snapshot authorization")
+                require(authorization.get("current_chat_run_id") == snapshot["run_id"],
+                        "corrupt_state", "Snapshot authorization owner mismatch")
+                require(TARGET.fullmatch(snapshot["actor"] or ""), "corrupt_state", "Malformed snapshot actor")
+                uuid_text(snapshot["run_id"])
+                date(snapshot["recorded_at"])
+                evidence = snapshot["evidence"]
+                require(isinstance(evidence, dict) and nonempty(evidence.get("path"))
+                        and isinstance(evidence.get("sha256"), str) and re.fullmatch(r"[0-9a-f]{64}", evidence["sha256"])
+                        and isinstance(evidence.get("payload"), dict), "corrupt_state", "Malformed snapshot evidence")
+                self.path(evidence["path"], evidence=True)
+                payload = evidence["payload"]
+                stored_source = {**source, "files": files}
+                observation = payload.get("source_observation")
+                stored_authorization = payload.get("authorization")
+                require(payload.get("kind") == SNAPSHOT_EVIDENCE_KIND and isinstance(payload.get("observed_at"), str)
+                        and isinstance(observation, dict) and observation.get("tool") == "mcp__codex_app__read_thread"
+                        and observation.get("thread_id") == source["id"] and observation.get("status") == source["status"]
+                        and observation.get("title") == source["title"] and observation.get("root") == source["root"]
+                        and observation.get("files") == files and observation.get("observed_at") == payload.get("observed_at")
+                        and stored_authorization == authorization and payload.get("source_chat") == stored_source,
+                        "corrupt_state", "Snapshot evidence differs from its immutable record")
+                date(payload["observed_at"])
             return state
         except (ValueError, TypeError, KeyError) as exc:
             raise Refusal("corrupt_state", "Ledger is corrupt; preserve it and recover explicitly") from exc
@@ -488,6 +558,18 @@ class Coordinator:
         attempt["review"] = None
 
     def outside_changes(self, state, attempt):
+        snapshots = state.get("snapshots", [])
+        snapshotted = {}
+        for snapshot in snapshots:
+            expected = snapshot["manifest"]
+            try:
+                current_snapshot = self.exact_manifest(snapshot["files"])
+            except Refusal as exc:
+                raise Refusal("snapshot_drift", f"Snapshotted file is unavailable or unsafe: {snapshot['id']}") from exc
+            require(current_snapshot == expected, "snapshot_drift", f"Snapshotted bytes or mode changed: {snapshot['id']}")
+            for entry in expected:
+                snapshotted[entry["path"]] = {"kind": "file", "sha256": entry["sha256"], "size": entry["size"],
+                                               "executable": entry["mode"] == "100755"}
         before, current = attempt["baseline"], self.inventory()
         own = set(attempt["files"])
         foreign = [name for item in state["attempts"] if item["id"] != attempt["id"] and item["status"] in ACTIVE and item.get("claimed_at") for name in item["files"]]
@@ -500,8 +582,66 @@ class Coordinator:
             old, new = before.get(name, {"kind": "absent"}), current.get(name, {"kind": "absent"})
             if old == new or name in own or any(self.overlap(name, permitted) for permitted in foreign):
                 continue
-            require((name in lineage and lineage[name]["entry"] == new) or preserved.get(name) == new,
+            require((name in lineage and lineage[name]["entry"] == new) or preserved.get(name) == new or snapshotted.get(name) == new,
                     "out_of_scope_change", f"Unexplained change outside exact scope: {name}")
+
+    def record_snapshot(self, state, args, actor):
+        self.root_actor(state, actor, args.run_id)
+        require(os.environ.get("CODEX_THREAD_ID") == args.run_id,
+                "current_run_mismatch", "Snapshot authorization must belong to this current chat run")
+        require(nonempty(args.reason), "missing_reason", "Snapshot provenance reason required")
+        raw_files = [self.path(value) for value in args.file]
+        require(raw_files and len(set(raw_files)) == len(raw_files), "invalid_scope", "Snapshot requires distinct exact files")
+        files = sorted(raw_files)
+        require(raw_files == files, "invalid_scope", "Snapshot CLI paths must be in canonical sorted order")
+        for index, name in enumerate(files):
+            require(not any(self.overlap(name, other) for other in files[index + 1:]),
+                    "invalid_scope", "Snapshot paths cannot overlap")
+        self.conflicts(state, files, [])
+        for previous in state.get("snapshots", []):
+            require(not any(self.overlap(name, prior) for name in files for prior in previous["files"]),
+                    "snapshot_path_conflict", "Snapshot paths cannot replace an existing immutable snapshot")
+
+        evidence = self.evidence(args.evidence)
+        payload = evidence["payload"]
+        require(payload.get("kind") == SNAPSHOT_EVIDENCE_KIND, "invalid_snapshot_evidence", "Snapshot evidence kind mismatch")
+        fresh(payload.get("observed_at"))
+        source = payload.get("source_chat")
+        require(isinstance(source, dict), "invalid_snapshot_source", "Completed source chat observation required")
+        require(nonempty(source.get("root")) and isinstance(source.get("root"), str),
+                "invalid_snapshot_source", "Source checkout root must be explicit")
+        try:
+            source_root_path = Path(source["root"])
+            require(source_root_path.is_absolute(), "invalid_snapshot_source", "Source checkout root must be absolute")
+            source_root = source_root_path.resolve(strict=True)
+        except (OSError, TypeError, ValueError) as exc:
+            raise Refusal("invalid_snapshot_source", "Source chat must name this existing checkout") from exc
+        require(source_root == self.root and source["root"] == str(self.root) and source.get("status") == "completed"
+                and nonempty(source.get("title")), "invalid_snapshot_source", "Completed source chat in this checkout required")
+        uuid_text(source.get("id"))
+        require(source["id"] != args.run_id, "invalid_snapshot_source", "Source chat must be separate from the current chat")
+        require(source.get("files") == files, "snapshot_file_mismatch", "Source chat file list must exactly match the CLI list")
+        observation = payload.get("source_observation")
+        require(isinstance(observation, dict) and observation.get("tool") == "mcp__codex_app__read_thread"
+                and observation.get("thread_id") == source["id"] and observation.get("status") == source["status"]
+                and observation.get("title") == source["title"] and observation.get("root") == source["root"]
+                and observation.get("files") == source["files"] and observation.get("observed_at") == payload["observed_at"],
+                "invalid_snapshot_observation", "Fresh source-chat observation must match the exact source record")
+        authorization = payload.get("authorization")
+        require(isinstance(authorization, dict) and authorization.get("source") == SNAPSHOT_AUTH_SOURCE
+                and authorization.get("current_chat_run_id") == args.run_id
+                and authorization.get("authorized") is True
+                and nonempty(authorization.get("user_authorization")),
+                "invalid_snapshot_authorization", "Direct authorization from this current chat is required")
+        manifest = self.exact_manifest(files)
+        snapshot = {"id": str(uuid.uuid4()),
+                    "source_chat": {"id": source["id"], "title": source["title"], "status": source["status"], "root": str(source_root)},
+                    "files": files, "manifest": manifest,
+                    "authorization": {"source": authorization["source"], "current_chat_run_id": authorization["current_chat_run_id"],
+                                     "authorized": True, "user_authorization": authorization["user_authorization"]},
+                    "evidence": evidence, "actor": actor, "run_id": args.run_id, "recorded_at": iso(), "reason": args.reason}
+        state.setdefault("snapshots", []).append(snapshot)
+        return {"snapshot": snapshot}
 
     def mutate(self, state, plan, args):
         action, actor = args.action, args.actor
@@ -539,6 +679,8 @@ class Coordinator:
         if state["orchestrator"] is None:
             require(action in {"reserve", "record-gate"}, "wrong_role", "Orchestrator is established by first reserve/gate")
             state["orchestrator"] = {"target": actor, "run_id": args.run_id}
+        if action == "record-snapshot":
+            return self.record_snapshot(state, args, actor)
         if action in {"reserve", "record-gate"}:
             self.root_actor(state, actor, args.run_id)
             require(nonempty(args.reason), "missing_reason", "Reason required")
@@ -750,6 +892,8 @@ class Coordinator:
                      "reason": args.reason, "previous": prior, "previous_gate": previous_gate}
             if args.action == "handoff":
                 event["handoff"] = copy.deepcopy(data["handoff"])
+            if args.action == "record-snapshot":
+                event["snapshot_id"] = data["snapshot"]["id"]
             state["events"].append(event)
             if "attempt" in data:
                 data["attempt"]["updated_at"] = event["at"]
@@ -770,7 +914,7 @@ class JsonParser(argparse.ArgumentParser):
 def parser():
     result = JsonParser(description=__doc__)
     result.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase", "handoff"}))
+    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "record-snapshot", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase", "handoff"}))
     result.add_argument("--expected-revision", type=int)
     result.add_argument("--actor")
     result.add_argument("--run-id")

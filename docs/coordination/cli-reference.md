@@ -15,6 +15,7 @@
 | `next` | Нет; возвращает все причины готовности, P0 ready отдельно от P1 | Любой; строго read-only |
 | `check` | `--task Bxx --file PATH` повторяемый, `--resource NAME` повторяемый, `--adopt-accepted ATTEMPT_ID` повторяемый | Любой; advisory read-only |
 | `record-gate` | `--task Bxx --evidence FILE --reason TEXT` | Orchestrator; только фактический внешний gate, без фиктивного review |
+| `record-snapshot` | `--file PATH` повторяемый, `--evidence FILE --reason TEXT` | Текущий orchestrator; только точные файлы завершённой отдельной работы с прямой авторизацией |
 | `handoff` | `--from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason TEXT` | Текущий чат `/root`; только передача того же target при отсутствии active attempts |
 | `reserve` | `--task Bxx --file PATH` повторяемый, `--resource NAME` повторяемый, `--reason TEXT`, optional `--adopt-accepted ATTEMPT_ID` повторяемый | Orchestrator |
 | `bind` | `--attempt UUID --tool-evidence FILE` | Orchestrator; реальный freshly spawned worker |
@@ -127,6 +128,49 @@ Evidence создаётся по реальному ответу пользов�
 python scripts/mvp_coordination.py --root WORKSPACE handoff --from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason USER_SELECTED_CURRENT_CHAT --actor /root --run-id CURRENT_CODEX_THREAD_ID --expected-revision CURRENT_REVISION
 ```
 
+### Snapshot завершённой отдельной работы
+
+`record-snapshot` добавляет в текущий ledger отдельную неизменяемую запись provenance. Она разрешает `outside_changes` сохранить только записанные bytes и режим файлов; запись не создаёт task acceptance, dependency lineage или право `--adopt-accepted`. Snapshot не подтверждает содержательную корректность и не заменяет review исходного чата.
+
+Текущий `/root` owner/run должен совпадать с `--actor`/`--run-id`, а `CODEX_THREAD_ID` процесса — с `--run-id`. Evidence не старше пяти минут подтверждает завершённый исходный чат в том же primary checkout и содержит тот же конечный список, который передан повторяющимся `--file`. Список сортируется по repository-relative пути; CLI, evidence и observation должны перечислять все пути один раз и в одинаковом порядке. При создании запрещены небезопасные/защищённые пути, любой overlap с active claim и overlap с уже сохранённым snapshot. Каждый указанный файл должен существовать как обычный файл.
+
+```json
+{
+  "kind": "mvp_separate_workspace_snapshot",
+  "observed_at": "2026-10-23T12:00:00Z",
+  "source_chat": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "title": "Завершённая отдельная работа",
+    "status": "completed",
+    "root": "D:/localhost-3000",
+    "files": ["design/example.js", "design/index.html"]
+  },
+  "source_observation": {
+    "tool": "mcp__codex_app__read_thread",
+    "thread_id": "11111111-1111-4111-8111-111111111111",
+    "title": "Завершённая отдельная работа",
+    "status": "completed",
+    "root": "D:/localhost-3000",
+    "files": ["design/example.js", "design/index.html"],
+    "observed_at": "2026-10-23T12:00:00Z"
+  },
+  "authorization": {
+    "source": "direct_user_reply_in_current_chat",
+    "current_chat_run_id": "22222222-2222-4222-8222-222222222222",
+    "authorized": true,
+    "user_authorization": "Прямая формулировка пользователя о snapshot этой работы"
+  }
+}
+```
+
+UUID, заголовок, root, список файлов и формулировка авторизации выше — только схема. Оркестратор подставляет реальные значения из текущего `CODEX_THREAD_ID`, ответа пользователя и свежего результата `read_thread`; он не выводит из примера ни один факт. Пример команды:
+
+```text
+python scripts/mvp_coordination.py --root WORKSPACE record-snapshot --file design/example.js --file design/index.html --evidence artifacts/coordination/source-chat-snapshot.json --reason USER_AUTHORIZED_COMPLETED_CHAT --actor /root --run-id CURRENT_CODEX_THREAD_ID --expected-revision CURRENT_REVISION
+```
+
+Ledger хранит уникальный snapshot ID, source chat ID/title/status/root, конечные записи `{path, mode, sha256, size}`, direct authorization, raw-evidence payload с SHA-256, orchestrator target/run и время записи. Snapshot-ы только добавляются; запись на уже snapshotted path запрещена. На последующем `submit`/`accept` coordinator сначала сверяет все snapshotted files с их exact manifest. Любое изменение bytes, режима или отсутствие файла закрывает операцию с `snapshot_drift`, даже если другой механизм provenance мог бы разрешить эти bytes. Совпадающий snapshot даёт право только на точные текущие bytes. Старая v1 ledger без `snapshots` читается как пустой список; её attempts и audit events не переписываются.
+
 ### Quiescence для release/cancel
 
 ```json
@@ -149,6 +193,6 @@ python scripts/mvp_coordination.py --root WORKSPACE handoff --from-run-id OLD_UU
 
 Fingerprint плана включает нормализованные определения backlog и содержимое `contract_documents`. Из task definitions исключены только runtime `status/evidence`, из верхнего уровня — `updated_on/product_status/planning_status`. Контрактные правки требуют явного `rebase` каждого затронутого live attempt. Rebase не переписывает backlog, сохраняет предыдущий plan/base в event history, обновляет bound plan и HEAD после явной проверки orchestrator и сбрасывает candidate/reviewer/GO. Он не обновляет исходный filesystem baseline и не скрывает изменения вне scope. Accepted dependencies проверяются по актуальному task definition, fingerprint контрактов и последнему accepted lineage файлов. Изменение контракта снимает актуальность прошлой приёмки: зависимости нужно заново проверить обычным worker/reviewer/Accept циклом, начиная с первой устаревшей задачи. Rebase текущей задачи не заменяет эту проверку. Новое обязательное условие также требует нового sourced gate. Последующее accepted изменение файла заменяет его lineage. Добавление несвязанной задачи само по себе не инвалидирует прежний accepted результат.
 
-Reserve сохраняет baseline tracked+untracked nonignored файлов и HEAD. Pre-existing dirty scope отклоняется. Исключение — explicit `--adopt-accepted ID`, когда текущие bytes/absence совпадают с последним accepted manifest и нет live владельца. При claim повторно проверяются собственный baseline, dependencies и plan. При submit чужие изменения вне scope допускаются в scope другого live claim, совпадающем accepted lineage либо точном `closed_manifest` остановленного released/cancelled peer. Последний фиксируется после quiescence; он сохраняет незавершённые bytes, но не даёт task acceptance или права их adoption. Изменение этих bytes после закрытия снова отклоняется. В общем checkout CLI не способен доказать автора filesystem write: это обнаружение изменений и дисциплина владения, не OS sandbox.
+Reserve сохраняет baseline tracked+untracked nonignored файлов и HEAD. Pre-existing dirty scope отклоняется. Исключение — explicit `--adopt-accepted ID`, когда текущие bytes/absence совпадают с последним accepted manifest и нет live владельца. При claim повторно проверяются собственный baseline, dependencies и plan. При submit чужие изменения вне scope допускаются в scope другого live claim, совпадающем accepted lineage, точном `closed_manifest` остановленного released/cancelled peer или exact manifest свежего completed-chat snapshot. Snapshot не становится accepted lineage. Все его bytes и mode повторно проверяются перед разрешением; изменение либо удаление snapshotted файла блокирует Submit/Accept. Snapshot нельзя заменить или обновить поверх существующей записи. В общем checkout CLI не способен доказать автора filesystem write: это обнаружение изменений и дисциплина владения, не OS sandbox.
 
 При повреждённом ledger — fail closed. Нет automatic reset, expiry, force, commit/push/deploy. Нужна совместная работа через CLI: неподчиняющийся локальный процесс имеет те же права на файловую систему.

@@ -123,6 +123,44 @@ class CoordinationTests(unittest.TestCase):
         payload.update(updates)
         return payload
 
+    def snapshot_payload(self, files, **updates):
+        source_id = str(uuid.uuid4())
+        observed_at = COORD.iso()
+        paths = sorted(files)
+        source = {"id": source_id, "title": "Completed separate workspace task", "status": "completed",
+                  "root": str(self.root), "files": paths}
+        payload = {"kind": COORD.SNAPSHOT_EVIDENCE_KIND, "observed_at": observed_at,
+                   "source_chat": source,
+                   "source_observation": {"tool": "mcp__codex_app__read_thread", "thread_id": source_id,
+                                          "title": source["title"], "status": source["status"], "root": source["root"],
+                                          "files": paths, "observed_at": observed_at},
+                   "authorization": {"source": COORD.SNAPSHOT_AUTH_SOURCE, "current_chat_run_id": self.root_run,
+                                     "authorized": True, "user_authorization": "Add an audit snapshot for this completed separate task"}}
+        payload.update(updates)
+        return payload
+
+    def record_snapshot(self, files, payload=None, *, run_id=None, environment_run=None, reason="User-authorized fixture snapshot"):
+        run_id = run_id or self.root_run
+        evidence = self.json_file(payload or self.snapshot_payload(files))
+        environment_run = environment_run or run_id
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": environment_run}):
+            result = self.call("record-snapshot", actor="/root", run_id=run_id, file=files,
+                               evidence=evidence, reason=reason)
+        return result["snapshot"], evidence
+
+    def refused_snapshot(self, code, files, payload=None, *, run_id=None, environment_run=None):
+        before = self.coordinator.state_path.read_bytes() if self.coordinator.state_path.exists() else None
+        evidence = self.json_file(payload or self.snapshot_payload(files))
+        run_id = run_id or self.root_run
+        environment_run = environment_run or run_id
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": environment_run}):
+            with self.assertRaises(COORD.Refusal) as caught:
+                self.call("record-snapshot", actor="/root", run_id=run_id, file=files,
+                          evidence=evidence, reason="User-authorized fixture snapshot")
+        self.assertEqual(caught.exception.code, code, str(caught.exception))
+        after = self.coordinator.state_path.read_bytes() if self.coordinator.state_path.exists() else None
+        self.assertEqual(before, after, "Rejected snapshot changed ledger")
+
     def proof(self, attempt, role, target=None, run_id=None, parent_run=None):
         target = target or "/root/" + role + "_" + uuid.uuid4().hex
         run_id = run_id or str(uuid.uuid4())
@@ -239,6 +277,129 @@ class CoordinationTests(unittest.TestCase):
         self.refused("wrong_role", "reserve", run_id=self.root_run, task="B03", file=["b.py"], reason="Old run")
         attempt = self.call("reserve", run_id=next_run, task="B03", file=["b.py"], reason="Current run owns ledger")["attempt"]
         self.assertEqual(attempt["status"], "reserved")
+
+    def test_snapshot_records_exact_manifest_authorization_and_nonacceptance(self):
+        self.gate()
+        source = self.root / "a.py"
+        payload = b"completed external work\n"
+        source.write_bytes(payload)
+        previous = copy.deepcopy(self.coordinator.read())
+        snapshot, evidence_path = self.record_snapshot(["a.py"])
+        raw_evidence = (self.root / evidence_path).read_bytes()
+        state = self.coordinator.read()
+        self.assertEqual(snapshot["source_chat"]["status"], "completed")
+        self.assertEqual(snapshot["source_chat"]["root"], str(self.root))
+        self.assertEqual(snapshot["files"], ["a.py"])
+        self.assertEqual(snapshot["manifest"], [{"path": "a.py", "mode": "100644",
+                                                  "sha256": hashlib.sha256(payload).hexdigest(), "size": len(payload)}])
+        self.assertEqual(snapshot["evidence"]["sha256"], hashlib.sha256(raw_evidence).hexdigest())
+        self.assertEqual(snapshot["evidence"]["payload"]["authorization"]["source"], COORD.SNAPSHOT_AUTH_SOURCE)
+        self.assertEqual(snapshot["actor"], "/root")
+        self.assertEqual(snapshot["run_id"], self.root_run)
+        self.assertTrue(snapshot["recorded_at"])
+        self.assertEqual(state["revision"], previous["revision"] + 1)
+        self.assertEqual(state["events"][:-1], previous["events"])
+        self.assertEqual(state["events"][-1]["snapshot_id"], snapshot["id"])
+        self.assertEqual(state["events"][-1]["actor"], "/root")
+        self.assertEqual(state["events"][-1]["run_id"], self.root_run)
+        self.assertFalse(self.coordinator.accepted(state, self.coordinator.load_plan(), "B01"))
+        self.assertNotIn("a.py", self.coordinator.lineage(state))
+        self.assertEqual(state["attempts"], previous["attempts"])
+
+    def test_snapshot_refuses_stale_wrong_source_authorization_observation_and_file_list(self):
+        self.gate()
+        self.write("a.py", "snapshot target\n")
+        stale = self.snapshot_payload(["a.py"], observed_at=(datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat())
+        self.refused_snapshot("stale_evidence", ["a.py"], stale)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["source_chat"]["status"] = "running"
+        self.refused_snapshot("invalid_snapshot_source", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["source_chat"]["root"] = str(self.root.parent)
+        invalid["source_observation"]["root"] = str(self.root.parent)
+        self.refused_snapshot("invalid_snapshot_source", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["source_chat"]["files"] = ["b.py"]
+        self.refused_snapshot("snapshot_file_mismatch", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["authorization"]["source"] = "inferred"
+        self.refused_snapshot("invalid_snapshot_authorization", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["authorization"]["authorized"] = False
+        self.refused_snapshot("invalid_snapshot_authorization", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["authorization"]["current_chat_run_id"] = str(uuid.uuid4())
+        self.refused_snapshot("invalid_snapshot_authorization", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        invalid["source_observation"]["tool"] = "unverified"
+        self.refused_snapshot("invalid_snapshot_observation", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"], kind="unverified")
+        self.refused_snapshot("invalid_snapshot_evidence", ["a.py"], invalid)
+
+        invalid = self.snapshot_payload(["a.py"])
+        self.refused_snapshot("current_run_mismatch", ["a.py"], invalid,
+                              environment_run=str(uuid.uuid4()))
+        self.refused_snapshot("unsafe_path", ["../outside"], self.snapshot_payload(["../outside"]))
+        self.refused_snapshot("invalid_scope", ["b.py", "a.py"], self.snapshot_payload(["a.py", "b.py"]))
+
+    def test_snapshot_refuses_any_path_overlapping_an_active_claim(self):
+        self.gate()
+        self.worker(self.reserve(files=["a.py"]))
+        self.refused_snapshot("path_conflict", ["a.py"])
+
+    def test_snapshot_bytes_allow_exact_out_of_scope_change_then_fail_closed_on_drift(self):
+        self.gate()
+        attempt = self.worker(self.reserve(files=["a.py"]))
+        self.write("b.py", "completed separate work\n")
+        snapshot, _ = self.record_snapshot(["b.py"])
+        self.write("a.py", "own implementation\n")
+        submitted = self.submit(attempt)
+        self.assertEqual(submitted["attempt"]["status"], "awaiting_review")
+        self.assertFalse(self.coordinator.accepted(self.coordinator.read(), self.coordinator.load_plan(), "B03"))
+
+        peer = self.worker(self.reserve(task="B03", files=["c.py"]))
+        self.write("c.py", "own peer implementation\n")
+        self.write("b.py", "changed after immutable capture\n")
+        self.refused("snapshot_drift", "submit", attempt=peer["id"],
+                     actor=peer["worker"]["target"], run_id=peer["worker"]["run_id"], evidence=self.json_file({
+                         "task_id": peer["task_id"], "attempt_id": peer["id"], "summary": "Drift refusal",
+                         "checks": [{"name": "fixture", "status": "passed", "evidence": "not reached"}]}))
+        self.write("b.py", "completed separate work\n")
+        (self.root / "b.py").unlink()
+        self.refused("snapshot_drift", "submit", attempt=peer["id"],
+                     actor=peer["worker"]["target"], run_id=peer["worker"]["run_id"], evidence=self.json_file({
+                         "task_id": peer["task_id"], "attempt_id": peer["id"], "summary": "Missing snapshot refusal",
+                         "checks": [{"name": "fixture", "status": "passed", "evidence": "not reached"}]}))
+
+    def test_snapshot_rejects_replacement(self):
+        self.gate()
+        self.write("a.py", "frozen source\n")
+        self.record_snapshot(["a.py"])
+        self.refused_snapshot("snapshot_path_conflict", ["a.py"])
+
+    def test_snapshot_reads_legacy_v1_ledger_without_rewriting_event_history(self):
+        self.gate()
+        self.write("a.py", "frozen source\n")
+        state = self.coordinator.read()
+        prior_events = copy.deepcopy(state["events"])
+        state.pop("snapshots")
+        self.coordinator.state_path.write_bytes(COORD.canonical(state) + b"\n")
+        legacy = self.coordinator.read()
+        self.assertEqual(legacy["snapshots"], [])
+        self.assertEqual(legacy["events"], prior_events)
+        second, _ = self.record_snapshot(["b.py"])
+        current = self.coordinator.read()
+        self.assertEqual(current["snapshots"], [second])
+        self.assertEqual(current["events"][:-1], prior_events)
+        self.assertEqual(current["schema_version"], 1)
 
     def test_full_lifecycle_dependency_and_wrong_root_run(self):
         self.gate()

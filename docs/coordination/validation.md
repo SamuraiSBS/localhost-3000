@@ -60,6 +60,16 @@ Raw evidence осталось в `artifacts/` fixture: `worker-spawn.json`, `wor
 - Новый независимый reviewer `/root/handoff_review2`: GO. Проверены точный owner pair, текущий `CODEX_THREAD_ID`, CAS, закрытые attempts, свежая user authorization evidence, audit path/hash и сохранение истории.
 - Это подтверждает только процедуру handoff. Реальная передача владельца и продуктовые задачи B02+ фиксируются последующими runtime events; Docker/VPS/HTTPS/product E2E не запускались.
 
+## 2026-10-23 — Snapshot завершённого source chat
+
+B14 добавляет только provenance для отдельного завершённого чата внутри того же checkout. `record-snapshot` требует текущего `/root` owner/run и matching `CODEX_THREAD_ID`, свежую observation evidence `mcp__codex_app__read_thread`, direct authorization в текущем чате, completed source status, одинаковые source/CLI file lists и существующие обычные файлы. Запись содержит точный конечный manifest с path/Git mode/SHA-256/size, evidence SHA-256 и actor/run/time. Она не входит в accepted lineage и не меняет статусы/результаты product tasks.
+
+Disposable-repo regression tests покрывают точное сохранение manifest/evidence hash, stale observation, неверные source/status/root/authorization, mismatch file list, unsafe/unsorted paths, конфликт с active claim, exact out-of-scope bytes, byte/deletion drift после capture, запрет замены snapshot и чтение/дополнение старого v1 ledger без изменения прежней event history. Все предыдущие handoff и coordination regression tests сохраняются.
+
+- SHA-256 текущего `scripts/mvp_coordination.py`: `0d1e7d5772133db67cdfeac736e721cb825d4781e999deba9f69973670c1d3ec`.
+- `python scripts/check.py`: 28 passed (24 coordination + 4 probe); design asset/link/font/token/mobile checks и Python syntax passed.
+- `git diff --check`: passed. Полный check подтверждает только локальные coordination/probe/design checks; Docker/VPS/HTTPS/product E2E проверяются отдельно.
+
 ## Локальный checkpoint
 
 Планы и tooling подготовлены для отдельного exact-path локального checkpoint в ветке `docs/mvp-autonomy`. После commit проверить чистоту именно его файлов; пользовательские фото и `материалы/` остаются вне коммита. SHA checkpoint находится в Git history и итоговом сообщении задачи, а не подставляется заранее. Push/CI/Docker/VPS/HTTPS и продуктовый browser E2E этой проверкой не выполнялись.
