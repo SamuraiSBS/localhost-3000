@@ -1,0 +1,6 @@
+# Product runtime. Regenerate hashes as documented in docs/runtime.md.
+fastapi
+pydantic
+uvicorn
+pwdlib[argon2]
+prometheus-client
