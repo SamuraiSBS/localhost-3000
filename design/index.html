@@ -12,18 +12,15 @@
     <link rel="stylesheet" href="tokens.css?v=20261022-4">
     <link rel="stylesheet" href="foundation.css">
     <link rel="stylesheet" href="liquid-glass.css?v=20261022-1">
-    <link rel="stylesheet" href="scene.css?v=20261022-9">
-    <script src="scene.js?v=20261022-2" type="module"></script>
+    <link rel="stylesheet" href="scene.css?v=20261023-1">
+    <script src="scene.js?v=20261023-1" type="module"></script>
   </head>
   <body class="ds-root">
     <a class="ds-skip ds-button" href="#workspace">К рабочей области</a>
     <main class="scene-shell">
-      <div class="scene-backdrop" id="scene-backdrop" data-renderer="fallback" aria-hidden="true">
-        <img src="assets/photo_8_2026-10-22_21-11-47.png" width="1280" height="853" alt="" fetchpriority="high">
-        <canvas></canvas>
-        <div class="scene-backdrop__scrim"></div>
+      <div class="scene-backdrop" aria-hidden="true">
+        <canvas id="chroma-current"></canvas>
       </div>
-      <p class="entry__dither-status" id="dither-status" role="status" aria-live="polite" hidden></p>
       <section class="entry" id="entry" aria-labelledby="entry-title">
         <div class="entry__composition">
           <h1 id="entry-title" class="entry__wordmark" tabindex="-1">localhost3000</h1>
@@ -31,7 +28,7 @@
             <span class="liquid-filter" aria-hidden="true"></span>
             <span class="hero-glass__content">CONNECT</span>
           </a>
-          <p class="entry__dither-status" id="glass-status" role="status" aria-live="polite" hidden></p>
+          <p class="entry__effect-status" id="glass-status" role="status" aria-live="polite" hidden></p>
         </div>
       </section>
       <section class="workspace" id="workspace" aria-labelledby="workspace-title" tabindex="-1" hidden>

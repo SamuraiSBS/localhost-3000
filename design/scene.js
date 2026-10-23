@@ -1,10 +1,10 @@
 import { PrismMaterial } from "./prism.js";
-import { DitherPreview } from "./dither.js?v=20261022-2";
+import { ChromaCurrent } from "./chroma-current.js?v=20261023-1";
 import { LiquidGlassMaterial } from "./liquid-glass.js?v=20261022-1";
 
 const entry = document.querySelector("#entry");
 const workspace = document.querySelector("#workspace");
-const dither = new DitherPreview(document.querySelector("#scene-backdrop"), document.querySelector("#dither-status"));
+const chromaCurrent = new ChromaCurrent(document.querySelector("#chroma-current"));
 const dialog = document.querySelector("#material-dialog");
 const openMaterial = document.querySelector("#open-material");
 const entryLink = document.querySelector(".enter-button");
@@ -28,6 +28,7 @@ async function animate(element, frames, milliseconds) {
 
 async function show(view, withMotion = false, moveFocus = true) {
   const id = ++transitionId;
+  chromaCurrent.setVisible(view === "entry");
   for (const section of [entry, workspace]) section.getAnimations().forEach(animation => animation.cancel());
   transitioning = true;
   if (dialog.open) dialog.close();
@@ -59,7 +60,7 @@ for (const link of document.querySelectorAll('a[href="#workspace"], a[href="#ent
 }
 window.addEventListener("popstate", () => show(location.hash === "#workspace" ? "workspace" : "entry"));
 show(location.hash === "#workspace" ? "workspace" : "entry", false, false);
-window.addEventListener("pagehide", event => { if (!event.persisted) { dither.destroy(); entryGlass.destroy(); } });
+window.addEventListener("pagehide", event => { if (!event.persisted) { chromaCurrent.destroy(); entryGlass.destroy(); } });
 
 if (typeof dialog.showModal === "function") {
   openMaterial.hidden = false;
