@@ -278,6 +278,105 @@ class CoordinationTests(unittest.TestCase):
         attempt = self.call("reserve", run_id=next_run, task="B03", file=["b.py"], reason="Current run owns ledger")["attempt"]
         self.assertEqual(attempt["status"], "reserved")
 
+    def recovery_payload(self, attempt, next_run, **updates):
+        payload = self.handoff_payload(next_run, kind=COORD.RECOVERY_EVIDENCE_KIND,
+            attempt_id=attempt["id"], task_id=attempt["task_id"],
+            abandoned_worker={key: attempt["worker"][key] for key in ("target", "run_id")},
+            policy="abandon_unverified_worker", abandonment_authorized=True,
+            manifest=self.coordinator.manifest(attempt["files"]))
+        payload.update(updates)
+        return payload
+
+    def recover(self, attempt, next_run, payload=None, **kwargs):
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            return self.call("recover-handoff", run_id=next_run, from_run_id=self.root_run,
+                             attempt=attempt["id"], evidence=self.json_file(payload or self.recovery_payload(attempt, next_run)),
+                             reason="User explicitly authorized recovery", **kwargs)
+
+    def test_recovery_is_atomic_audited_nonacceptance_and_fences_old_actors(self):
+        self.gate()
+        attempt = self.worker(self.reserve(files=["a.py", "absent.py"]))
+        self.write("a.py", "unfinished work\n")
+        previous = copy.deepcopy(self.coordinator.read())
+        next_run = str(uuid.uuid4())
+        recovered = self.recover(attempt, next_run)["attempt"]
+        state = self.coordinator.read()
+        self.assertEqual(state["revision"], previous["revision"] + 1)
+        self.assertEqual(state["events"][:-1], previous["events"])
+        self.assertEqual(state["gates"], previous["gates"])
+        self.assertEqual(recovered["status"], "cancelled")
+        self.assertEqual(recovered["baseline"], attempt["baseline"])
+        self.assertEqual(recovered["worker"], attempt["worker"])
+        self.assertNotIn("quiescence", recovered)
+        self.assertEqual(recovered["closed_manifest"]["absent.py"], {"kind": "absent"})
+        receipt = recovered["operator_abandonment"]["authorization"]
+        self.assertEqual(receipt["sha256"], hashlib.sha256((self.root / receipt["path"]).read_bytes()).hexdigest())
+        self.assertEqual(state["events"][-1]["handoff"]["authorization"], receipt)
+        self.assertFalse(self.coordinator.accepted(state, self.coordinator.load_plan(), "B01"))
+        for action in ("claim", "submit", "block", "review", "resume", "accept", "release", "cancel", "rebase"):
+            self.refused("closed_attempt", action, attempt=attempt["id"],
+                         actor=attempt["worker"]["target"], run_id=attempt["worker"]["run_id"])
+        self.refused("wrong_role", "reserve", task="B03", file=["b.py"], reason="Old owner")
+        self.refused("dirty_scope", "reserve", run_id=next_run, task="B01", file=["a.py"], reason="No adoption flag")
+        fresh = self.call("reserve", run_id=next_run, task="B01", file=["a.py", "absent.py"],
+                          adopt_recovered=[attempt["id"]], reason="Explicitly inspect unfinished work")["attempt"]
+        self.assertEqual(fresh["adopted_recovered"], [attempt["id"]])
+        self.assertEqual(fresh["baseline_scope"], recovered["closed_manifest"])
+        self.assertNotEqual(fresh["id"], attempt["id"])
+        self.assertIsNone(fresh["candidate"])
+        self.assertIsNone(fresh["worker"])
+
+    def test_recovery_rejects_wrong_provenance_drift_other_live_and_cas(self):
+        self.gate()
+        attempt = self.worker(self.reserve())
+        next_run = str(uuid.uuid4())
+        invalid = [dict(policy="stopped"), dict(abandonment_authorized=False), dict(abandoned_worker={}),
+                   dict(attempt_id=str(uuid.uuid4())), dict(task_id="B03"), dict(writers_stopped=True),
+                   dict(quiescence={}), dict(kind=COORD.HANDOFF_EVIDENCE_KIND), dict(source="inferred"),
+                   dict(current_chat_selected=False), dict(next_orchestrator={}), dict(previous_orchestrator={}),
+                   dict(user_authorization="")]
+        for updates in invalid:
+            before = self.coordinator.state_path.read_bytes()
+            with self.assertRaises(COORD.Refusal):
+                self.recover(attempt, next_run, self.recovery_payload(attempt, next_run, **updates))
+            self.assertEqual(self.coordinator.state_path.read_bytes(), before)
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            self.refused("recovery_manifest_drift", "recover-handoff", run_id=next_run, from_run_id=self.root_run,
+                         attempt=attempt["id"], evidence=self.json_file(self.recovery_payload(attempt, next_run, manifest={})), reason="Recovery")
+            self.refused("wrong_owner", "recover-handoff", run_id=next_run, from_run_id=str(uuid.uuid4()),
+                         attempt=attempt["id"], reason="Recovery")
+            self.refused("stale_evidence", "recover-handoff", run_id=next_run, from_run_id=self.root_run,
+                         attempt=attempt["id"], reason="Recovery", evidence=self.json_file(self.recovery_payload(
+                             attempt, next_run, observed_at=(datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat())))
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": str(uuid.uuid4())}):
+            self.refused("current_run_mismatch", "recover-handoff", run_id=next_run, from_run_id=self.root_run,
+                         attempt=attempt["id"], reason="Recovery")
+        before = self.coordinator.state_path.read_bytes()
+        with self.assertRaises(COORD.Refusal) as stale:
+            self.recover(attempt, next_run, revision=0)
+        self.assertEqual(stale.exception.code, "stale_revision")
+        self.assertEqual(self.coordinator.state_path.read_bytes(), before)
+        self.reserve("B03", ["b.py"])
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            self.refused("active_attempts", "recover-handoff", run_id=next_run, from_run_id=self.root_run,
+                         attempt=attempt["id"], reason="Cannot abandon another claim implicitly")
+
+    def test_recovery_adoption_rejects_other_task_changed_bytes_and_ordinary_cancel(self):
+        self.gate()
+        ordinary = self.reserve("B03", ["b.py"])
+        self.call("cancel", attempt=ordinary["id"], reason="Ordinary unbound cancellation")
+        self.refused("invalid_recovery_adoption", "reserve", task="B03", file=["b.py"],
+                     adopt_recovered=[ordinary["id"]], reason="Not recovered")
+        attempt = self.worker(self.reserve())
+        self.write("a.py", "unfinished\n")
+        next_run = str(uuid.uuid4())
+        self.recover(attempt, next_run)
+        self.refused("invalid_recovery_adoption", "reserve", run_id=next_run, task="B03", file=["a.py"],
+                     adopt_recovered=[attempt["id"]], reason="Wrong task")
+        self.write("a.py", "post recovery drift\n")
+        self.refused("recovery_manifest_drift", "reserve", run_id=next_run, task="B01", file=["a.py"],
+                     adopt_recovered=[attempt["id"]], reason="Changed bytes")
+
     def test_snapshot_records_exact_manifest_authorization_and_nonacceptance(self):
         self.gate()
         source = self.root / "a.py"

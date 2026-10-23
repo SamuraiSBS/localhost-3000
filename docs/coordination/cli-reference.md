@@ -17,6 +17,7 @@
 | `record-gate` | `--task Bxx --evidence FILE --reason TEXT` | Orchestrator; только фактический внешний gate, без фиктивного review |
 | `record-snapshot` | `--file PATH` повторяемый, `--evidence FILE --reason TEXT` | Текущий orchestrator; только точные файлы завершённой отдельной работы с прямой авторизацией |
 | `handoff` | `--from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason TEXT` | Текущий чат `/root`; только передача того же target при отсутствии active attempts |
+| `recover-handoff` | `--from-run-id OLD_UUID --attempt ABANDONED_UUID --evidence FILE --reason TEXT` | Текущий `/root`; отдельная прямая авторизация operator abandonment единственного active claim |
 | `reserve` | `--task Bxx --file PATH` повторяемый, `--resource NAME` повторяемый, `--reason TEXT`, optional `--adopt-accepted ATTEMPT_ID` повторяемый | Orchestrator |
 | `bind` | `--attempt UUID --tool-evidence FILE` | Orchestrator; реальный freshly spawned worker |
 | `claim` | `--attempt UUID --run-id UUID` | Bound worker; первая точка разрешения правок |
@@ -126,6 +127,22 @@ Evidence создаётся по реальному ответу пользов�
 
 ```text
 python scripts/mvp_coordination.py --root WORKSPACE handoff --from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason USER_SELECTED_CURRENT_CHAT --actor /root --run-id CURRENT_CODEX_THREAD_ID --expected-revision CURRENT_REVISION
+```
+
+### Явное восстановление после недоступного worker
+
+`recover-handoff` — отдельная операторская процедура, требующая прямого разрешения пользователя именно на восстановление в текущем чате. Простое повторение команды MVP, timeout, `notLoaded` или отсутствие worker не подтверждают остановку. Обычные `handoff`, `release` и `cancel` сохраняют прежние ограничения. Bootstrap-ремонт самого coordinator при невозможности reserve допускается только по отдельному разрешению пользователя, с точным scope, тестами и независимым review до live mutation; это не разрешение править продукт или ledger вручную.
+
+Команда проверяет CAS, точные прежний owner/run, новый `/root` и его фактический `CODEX_THREAD_ID`. Названный claimed attempt с worker должен быть единственным active attempt. Evidence использует поля обычного handoff (`source`, `current_chat_selection`, `current_chat_selected`, `user_authorization`, `previous_orchestrator`, `next_orchestrator`, `observed_at`), но `kind="mvp_orchestrator_recovery_authorization"`. Дополнительно обязательны `attempt_id`, `task_id`, `abandoned_worker={"target": "точный target", "run_id": "точный UUID"}`, `policy="abandon_unverified_worker"`, `abandonment_authorized=true`, `manifest`. Manifest — полный результат `Coordinator.manifest(attempt.files)`: mapping exact paths в `{kind:"file", sha256, size, executable}` либо `{kind:"absent"}`. `writers_stopped` и `quiescence` в recovery evidence запрещены: остановка не доказана.
+
+Пять минут относятся к свежему наблюдению источника сохраняющегося прямого разрешения вместе с текущими CAS/manifest, а не к сроку действия ответа пользователя. Сохранять точный ответ и контекст исходного вопроса; если время ответа известно, записать его отдельно как `authorized_at`. `observed_at` обозначает свежую инструментальную проверку источника в текущем чате (например, `read_thread`), не новое время ответа. Нельзя выдать старый ответ за только что полученный.
+
+За одну revision attempt становится `cancelled`, сохраняет историю и незавершённые bytes, получает `closed_manifest` и `operator_abandonment` с копией evidence/SHA-256; owner меняется на текущий чат. Приёмка, candidate и GO не переносятся в новую работу. Смена owner и closed status запрещают старому owner/worker дальнейшие CLI mutations. Это процедурный fence, не OS sandbox: coordinator не останавливает внешний процесс и не доказывает отсутствие filesystem writers. Если есть признаки продолжающихся записей, продуктовые работы не возобновлять до устранения writer.
+
+Для новой попытки той же задачи `check` и `reserve` принимают явный повторяемый `--adopt-recovered ATTEMPT_ID`. Только recovery recipient может взять прежние claimed paths с точными сохранёнными bytes/modes/absence. Проверяется полный closed manifest исходного attempt; обычный cancelled/released claim, другая задача или изменённый файл не подходят. Остальные dirty paths требуют обычной accepted lineage либо остаются запрещены. Новая reserve записывает `adopted_recovered`, новый baseline текущего checkout и новый attempt ID; затем обязательны новый worker, Claim, независимый review всех результатов и Accept. Recovery adoption не создаёт accepted/dependency lineage.
+
+```text
+python scripts/mvp_coordination.py --root WORKSPACE recover-handoff --from-run-id OLD_UUID --attempt ABANDONED_UUID --evidence RECOVERY_JSON --reason USER_AUTHORIZED_RECOVERY --actor /root --run-id CURRENT_CODEX_THREAD_ID --expected-revision CURRENT_REVISION
 ```
 
 ### Snapshot завершённой отдельной работы

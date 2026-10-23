@@ -23,6 +23,7 @@ ACTIVE = {"reserved", "bound", "in_progress", "awaiting_review", "changes_reques
 CLOSED = {"accepted", "released", "cancelled"}
 READ_ONLY = {"status", "next", "check"}
 HANDOFF_EVIDENCE_KIND = "mvp_orchestrator_handoff_authorization"
+RECOVERY_EVIDENCE_KIND = "mvp_orchestrator_recovery_authorization"
 SNAPSHOT_EVIDENCE_KIND = "mvp_separate_workspace_snapshot"
 SNAPSHOT_AUTH_SOURCE = "direct_user_reply_in_current_chat"
 TARGET = re.compile(r"^/root(?:/[a-z][a-z0-9_]*)*$")
@@ -480,7 +481,20 @@ class Coordinator:
             require(not any(self.overlap(a, b) for a in files for b in attempt["files"]), "path_conflict", f"Paths reserved by {attempt['id']}")
             require(not set(resources).intersection(attempt["resources"]), "resource_conflict", f"Resources reserved by {attempt['id']}")
 
-    def clean_scope(self, state, files, adopted):
+    def clean_scope(self, state, files, adopted, recovered=(), task_id=None):
+        recovered_entries = {}
+        for prior_id in recovered:
+            prior = self.attempt(state, prior_id)
+            recovery = prior.get("operator_abandonment", {})
+            require(prior["status"] == "cancelled" and prior.get("claimed_at")
+                    and prior["task_id"] == task_id and recovery.get("next_orchestrator") == state["orchestrator"]
+                    and recovery.get("kind") == RECOVERY_EVIDENCE_KIND,
+                    "invalid_recovery_adoption", "Only the recipient may explicitly adopt a recovered claim for the same task")
+            require(self.manifest(prior["files"]) == prior.get("closed_manifest"),
+                    "recovery_manifest_drift", "Recovered bytes or modes changed before adoption")
+            require(any(name in prior["files"] for name in files),
+                    "invalid_recovery_adoption", "Recovery adoption must include a previously claimed path")
+            recovered_entries.update(prior["closed_manifest"])
         dirty = {value.casefold() for value in self.dirty()}
         tracked = {os.fsdecode(value).casefold() for value in self.git("ls-files", "-z").split(b"\0") if value}
         lineage = self.lineage(state)
@@ -489,7 +503,8 @@ class Coordinator:
             is_dirty = name.casefold() in dirty or (current[name]["kind"] != "absent" and name.casefold() not in tracked)
             if is_dirty:
                 prior = lineage.get(name)
-                require(prior and prior["attempt_id"] in adopted and current[name] == prior["entry"],
+                require((prior and prior["attempt_id"] in adopted and current[name] == prior["entry"])
+                        or recovered_entries.get(name) == current[name],
                         "dirty_scope", f"Preserve pre-existing dirty file: {name}; only exact accepted lineage may be explicitly adopted")
         for prior_id in adopted:
             require(any(item["id"] == prior_id and item["status"] == "accepted" for item in state["attempts"]),
@@ -499,7 +514,7 @@ class Coordinator:
         reasons = self.ready_reasons(state, plan, args.task)
         files, resources = self.scope(args.file), self.resources(args.resource)
         self.conflicts(state, files, resources)
-        self.clean_scope(state, files, args.adopt_accepted)
+        self.clean_scope(state, files, args.adopt_accepted, args.adopt_recovered, args.task)
         return {"ready": not reasons, "reasons": reasons, "files": files, "resources": resources}
 
     def require_plan(self, attempt, plan):
@@ -647,7 +662,7 @@ class Coordinator:
         action, actor = args.action, args.actor
         require(TARGET.fullmatch(actor or ""), "invalid_identity", "Canonical native actor target required")
         uuid_text(args.run_id)
-        if action == "handoff":
+        if action in {"handoff", "recover-handoff"}:
             previous = state["orchestrator"]
             require(previous is not None, "no_orchestrator", "An initialized orchestrator is required")
             uuid_text(args.from_run_id)
@@ -657,12 +672,13 @@ class Coordinator:
             require(args.run_id != args.from_run_id, "same_owner", "Handoff requires a different current chat run")
             require(os.environ.get("CODEX_THREAD_ID") == args.run_id,
                     "current_run_mismatch", "--run-id must match this process CODEX_THREAD_ID")
-            require(not any(item["status"] in ACTIVE for item in state["attempts"]),
+            recovery_attempt = self.attempt(state, args.attempt) if action == "recover-handoff" else None
+            require(not any(item["status"] in ACTIVE and item is not recovery_attempt for item in state["attempts"]),
                     "active_attempts", "Close or resolve every active attempt before handoff")
             require(nonempty(args.reason), "missing_reason", "Handoff reason required")
             evidence = self.evidence(args.evidence)
             payload = evidence["payload"]
-            require(payload.get("kind") == HANDOFF_EVIDENCE_KIND
+            require(payload.get("kind") == (RECOVERY_EVIDENCE_KIND if recovery_attempt else HANDOFF_EVIDENCE_KIND)
                     and payload.get("source") == "direct_user_reply_in_current_chat"
                     and payload.get("current_chat_selection") == "в текущем чате"
                     and payload.get("current_chat_selected") is True
@@ -673,9 +689,30 @@ class Coordinator:
                     "invalid_handoff_evidence", "Authorization evidence must name the exact previous and current owners")
             fresh(payload.get("observed_at"))
             next_owner = {"target": actor, "run_id": args.run_id}
+            if recovery_attempt:
+                require(recovery_attempt["status"] in ACTIVE and recovery_attempt.get("claimed_at")
+                        and recovery_attempt.get("worker") and recovery_attempt.get("orchestrator") == previous,
+                        "invalid_recovery_attempt", "Exact live claimed worker attempt of the recorded owner required")
+                worker = {key: recovery_attempt["worker"][key] for key in ("target", "run_id")}
+                require(payload.get("attempt_id") == recovery_attempt["id"]
+                        and payload.get("task_id") == recovery_attempt["task_id"]
+                        and payload.get("abandoned_worker") == worker
+                        and payload.get("policy") == "abandon_unverified_worker"
+                        and payload.get("abandonment_authorized") is True
+                        and "writers_stopped" not in payload and "quiescence" not in payload,
+                        "invalid_recovery_evidence", "Explicit operator abandonment of the exact unverified worker required")
+                manifest = self.manifest(recovery_attempt["files"])
+                require(payload.get("manifest") == manifest, "recovery_manifest_drift", "Recovery must name the exact current scope manifest")
+                recovery_attempt.update(status="cancelled", closed_manifest=manifest, closed_at=iso(), close_reason=args.reason,
+                                        operator_abandonment={"kind": RECOVERY_EVIDENCE_KIND,
+                                                              "previous_orchestrator": copy.deepcopy(previous),
+                                                              "next_orchestrator": next_owner, "authorization": evidence})
             state["orchestrator"] = next_owner
-            return {"handoff": {"previous_orchestrator": copy.deepcopy(previous),
-                                "orchestrator": next_owner, "authorization": evidence}}
+            result = {"handoff": {"previous_orchestrator": copy.deepcopy(previous),
+                                  "orchestrator": next_owner, "authorization": evidence}}
+            if recovery_attempt:
+                result["attempt"] = recovery_attempt
+            return result
         if state["orchestrator"] is None:
             require(action in {"reserve", "record-gate"}, "wrong_role", "Orchestrator is established by first reserve/gate")
             state["orchestrator"] = {"target": actor, "run_id": args.run_id}
@@ -709,6 +746,7 @@ class Coordinator:
                        "orchestrator": copy.deepcopy(state["orchestrator"]), "plan_hash": plan["hash"], "task_hash": plan["task_hashes"][args.task],
                        "contract_hash": digest(plan["contracts"]),
                        "files": report["files"], "resources": report["resources"], "adopted": args.adopt_accepted,
+                       "adopted_recovered": args.adopt_recovered,
                        "base_head": self.git("rev-parse", "HEAD").decode().strip(), "baseline": baseline,
                        "baseline_index_sha256": self.index_digest(),
                        "baseline_scope": self.manifest(report["files"]), "worker": None, "reviewer": None,
@@ -890,7 +928,7 @@ class Coordinator:
             event = {"sequence": state["revision"], "action": args.action, "actor": args.actor, "run_id": args.run_id, "at": iso(),
                      "attempt_id": args.attempt or data.get("attempt", {}).get("id"), "task_id": args.task or data.get("attempt", {}).get("task_id"),
                      "reason": args.reason, "previous": prior, "previous_gate": previous_gate}
-            if args.action == "handoff":
+            if args.action in {"handoff", "recover-handoff"}:
                 event["handoff"] = copy.deepcopy(data["handoff"])
             if args.action == "record-snapshot":
                 event["snapshot_id"] = data["snapshot"]["id"]
@@ -914,7 +952,7 @@ class JsonParser(argparse.ArgumentParser):
 def parser():
     result = JsonParser(description=__doc__)
     result.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "record-snapshot", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase", "handoff"}))
+    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "record-snapshot", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase", "handoff", "recover-handoff"}))
     result.add_argument("--expected-revision", type=int)
     result.add_argument("--actor")
     result.add_argument("--run-id")
@@ -924,6 +962,7 @@ def parser():
     result.add_argument("--file", action="append", default=[])
     result.add_argument("--resource", action="append", default=[])
     result.add_argument("--adopt-accepted", action="append", default=[])
+    result.add_argument("--adopt-recovered", action="append", default=[])
     result.add_argument("--reason")
     result.add_argument("--tool-evidence")
     result.add_argument("--evidence")
