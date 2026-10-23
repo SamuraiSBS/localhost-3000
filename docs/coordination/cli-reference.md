@@ -5,6 +5,8 @@
 
 Каждый успешный ответ — JSON `{ok:true, action, revision, ...}`. Отказ — JSON `{ok:false, error:{code,message}}` в stderr, exit 2. **Любая мутация, включая root actions**, требует `--expected-revision N --actor TARGET --run-id UUID`. Для реальных native subagents TARGET имеет вид `/root/mvp_b01_worker`, а не `codex://threads/...`. Orchestrator — canonical target родительского агента, обычно `/root`, **вместе с его actual run UUID**; другой чат с target `/root`, но другим UUID, не владеет этим ledger.
 
+Другой чат с target `/root`, но другим UUID, не владеет ledger. Единственное исключение — явная `handoff`: она передаёт владельца тому же `/root` после проверки свежей пользовательской авторизации и при отсутствии активных claims.
+
 ## Команды
 
 | Action | Дополнительные аргументы | Кто выполняет |
@@ -13,6 +15,7 @@
 | `next` | Нет; возвращает все причины готовности, P0 ready отдельно от P1 | Любой; строго read-only |
 | `check` | `--task Bxx --file PATH` повторяемый, `--resource NAME` повторяемый, `--adopt-accepted ATTEMPT_ID` повторяемый | Любой; advisory read-only |
 | `record-gate` | `--task Bxx --evidence FILE --reason TEXT` | Orchestrator; только фактический внешний gate, без фиктивного review |
+| `handoff` | `--from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason TEXT` | Текущий чат `/root`; только передача того же target при отсутствии active attempts |
 | `reserve` | `--task Bxx --file PATH` повторяемый, `--resource NAME` повторяемый, `--reason TEXT`, optional `--adopt-accepted ATTEMPT_ID` повторяемый | Orchestrator |
 | `bind` | `--attempt UUID --tool-evidence FILE` | Orchestrator; реальный freshly spawned worker |
 | `claim` | `--attempt UUID --run-id UUID` | Bound worker; первая точка разрешения правок |
@@ -100,6 +103,29 @@ NO_GO требует непустые actionable `findings`. GO запрещён
 ```
 
 Для B00 необходимы все `questions` из backlog. `denied`/`unknown`/null не открывают gate. Для task с `additional_gate` требуется отдельный answer с `question_id="additional_gate"`. Ответы должны быть полученными фактами, не предположениями агента. `record-gate` закрывает только external-facts задачу B00; для обычной продуктовой задачи он открывает gate, но не заменяет worker/reviewer/accept.
+
+### Handoff orchestrator
+
+Handoff требуется, когда прямое поручение пользователя продолжить работу именно в текущем чате, но сохранённая пара `/root` + run UUID принадлежит другому запуску. Передача не принимает, не снимает и не меняет claims: CLI откажет, пока есть любой active attempt. Target остаётся `/root`; `--from-run-id` должен совпасть с записанным владельцем, а `--run-id` — с точечным `CODEX_THREAD_ID` текущего процесса. CAS обязателен.
+
+```json
+{
+  "kind": "mvp_orchestrator_handoff_authorization",
+  "source": "direct_user_reply_in_current_chat",
+  "current_chat_selection": "в текущем чате",
+  "current_chat_selected": true,
+  "user_authorization": "Прямая формулировка подтверждения пользователя",
+  "previous_orchestrator": {"target": "/root", "run_id": "записанный UUID"},
+  "next_orchestrator": {"target": "/root", "run_id": "CODEX_THREAD_ID текущего чата"},
+  "observed_at": "2026-10-23T12:00:00Z"
+}
+```
+
+Evidence создаётся по реальному ответу пользователя не более пяти минут назад и называет обе точные пары владельца. Успешный event хранит предыдущего/следующего владельца, payload и SHA-256 источника. Ошибка или устаревшая revision не меняет ledger. CLI фиксирует процедурные свидетельства; он не может криптографически удостоверить автора evidence.
+
+```text
+python scripts/mvp_coordination.py --root WORKSPACE handoff --from-run-id OLD_UUID --evidence USER_AUTHORIZATION_FILE --reason USER_SELECTED_CURRENT_CHAT --actor /root --run-id CURRENT_CODEX_THREAD_ID --expected-revision CURRENT_REVISION
+```
 
 ### Quiescence для release/cancel
 

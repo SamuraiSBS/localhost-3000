@@ -53,6 +53,13 @@ Raw evidence осталось в `artifacts/` fixture: `worker-spawn.json`, `wor
 
 Настоящий `python scripts/mvp_coordination.py status`: revision 0, `state_exists=false`. `next`: нет готовых P0, B00 требует фактических ответов Q-001–003. MVP очередь не запущена. Чтение и аудит MTCH не изменяли его исходники/claims и не запускали его координатор.
 
+## 2026-10-23 — Handoff владельца ledger
+
+- Проверенный SHA-256 `scripts/mvp_coordination.py`: `48f79cb52432af1cf4e1e9226e8504a1cd484f96f560cea172a806e0eb507d15`.
+- `python scripts/check.py`: 22 tests passed (18 coordination и 4 probe); design checks и Python syntax passed. Отдельный handoff targeted run: 3 passed. `git diff --check`: passed.
+- Новый независимый reviewer `/root/handoff_review2`: GO. Проверены точный owner pair, текущий `CODEX_THREAD_ID`, CAS, закрытые attempts, свежая user authorization evidence, audit path/hash и сохранение истории.
+- Это подтверждает только процедуру handoff. Реальная передача владельца и продуктовые задачи B02+ фиксируются последующими runtime events; Docker/VPS/HTTPS/product E2E не запускались.
+
 ## Локальный checkpoint
 
 Планы и tooling подготовлены для отдельного exact-path локального checkpoint в ветке `docs/mvp-autonomy`. После commit проверить чистоту именно его файлов; пользовательские фото и `материалы/` остаются вне коммита. SHA checkpoint находится в Git history и итоговом сообщении задачи, а не подставляется заранее. Push/CI/Docker/VPS/HTTPS и продуктовый browser E2E этой проверкой не выполнялись.

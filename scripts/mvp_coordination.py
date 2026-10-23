@@ -22,6 +22,7 @@ import uuid
 ACTIVE = {"reserved", "bound", "in_progress", "awaiting_review", "changes_requested", "blocked"}
 CLOSED = {"accepted", "released", "cancelled"}
 READ_ONLY = {"status", "next", "check"}
+HANDOFF_EVIDENCE_KIND = "mvp_orchestrator_handoff_authorization"
 TARGET = re.compile(r"^/root(?:/[a-z][a-z0-9_]*)*$")
 RUNTIME_KEYS = {"status", "evidence"}
 PROTECTED = {".git", ".agent-state", ".state", ".agents", ".codex", ".venv", "node_modules", "__pycache__", ".pytest_cache"}
@@ -506,6 +507,35 @@ class Coordinator:
         action, actor = args.action, args.actor
         require(TARGET.fullmatch(actor or ""), "invalid_identity", "Canonical native actor target required")
         uuid_text(args.run_id)
+        if action == "handoff":
+            previous = state["orchestrator"]
+            require(previous is not None, "no_orchestrator", "An initialized orchestrator is required")
+            uuid_text(args.from_run_id)
+            require(actor == "/root" and previous.get("target") == actor,
+                    "invalid_handoff_target", "Handoff may transfer the recorded /root target only to the same target")
+            require(previous.get("run_id") == args.from_run_id, "wrong_owner", "--from-run-id must match the recorded orchestrator owner")
+            require(args.run_id != args.from_run_id, "same_owner", "Handoff requires a different current chat run")
+            require(os.environ.get("CODEX_THREAD_ID") == args.run_id,
+                    "current_run_mismatch", "--run-id must match this process CODEX_THREAD_ID")
+            require(not any(item["status"] in ACTIVE for item in state["attempts"]),
+                    "active_attempts", "Close or resolve every active attempt before handoff")
+            require(nonempty(args.reason), "missing_reason", "Handoff reason required")
+            evidence = self.evidence(args.evidence)
+            payload = evidence["payload"]
+            require(payload.get("kind") == HANDOFF_EVIDENCE_KIND
+                    and payload.get("source") == "direct_user_reply_in_current_chat"
+                    and payload.get("current_chat_selection") == "в текущем чате"
+                    and payload.get("current_chat_selected") is True
+                    and nonempty(payload.get("user_authorization")),
+                    "invalid_handoff_evidence", "Fresh direct user authorization for this current chat is required")
+            require(payload.get("previous_orchestrator") == previous
+                    and payload.get("next_orchestrator") == {"target": actor, "run_id": args.run_id},
+                    "invalid_handoff_evidence", "Authorization evidence must name the exact previous and current owners")
+            fresh(payload.get("observed_at"))
+            next_owner = {"target": actor, "run_id": args.run_id}
+            state["orchestrator"] = next_owner
+            return {"handoff": {"previous_orchestrator": copy.deepcopy(previous),
+                                "orchestrator": next_owner, "authorization": evidence}}
         if state["orchestrator"] is None:
             require(action in {"reserve", "record-gate"}, "wrong_role", "Orchestrator is established by first reserve/gate")
             state["orchestrator"] = {"target": actor, "run_id": args.run_id}
@@ -718,6 +748,8 @@ class Coordinator:
             event = {"sequence": state["revision"], "action": args.action, "actor": args.actor, "run_id": args.run_id, "at": iso(),
                      "attempt_id": args.attempt or data.get("attempt", {}).get("id"), "task_id": args.task or data.get("attempt", {}).get("task_id"),
                      "reason": args.reason, "previous": prior, "previous_gate": previous_gate}
+            if args.action == "handoff":
+                event["handoff"] = copy.deepcopy(data["handoff"])
             state["events"].append(event)
             if "attempt" in data:
                 data["attempt"]["updated_at"] = event["at"]
@@ -738,10 +770,11 @@ class JsonParser(argparse.ArgumentParser):
 def parser():
     result = JsonParser(description=__doc__)
     result.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase"}))
+    result.add_argument("action", choices=sorted(READ_ONLY | {"record-gate", "reserve", "bind", "claim", "submit", "bind-reviewer", "review", "accept", "block", "resume", "release", "cancel", "extend", "rebase", "handoff"}))
     result.add_argument("--expected-revision", type=int)
     result.add_argument("--actor")
     result.add_argument("--run-id")
+    result.add_argument("--from-run-id")
     result.add_argument("--task")
     result.add_argument("--attempt")
     result.add_argument("--file", action="append", default=[])

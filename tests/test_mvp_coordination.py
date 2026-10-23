@@ -1,6 +1,7 @@
 """Disposable-repository tests. Never mutate the project's Git index or ledger."""
 
 import copy
+import hashlib
 import importlib.util
 import json
 import os
@@ -12,6 +13,7 @@ import sys
 import unittest
 from unittest import mock
 import uuid
+from datetime import datetime, timedelta, timezone
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -112,6 +114,15 @@ class CoordinationTests(unittest.TestCase):
     def reserve(self, task="B01", files=None, **kwargs):
         return self.call("reserve", task=task, file=files or ["a.py"], reason="Exact fixture slice", **kwargs)["attempt"]
 
+    def handoff_payload(self, next_run, **updates):
+        payload = {"kind": COORD.HANDOFF_EVIDENCE_KIND, "source": "direct_user_reply_in_current_chat",
+                   "current_chat_selection": "в текущем чате", "current_chat_selected": True,
+                   "user_authorization": "Да, добавить handoff (Recommended)",
+                   "previous_orchestrator": {"target": "/root", "run_id": self.root_run},
+                   "next_orchestrator": {"target": "/root", "run_id": next_run}, "observed_at": COORD.iso()}
+        payload.update(updates)
+        return payload
+
     def proof(self, attempt, role, target=None, run_id=None, parent_run=None):
         target = target or "/root/" + role + "_" + uuid.uuid4().hex
         run_id = run_id or str(uuid.uuid4())
@@ -165,6 +176,69 @@ class CoordinationTests(unittest.TestCase):
                 "task_id": "B00", "actor": "/root", "answers": [{"question_id": q, "decision": decision, "answer": "Unknown", "source": "Fixture", "received_at": COORD.iso()} for q in ("Q-001", "Q-002", "Q-003")]}))
         self.gate()
         self.assertEqual(self.call("next")["ready_p0"], ["B01", "B03"])
+
+    def test_handoff_refuses_wrong_stale_and_active_authority_without_mutating_ledger(self):
+        self.gate()
+        next_run = str(uuid.uuid4())
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            self.refused("wrong_owner", "handoff", run_id=next_run, from_run_id=str(uuid.uuid4()), evidence=self.json_file(self.handoff_payload(next_run)), reason="Fixture handoff")
+            self.refused("invalid_handoff_target", "handoff", actor="/root/other", run_id=next_run,
+                         from_run_id=self.root_run, evidence=self.json_file(self.handoff_payload(next_run)), reason="Fixture handoff")
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": str(uuid.uuid4())}):
+            self.refused("current_run_mismatch", "handoff", run_id=next_run, from_run_id=self.root_run, reason="Fixture handoff")
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            same_owner = self.handoff_payload(self.root_run)
+            self.refused("same_owner", "handoff", run_id=self.root_run, from_run_id=self.root_run,
+                         evidence=self.json_file(same_owner), reason="Fixture handoff")
+            self.refused("missing_evidence", "handoff", run_id=next_run, from_run_id=self.root_run, evidence="", reason="Fixture handoff")
+            invalid_payloads = [
+                self.handoff_payload(next_run, kind="wrong_kind"),
+                self.handoff_payload(next_run, source="inferred"),
+                self.handoff_payload(next_run, current_chat_selection="other chat"),
+                self.handoff_payload(next_run, current_chat_selected=False),
+                self.handoff_payload(next_run, user_authorization=""),
+                self.handoff_payload(next_run, previous_orchestrator={"target": "/root/other", "run_id": self.root_run}),
+                self.handoff_payload(next_run, next_orchestrator={"target": "/root", "run_id": str(uuid.uuid4())}),
+            ]
+            for invalid in invalid_payloads:
+                self.refused("invalid_handoff_evidence", "handoff", run_id=next_run, from_run_id=self.root_run,
+                             evidence=self.json_file(invalid), reason="Fixture handoff")
+            stale = self.handoff_payload(next_run, observed_at=(datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat())
+            self.refused("stale_evidence", "handoff", run_id=next_run, from_run_id=self.root_run,
+                         evidence=self.json_file(stale), reason="Fixture handoff")
+            self.refused("stale_revision", "handoff", run_id=next_run, from_run_id=self.root_run, revision=0, reason="Fixture handoff")
+
+        self.reserve()
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            self.refused("active_attempts", "handoff", run_id=next_run, from_run_id=self.root_run, reason="Fixture handoff")
+
+    def test_handoff_records_authorization_and_only_new_run_can_continue(self):
+        self.gate()
+        self.complete()
+        previous_state = copy.deepcopy(self.coordinator.read())
+        next_run = str(uuid.uuid4())
+        payload = self.handoff_payload(next_run)
+        evidence_path = self.json_file(payload)
+        raw_evidence = (self.root / evidence_path).read_bytes()
+        with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": next_run}):
+            result = self.call("handoff", run_id=next_run, from_run_id=self.root_run, evidence=evidence_path,
+                               reason="User explicitly selected the current chat for MVP continuation")
+        self.assertEqual(result["action"], "handoff")
+        self.assertEqual(result["revision"], previous_state["revision"] + 1)
+        self.assertEqual(result["handoff"]["previous_orchestrator"], {"target": "/root", "run_id": self.root_run})
+        self.assertEqual(result["handoff"]["orchestrator"], {"target": "/root", "run_id": next_run})
+        state = self.coordinator.read()
+        self.assertEqual(state["orchestrator"], {"target": "/root", "run_id": next_run})
+        authorization = state["events"][-1]["handoff"]["authorization"]
+        self.assertEqual(authorization["path"], evidence_path)
+        self.assertEqual(authorization["sha256"], hashlib.sha256(raw_evidence).hexdigest())
+        self.assertEqual(authorization["payload"]["user_authorization"], "Да, добавить handoff (Recommended)")
+        self.assertEqual(state["attempts"], previous_state["attempts"])
+        self.assertEqual(state["gates"], previous_state["gates"])
+        self.assertEqual(state["events"][:-1], previous_state["events"])
+        self.refused("wrong_role", "reserve", run_id=self.root_run, task="B03", file=["b.py"], reason="Old run")
+        attempt = self.call("reserve", run_id=next_run, task="B03", file=["b.py"], reason="Current run owns ledger")["attempt"]
+        self.assertEqual(attempt["status"], "reserved")
 
     def test_full_lifecycle_dependency_and_wrong_root_run(self):
         self.gate()

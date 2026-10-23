@@ -10,6 +10,8 @@
 
 Единственный runtime ledger — `.agent-state/mvp-coordination/claims.json`; обращаться через `scripts/mvp_coordination.py`. Не редактировать JSON напрямую. [CLI reference](cli-reference.md) задаёт точные параметры и форматы evidence. `docs/backlog.json` — план, не второй журнал выполнения. При выполнении не менять его статусы и hashes ради обхода текущего claim.
 
+Если сохранённая пара orchestrator `/root` + run UUID не совпадает с точечным `CODEX_THREAD_ID` текущего чата, не подставлять старый UUID. Сначала прочитать ledger и получить прямое поручение продолжить именно в текущем чате. `handoff` разрешён только между запусками того же `/root`, с `--from-run-id` равным текущему owner, свежей source evidence и без любых активных attempts. Переход CAS-атомарен, не редактирует и не закрывает историю claims; старый run после передачи больше не может управлять ledger.
+
 Начальные команды выполняются из корня репозитория и ничего не создают:
 
 ```powershell
