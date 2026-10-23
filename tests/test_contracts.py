@@ -220,9 +220,10 @@ def test_health_only_and_docs_not_exposed(contract_data_dir):
         password_hash=PasswordHash.recommended().hash("contract-test-password"),
         metrics_token="contract-test-metrics-token",
         public_origin="http://testserver",
+        revision="delivery-test-revision",
     )
     with TestClient(create_app(config)) as client:
-        assert client.get("/healthz").json() == {"status": "ok", "stage": "runtime-scaffold"}
+        assert client.get("/healthz").json() == {"status": "ok", "stage": "product", "revision": "delivery-test-revision"}
         for path in ("/docs", "/redoc", "/openapi.json"):
             assert client.get(path).status_code == 404
         assert client.get("/api/v1/customers").status_code == 401

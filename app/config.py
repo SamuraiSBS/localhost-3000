@@ -5,7 +5,7 @@ from pathlib import Path
 import os
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE_PATH = PROJECT_ROOT / "материалы" / "data" / "data.json"
+DEFAULT_SOURCE_PATH = PROJECT_ROOT / "data" / "seed.json"
 
 
 @dataclass(frozen=True)
@@ -16,6 +16,7 @@ class RuntimeConfig:
     password_hash: str | None = field(default=None, repr=False)
     metrics_token: str | None = field(default=None, repr=False)
     public_origin: str = "http://127.0.0.1:8311"
+    revision: str = "local"
     session_ttl_seconds: int = 28800
     max_snapshot_bytes: int = 10 * 1024 * 1024
 
@@ -24,6 +25,7 @@ class RuntimeConfig:
         return cls(
             source_path=Path(os.environ.get("SOURCE_SNAPSHOT_PATH", str(DEFAULT_SOURCE_PATH))),
             data_dir=Path(os.environ.get("DATA_DIR", str(PROJECT_ROOT / ".state"))),
+            revision=os.environ.get("APP_REVISION", "local"),
             login=os.environ.get("APP_LOGIN"),
             password_hash=os.environ.get("APP_PASSWORD_HASH"),
             metrics_token=os.environ.get("METRICS_TOKEN"),

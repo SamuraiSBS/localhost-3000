@@ -221,7 +221,7 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
 
     @application.get("/healthz", include_in_schema=False)
     def health() -> dict[str, str]:
-        return {"status": "ok", "stage": "runtime-scaffold"}
+        return {"status": "ok", "stage": "product", "revision": config.revision}
 
     def contract_openapi():
         if application.openapi_schema is None:

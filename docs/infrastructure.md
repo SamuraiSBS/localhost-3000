@@ -1,6 +1,37 @@
 # Состояние инфраструктуры
 
-Дата: 2026-10-22. Этот документ обновляется по фактическим проверкам.
+Дата: 2026-10-23. Этот документ обновляется по фактическим проверкам.
+
+## Локальный продукт B09 — 2026-10-23
+
+Проверен отдельный Compose project `mvp-r637f-b09`, `http://127.0.0.1:8359`, сеть `10.253.249.0/24`,
+свои volumes SQLite/Caddy; другие Docker projects/volumes не изменялись. Стандартные address pools
+на этой машине исчерпаны, использована проверенная свободная task-owned подсеть через `COMPOSE_SUBNET`.
+Docker Engine 29.4.2, Compose 5.1.3, Python образа 3.13.17. Сборка из отдельной копии tracked sources
+и разрешённого `data/seed.json` прошла без исходной папки материалов, root-фото, `.env`, `.git` и `.state`.
+Seed byte-identical оригиналу: `6e0e224671a4cd22059431b01fb6fed21e075100bb21b1545d94e746e666292e`.
+
+Проверены через Caddy: product health/revision, закрытые API/docs/metrics, вход и CSRF отказ,
+смена настроек и snapshot, restart приложения с тем же volume, повторный вход и сохранённые данные.
+Опциональный приватный Prometheus 3.15.1 (`sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2`)
+реально сделал authenticated scrape: `up=1`, агрегаты и risk counts совпали с API.
+Request access logs Caddy/Uvicorn отключены, чтобы не сохранять поисковые email в query.
+Секреты не встроены в image, не печатались; root `.env` сохранён.
+
+`python scripts/check.py` после ACL-исправления: 202 passed; до исправления чистая копия поставки: 199 passed; targeted delivery/contracts: 85 passed.
+Windows ACL-исправление: 8 delivery tests passed; текущие и ранние task-owned synthetic secrets получили
+защищённую DACL только текущего user SID. Владелец/SID и отсутствие broad/inherited ACE подтверждены
+через .NET metadata и SID-only SDDL `icacls /save`, без чтения секретных значений.
+Каталог защищается до записи, ACL каждого пустого файла проверяется до первого байта секрета;
+ошибка настройки/проверки ACL прерывает setup. POSIX остаётся 0700/0600. Docker/runtime при этом не менялся.
+Проверена byte preservation Swagger/seed при `core.autocrlf=true` в отдельном disposable Git fixture.
+Точный local dirty build/ref/image и команды: `artifacts/acceptance/b09-compose.json`.
+CI обновлён, но удалённый запуск CI, deployment/rollback exercise, VPS, HTTPS и публичный E2E
+в B09 **не запускались**. `DEPLOY_ENABLED=false` и private GHCR не изменялись.
+Browser приёмка продукта относится к B10. Ниже — исторические наблюдения инфраструктурного probe;
+они не подтверждают публичную поставку текущего продукта.
+
+
 
 ## Текущий статус — 2026-10-22
 
