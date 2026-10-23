@@ -1,65 +1,83 @@
-# Развёртывание: Яндекс Облако
+# Развёртывание: Timeweb Cloud
 
-VM пока не создана. Домен от пользователя: `localhost-3000.ru`. Ни адрес сервера, ни стоимость, ни DNS-доступ не предполагаются.
+Для размещения выбран Timeweb Cloud. VM, Timeweb Firewall и bootstrap настроены. Ручной деплой, корневая DNS-запись и HTTPS для `localhost-3000.ru` проверены. Автоматический CD оставлен выключенным: безопасный маршрут через Tailscale ещё не настроен. Публично работает инфраструктурный probe, а не продуктовый MVP.
 
-Пользователь подтвердил, что корневой домен свободен для этого проекта. Текущая A-запись `81.26.176.123` должна быть заменена реальным IP новой VM только после её создания.
+## Текущий сервер — 2026-10-22
 
-## Создание VM пользователем
+В панели создан и отображается как «В сети» сервер `Localhost3000`, ID `9400609`: Cloud MSK Ultra 30, Ubuntu 24.04, 1 × 3.3 ГГц, 2 ГБ RAM, 30 ГБ NVMe, IPv4 `185.42.14.141`. При заказе форма показывала 3 000 ₽/месяц без бэкапа. Группа `localhost3000-allowlist` привязана только к этой VM: входящие TCP 22 с административного `/32`, TCP 80/443 и UDP 443 из Интернета; остальной входящий трафик блокируется, исходящих правил нет. Административный IP в репозитории не хранить. Root и `deploy` доступны по SSH-ключу; fingerprint сервера сверили через консоль Timeweb. Пароль и приватный ключ не копировались.
 
-В [консоли](https://console.yandex.cloud/) выбрать каталог → Compute Cloud → Виртуальные машины → Создать. Для probe и небольшого MVP стартовая конфигурация: Ubuntu 24.04 LTS x86_64, 2 vCPU, 4 ГБ RAM, SSD 30 ГБ, без GPU и прерываемости. Это инженерная отправная точка, не размерность неизвестного продукта. Проверить калькулятор и цену IPv4/диска перед созданием. Статический публичный IP позволит не менять DNS при остановках.
+## Ранее рассмотренная конфигурация
 
-В разделе доступа использовать SSH-ключ (или OS Login при уже настроенном процессе); приватный ключ хранить локально. Передать Codex публичный IP, имя пользователя, SSH-алиас/путь к локальному ключу или агенту. Приватный ключ/пароль в чат не отправлять.
+Для временного probe предлагается небольшой стартовый шаг, близкий к прежней инженерной оценке: Москва, линейка Premium 3.3 ГГц, тариф MSK 50 (2 vCPU, 4 ГБ RAM, 50 ГБ NVMe), Ubuntu 24.04 LTS x86_64 без Marketplace-приложений. Это конфигурация инфраструктурного probe, а не оценка будущего продукта.
 
-Создать отдельную security group: вход TCP 80/443 и UDP 443 для сайта; TCP 22 только от административного IP и согласованного пути CI. Исходящие DNS/HTTPS должны работать. Не публиковать 3000, 8080 и Docker API. Docker published ports могут обходить UFW, поэтому cloud security group обязательна.
+До заказа рассматривался Premium MSK 50 в Москве: 3 640 ₽/месяц за VM и 200 ₽/месяц за IPv4; вариант без бэкапа составлял 3 840 ₽/месяц. В MSK-1 тогда не было свободных Premium-ресурсов, и этот предзаказ не отправлялся. Позже была создана другая конфигурация — её текущие параметры приведены выше. Для Ultra MSK 50 форма показывала 5 280 ₽/месяц за сервер и 5 480 ₽/месяц с IPv4 до опций. Старую оценку 1 080 + 150 ₽/месяц не использовать.
 
-Для GitHub-hosted runner нужны согласованный SSH ingress (диапазоны runner меняются) либо VPN/отдельный runner в сети. Скрипт bootstrap открывает SSH только для ADMIN_CIDR: CD без дополнительного маршрута не заработает. Не размещать постоянный self-hosted runner для недоверенных PR на production VM.
+Источники: [тарифы VPS/VDS](https://timeweb.cloud/services/vps-ubuntu), [создание облачного сервера](https://timeweb.cloud/docs/cloud-servers/manage-servers/create-server), [публичные IP](https://timeweb.cloud/docs/public-ip).
+
+## Первичная защита созданной VM
+
+Административный IPv4/CIDR для SSH пользователь сообщил; сохранять его в репозитории нельзя. Пользователь сверил fingerprint SSH-хоста через консоль Timeweb. Вход root и отдельный вход `deploy` по пользовательскому ключу проверены. Root-пароль и приватный ключ не раскрывались и не копировались.
+
+Группа `localhost3000-allowlist` уже создана и привязана только к VM `9400609`. Проверенные входящие правила: TCP 22 только с сообщённого административного `/32`; TCP 80 и TCP 443 из Интернета; UDP 443 для HTTP/3. Не открывать 3000, 8080 или Docker API. Исходящих правил нет: у Timeweb allowlist исходящие правила включают отдельную фильтрацию всего остального исходящего трафика. Дополнительно настроить UFW через `scripts/bootstrap-ubuntu.sh`.
+
+Автоматический CD пока не настроен. Для него в проектном плане предусмотрен Tailscale SSH: GitHub Actions получает краткоживущий узел через OIDC, а tag-политика разрешает SSH только на `deploy` этой VM. Tailnet и federated identity не настроены. После настройки этого маршрута открыть SSH на `tailscale0` в UFW и выполнить `tailscale set --ssh`. Не использовать личный tailnet с другими устройствами, пока не проверены и не ограничены его ACL. Постоянный self-hosted runner на production VM не устанавливать.
 
 ## Bootstrap выделенного сервера
 
-Скопировать scripts/bootstrap-ubuntu.sh и **публичный** deploy-ключ на VM. Проверить fingerprint хоста через доверенную консоль. На сервере:
+Для VM `9400609` сверить IP и fingerprint SSH-хоста в панели Timeweb. Root-пароль не копировать и не передавать в чат. После настройки ограниченного Timeweb Firewall войти на VM из доверенной административной сети, передать скрипт `scripts/bootstrap-ubuntu.sh` и выполнить от root:
 
 ```bash
-sudo bash bootstrap-ubuntu.sh ADMIN_PUBLIC_IP/32 /path/to/deploy.pub
+bash bootstrap-ubuntu.sh ADMIN_PUBLIC_IP/32 /path/to/deploy.pub
 ```
 
-Подставлять реальные значения. Скрипт устанавливает Docker из официального apt-репозитория, создаёт deploy-пользователя и `/opt/localhost-3000`, включает Docker при загрузке и настраивает UFW. Сначала проверить вход deploy-ключом во второй сессии. Не менять существующую production VM этим скриптом без проверки её служб и правил доступа.
+Вместо `ADMIN_PUBLIC_IP/32` подставить административный CIDR, а в `PUBLIC_KEY` передать публичный ключ. Скрипт принимает Ubuntu 22.04/24.04, устанавливает Docker из официального apt-репозитория, создаёт `deploy`, каталог `/opt/localhost-3000` и ограничивает публичный SSH этим CIDR. Опция `--tailscale-ssh` не добавляет постоянный SSH-ключ; её использовать только при настройке Tailscale-доступа.
 
-Под пользователем deploy создать `/opt/localhost-3000/.env` из `.env.production.example`, `chmod 600`. Для первого теста без домена использовать `SITE_ADDRESS=:80`, публичный URL `http://REAL_IP`. После DNS переключить на домен.
+Для VM `9400609` 2026-10-22 скрипт выполнен от root с пользовательским публичным ключом. Проверено: Docker активен, `docker compose version` — `v5.6.1`, `deploy` входит в группу Docker, UFW включён и разрешает SSH с административного `/32`, TCP 80/443 и UDP 443. Отдельный вход `deploy` по SSH-ключу успешен. Сам ключ, пароль и административный IP в документ не включать.
+
+Для будущего Tailscale-маршрута после установки Tailscale и входа VM в tailnet:
+
+```bash
+sudo ufw allow in on tailscale0 to any port 22 proto tcp
+sudo tailscale set --ssh
+```
+
+При включении Tailscale сначала проверить вход `deploy` по имени VM `*.ts.net`, сохранив доступ администратора по публичному `/32`. Не убирать административное правило, пока Tailscale-соединение не проверено.
+
+Под пользователем `deploy` хранить `/opt/localhost-3000/.env` с правами `chmod 600`. На первом запуске без DNS использовать `SITE_ADDRESS=:80` и `PUBLIC_URL=http://REAL_IP`; после проверки домена задано `SITE_ADDRESS=localhost-3000.ru`.
 
 ## DNS и TLS
 
-У DNS-провайдера добавить/обновить A для `localhost-3000.ru` на реальный публичный IPv4 VM. AAAA добавлять только при работающем IPv6; удалить/исправить мешающую AAAA после проверки. Перед изменением существующей записи проверить, какой сервис уже использует домен. Если корневой домен занят, согласовать поддомен.
+После проверки сервера по IP корневая A-запись `localhost-3000.ru` обновлена в Timeweb с `81.26.176.123` на `185.42.14.141`, TTL 600 секунд. Все четыре авторитетных NS и публичный DNS вернули новый адрес. AAAA не обнаружена; мешающей CAA-записи не найдено.
 
-Убедиться, что DNS уже указывает на VM, 80/443 доступны извне, сертификаты не запрещены CAA. В `.env` сервера: `SITE_ADDRESS=localhost-3000.ru`. GitHub `PUBLIC_URL=https://localhost-3000.ru`. Caddy получает и обновляет сертификат автоматически, том `caddy_data` сохранять. `curl`/smoke выполняются без отключения TLS-проверки.
+В Caddy задан `SITE_ADDRESS=localhost-3000.ru`; сохранённый том `caddy_data` не удалять. Проверено в браузере: `https://localhost-3000.ru/healthz` отвечает с текущим SHA, а HTTP перенаправляет на HTTPS. Для будущего CD использовать `PUBLIC_URL=https://localhost-3000.ru`; настройка GitHub Actions пока отключена.
 
 ## GitHub Actions
 
-Settings → Environments → New environment → `production`, ограничить веткой `main`. Доступность protection rules зависит от тарифа приватного репозитория; платный тариф автоматически не менять.
+Использовать environment `production`, ограниченный `main`. GitHub CLI подтвердил repository variable `DEPLOY_ENABLED=false`; в ходе настройки её не меняли. Предыдущее чтение также подтвердило отсутствие остальных repository variables/secrets и значений в environment `production`; secrets не читали. По просьбе пользователя автоматический CD пока оставить выключенным. Вернуться к нему после настройки и проверки ограниченного Tailscale SSH-маршрута и OIDC.
 
-Settings → Secrets and variables → Actions, переменные (repository vars, кроме явно указанных environment vars):
+Repository variables:
 
 | Имя | Значение |
 | --- | --- |
-| `DEPLOY_ENABLED` | `true` только после готовности сервера, доступа и DNS |
-| `DEPLOY_HOST` | Реальный IP/hostname VM (environment production) |
-| `DEPLOY_USER` | `deploy` (environment production) |
-| `DEPLOY_PORT` | `22` либо согласованный порт (environment production) |
-| `PUBLIC_URL` | `https://localhost-3000.ru` или временно `http://REAL_IP` (environment production) |
+| `DEPLOY_ENABLED` | `true` только после серверной, сетевой и публичной приёмки |
+| `DEPLOY_HOST` | MagicDNS имя VM с суффиксом `.ts.net` |
+| `DEPLOY_USER` | `deploy` |
+| `PUBLIC_URL` | `https://localhost-3000.ru` |
 
-Secrets окружения production:
+Secrets environment `production`:
 
 | Имя | Содержимое |
 | --- | --- |
-| `DEPLOY_SSH_KEY` | Отдельный приватный deploy-ключ, загрузить непосредственно через GitHub UI/CLI, не в чат |
-| `DEPLOY_KNOWN_HOSTS` | Строка known_hosts, fingerprint которой сверили через доверенную консоль VM; для нестандартного порта формат `[HOST]:PORT` |
+| `TS_OAUTH_CLIENT_ID` | Client ID ограниченной Tailscale federated identity |
+| `TS_AUDIENCE` | Audience этой federated identity |
 
-`GITHUB_TOKEN` создаётся автоматически на запуск. Publish job получает packages:write, CD — packages:read. Приватность GHCR-пакета не менять. Если GHCR выдаёт отказ, Package settings → Manage Actions access: дать этому репозиторию доступ; не выдавать постоянный широкий PAT.
+В Tailscale federated identity ограничить issuer `https://token.actions.githubusercontent.com`, subject `repo:SamuraiSBS@102793438/localhost-3000@1429783568:environment:production`, ветку `refs/heads/main`, событие `workflow_run`, workflow `CD`, scope `auth_keys` и tag `tag:localhost3000-ci`. Числовые ID подтверждены GitHub API: репозиторий создан 2026-10-22 и использует immutable OIDC subject. В tailnet создать узел-тег `tag:localhost3000-prod`; сетевой и SSH-доступ от `tag:localhost3000-ci` разрешить только к `tag:localhost3000-prod` на TCP 22 и только Linux-пользователю `deploy`. Использовать tailnet без других устройств либо сначала проверить и сузить существующие правила доступа.
 
-CI проверяет PR без deployment secrets. Успешный CI push `main` публикует digest-артефакт; CD принимает только этот доверенный run, отклоняет устаревший main, передаёт registry token по SSH stdin и удаляет временный Docker config. SSH host checking включён. В PR произвольные workflow_run-артефакты не исполняются.
+Не читать и не выводить существующие secrets. `GITHUB_TOKEN` создаётся на каждый workflow run; publish job получает `packages:write`, CD — `packages:read`. GHCR оставить приватным. CD получает только `id-token:write` для Tailscale OIDC; его Tailscale-узел временный. Workflow передаёт деплой по Tailscale SSH с проверкой host key, не используя постоянный SSH-ключ. Перед публичной приёмкой подтвердить, что новая версия workflow объединена в `main`.
 
-## Эксплуатация и откат
+## Эксплуатация и приёмка
 
-Релизы: `/opt/localhost-3000/releases/SHA-RUN_ID`. `current`/`previous` — симлинки принятых версий. Подготовленный image digest и предыдущие образы не удалять до окончания хакатона.
+Релизы: `/opt/localhost-3000/releases/SHA-RUN_ID`. `current`/`previous` — указатели принятых версий. Образы отката, релизные каталоги и persistent volumes не удалять.
 
 ```bash
 cd /opt/localhost-3000/current
@@ -68,8 +86,13 @@ docker compose --project-name localhost-3000 --env-file /opt/localhost-3000/.env
 bash scripts/rollback.sh /opt/localhost-3000
 ```
 
-deploy.sh сериализует деплои через flock, подтягивает образ до изменения служб, проверяет контейнеры и exact revision через внешний URL. При ошибке возвращает предыдущие image + compose + proxy config и проверяет их. Ошибка первого деплоя останавливает неработающий стенд; прежней версии тогда ещё нет. Если сам откат неуспешен, скрипт возвращает ошибку и требует диагностики. Данные БД отсутствуют; после ТЗ нужны согласованные backup/restore и backward-compatible миграции. Caddy-тома при обычной остановке не удалять.
+Ручной публичный health smoke по HTTPS и точный SHA проверены. Полный прогон автоматического CD, отдельный деплой с изменённым видимым текстом и контролируемый rollback не выполнялись. Главная страница пока содержит старую фразу о том, что публичный деплой ждёт VM в Yandex Cloud; исправить её перед публичной демонстрацией. Это инфраструктурный probe, не готовый продукт.
 
-После включения CD нужен реальный полный прогон: push → CI → GHCR → CD → HTTPS → новая видимая строка отдельным коммитом → повторная проверка exact SHA и текста. До этого публичный деплой не считается принятым.
+Документация провайдера: [Firewall](https://timeweb.cloud/docs/firewall/upravlenie-fajrvolom), [сеть сервера](https://timeweb.cloud/docs/cloud-servers/manage-servers/network), [Caddy Automatic HTTPS](https://caddyserver.com/docs/automatic-https).
 
-Источники: [Linux VM](https://yandex.cloud/ru/docs/compute/quickstart/quick-create-linux), [Docker Ubuntu и firewall](https://docs.docker.com/engine/install/ubuntu/), [Caddy automatic HTTPS](https://caddyserver.com/docs/automatic-https).
+## Первая ручная публикация — 2026-10-22
+
+- Успешный main CI run 39811602734 для коммита c333ad0d4a0a9f05cd6b531e5a352d5495c28aaa опубликовал приватный образ ghcr.io/samuraisbs/localhost-3000 с digest sha256:36607d1bf76c0444a4520804f1e5183c2cf6903b551a22615ccee889217580fa. В CI также прошли сборка, smoke и упражнение deploy/rollback.
+- Архив runtime-файлов этого коммита передан в /opt/localhost-3000/releases/c333ad0d4a0a9f05cd6b531e5a352d5495c28aaa-39811602734; SHA-256 переданного архива проверен. На VM создан /opt/localhost-3000/.env с SITE_ADDRESS=:80 и правами 600 для проверки по IPv4.
+- Образ не скачан: GitHub CLI авторизован, но его текущий токен не имеет read:packages; GHCR ответил permission_denied: The token provided does not match expected scopes. Артефакт CI deployment-image содержит только digest и не включает образ. Временные Docker credentials и скрипт pull удалены; контейнеры не запущены.
+- A-записи localhost-3000.ru и www.localhost-3000.ru по-прежнему указывают на старый адрес 81.26.176.123. DNS не менялся; публичная HTTP-проверка, HTTPS и приёмка не выполнены. Следующий шаг — выдать CLI-токену read:packages и повторить pull точного digest, затем пройти HTTP smoke по IP.
