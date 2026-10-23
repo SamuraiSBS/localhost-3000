@@ -5,7 +5,11 @@ import hashlib
 import json
 
 import pytest
+from pathlib import Path
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
+from pwdlib import PasswordHash
 from pydantic import ValidationError
 
 from app.config import DEFAULT_SOURCE_PATH, RuntimeConfig
@@ -14,6 +18,19 @@ from app.contracts import (
     SourceSnapshot, checked_money, load_source,
 )
 from app.main import create_app
+
+
+@pytest.fixture
+def contract_data_dir():
+    path = Path(__file__).resolve().parent / f".b04-contract-test-{uuid4().hex}"
+    path.mkdir()
+    try:
+        yield path
+    finally:
+        database_path = path / "app.sqlite3"
+        for suffix in ("", "-wal", "-shm"):
+            Path(f"{database_path}{suffix}").unlink(missing_ok=True)
+        path.rmdir()
 
 
 @pytest.fixture
@@ -196,18 +213,34 @@ def test_partial_threshold_merge_uses_current_values():
         SettingsPatch(thresholds={"high": 30}).apply(settings)
 
 
-def test_health_only_and_docs_not_exposed():
-    with TestClient(create_app()) as client:
+def test_health_only_and_docs_not_exposed(contract_data_dir):
+    config = RuntimeConfig(
+        data_dir=contract_data_dir,
+        login="contract-test-operator",
+        password_hash=PasswordHash.recommended().hash("contract-test-password"),
+        metrics_token="contract-test-metrics-token",
+        public_origin="http://testserver",
+    )
+    with TestClient(create_app(config)) as client:
         assert client.get("/healthz").json() == {"status": "ok", "stage": "runtime-scaffold"}
-        for path in ("/docs", "/redoc", "/openapi.json", "/api/v1/customers"):
+        for path in ("/docs", "/redoc", "/openapi.json"):
             assert client.get(path).status_code == 404
+        assert client.get("/api/v1/customers").status_code == 401
 
 
-def test_missing_seed_fails_startup():
+def test_missing_seed_fails_startup(contract_data_dir):
     missing = DEFAULT_SOURCE_PATH.with_name("__missing_seed_for_contract_test__.json")
     assert not missing.exists()
+    config = RuntimeConfig(
+        source_path=missing,
+        data_dir=contract_data_dir,
+        login="contract-test-operator",
+        password_hash=PasswordHash.recommended().hash("contract-test-password"),
+        metrics_token="contract-test-metrics-token",
+        public_origin="http://testserver",
+    )
     with pytest.raises(FileNotFoundError):
-        with TestClient(create_app(RuntimeConfig(source_path=missing))):
+        with TestClient(create_app(config)):
             pass
 
 
