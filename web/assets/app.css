@@ -19,12 +19,13 @@ table { border-collapse: collapse; width: 100%; text-align: left; font-variant-n
 caption { text-align: left; padding: var(--space-4); }
 th, td { padding: var(--space-4); border-bottom: var(--border-width) solid var(--color-border); vertical-align: top; }
 th { font-weight: var(--weight-label); }
-th button { padding: var(--space-2); min-height: var(--control-min); border: 0; background: transparent; color: inherit; text-align: left; text-decoration: underline; text-underline-offset: .25em; }
+th button { padding: var(--space-2); min-width: var(--control-min); min-height: var(--control-min); border: 0; background: transparent; color: inherit; text-align: left; text-decoration: underline; text-underline-offset: .25em; }
 th button:hover { background: var(--color-surface-raised); }
 th[aria-sort="ascending"] button::after { content: " ↑"; }
 th[aria-sort="descending"] button::after { content: " ↓"; }
 #customers-table { min-width: 68rem; }
-#customers-table :is(th,td):nth-child(1) { min-width: 4rem; }
+#customers-table td a { display: inline-block; min-width: var(--control-min); min-height: var(--control-min); }
+#customers-table :is(th,td):nth-child(1) { min-width: 4rem; white-space: nowrap; overflow-wrap: normal; }
 #customers-table :is(th,td):nth-child(2) { min-width: 12rem; max-width: 18rem; }
 #customers-table :is(th,td):nth-child(3) { min-width: 8rem; }
 #customers-table :is(th,td):nth-child(4) { min-width: 12rem; }

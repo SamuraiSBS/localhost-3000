@@ -1,5 +1,6 @@
 import { startShell, api, el, eur, score, date, metadata, pairs, list, errorText } from './shell.js';
 const detail=document.querySelector('#customer-detail');
+function announce(text){if(status.textContent!==text)status.textContent=text;}
 const status=document.querySelector('#detail-status');
 const retry=document.querySelector('#retry');
 const states={active:'Активна',suspended:'Приостановлена',prolong_wait:'Ожидает продления',blocked:'Заблокирована',deleted:'Удалена',performed:'Выполнена',not_performed:'Не выполнена'};
@@ -7,13 +8,27 @@ const reasons={no_renewable_services:'Нет возобновляемых усл
 const warningText=(warning,service) => warning === 'prolong_wait_older_than_five_days' ? `Статус источника не согласован со сроком ожидания: окончание ${date(service?.expiresAt)}; ожидание превышает пять дней.` : warning === 'active_expired_over_five_days' ? `Активная услуга просрочена более пяти дней: окончание ${date(service?.expiresAt)}.` : `Предупреждение источника: ${warning}`;
 const terms={month:'месяц',year:'год',day:'день'};
 function section(title) { const node=el('section',undefined,'section');node.append(el('h2',title));return node; }
-export async function loadCustomer() {
-  detail.setAttribute('aria-busy','true'); status.textContent='Загружаем клиента…';retry.hidden=true;
+let shownRevision=null;
+function reconcile(parent,next){
+  const old=[...parent.childNodes],fresh=[...next.childNodes];
+  fresh.forEach((node,index)=>{
+    const current=old[index];if(!current){parent.append(node);return;}
+    if(current.nodeType!==node.nodeType||current.nodeName!==node.nodeName){current.replaceWith(node);return;}
+    if(node.nodeType===Node.TEXT_NODE){if(current.textContent!==node.textContent)current.textContent=node.textContent;return;}
+    for(const attr of [...current.attributes])if(attr.name!=='open'&&!node.hasAttribute(attr.name))current.removeAttribute(attr.name);
+    for(const attr of node.attributes)if(attr.name!=='open')current.setAttribute(attr.name,attr.value);
+    reconcile(current,node);
+  });old.slice(fresh.length).forEach(node=>node.remove());
+}
+async function readCustomer(background=false,signal) {
+  if(!background){detail.setAttribute('aria-busy','true');announce('Загружаем клиента…');}retry.hidden=true;
   try {
     const id=location.pathname.split('/').pop();
     if (!/^[1-9][0-9]*$/.test(id)) { const error=new Error();error.status=404;throw error; }
-    const {data}=await api('/customers/'+encodeURIComponent(id));
-    detail.replaceChildren(); document.querySelector('h1').textContent=data.email;
+    const {data}=await api('/customers/'+encodeURIComponent(id),{signal});
+    if(stopped)return;
+    if(shownRevision===data.analysis_revision){announce('Данные клиента актуальны.');return;}
+    const scrollY=window.scrollY, fresh=el('div'); document.querySelector('h1').textContent=data.email;
     const overview=el('section'); overview.append(el('h2',`Клиент ${data.id}`),el('p',score(data)));
     if (data.risk_score===null) overview.append(el('p',reasons[data.unscored_reason] || data.unscored_reason || 'Нет возобновляемых услуг'));
     overview.append(list(data.top_reasons.map(item=>item.explanation)),metadata(data));
@@ -35,9 +50,26 @@ export async function loadCustomer() {
     const fold=el('details'); fold.append(el('summary',`Транзакции: ${data.transactions.length}`));
     if (!data.transactions.length) fold.append(el('p','Истории транзакций нет. Это не означает высокий риск.'));
     else { const region=el('div',undefined,'table-region');region.setAttribute('role','region');region.setAttribute('aria-label','История транзакций с горизонтальной прокруткой');region.tabIndex=0;const table=el('table');const caption=el('caption','Транзакции клиента');const thead=el('thead');const head=el('tr');for (const text of ['ID','Услуга','Сумма, €','Статус','Тип','Создана','Выполнена']) {const th=el('th',text);th.scope='col';head.append(th);}thead.append(head);const body=el('tbody');for(const transaction of data.transactions){const row=el('tr');for(const text of [transaction.id,transaction.serviceId,eur(transaction.amount_cents),states[transaction.status]||transaction.status,transaction.type,date(transaction.createdAt),date(transaction.performedAt)])row.append(el('td',text));body.append(row);}table.append(caption,thead,body);region.append(table);fold.append(region); }
-    transactions.append(fold);detail.append(overview,funds,services,transactions);status.textContent='Данные клиента загружены.';
-  } catch(error) { detail.replaceChildren();status.textContent=error.status===404?'404 — Клиент не найден. Возможно, он отсутствует в текущем снимке.':errorText(error);retry.hidden=error.status===404; }
+    transactions.append(fold);fresh.append(overview,funds,services,transactions);reconcile(detail,fresh);window.scrollTo(window.scrollX,scrollY);shownRevision=data.analysis_revision;announce('Данные клиента обновлены.');
+  } catch(error) {
+    if(error.status===401){stopped=true;document.querySelector('h1').textContent='Клиент';return;}
+    if(error.status===404){detail.replaceChildren();shownRevision=null;document.querySelector('h1').textContent='Клиент';announce('404 — Клиент отсутствует в текущем снимке.');retry.hidden=true;return;}
+    announce((shownRevision?'Показан последний согласованный результат. ':'')+errorText(error));retry.hidden=false;throw error;
+  }
   finally {detail.setAttribute('aria-busy','false');}
 }
+let timer, delay=2000, running=false, pending=false, stopped=false, ready=false, controller;
+function schedule(){clearTimeout(timer);if(!stopped&&!document.hidden)timer=setTimeout(()=>refresh(true),delay);}
+async function refresh(background=false){
+  if(!ready||stopped||document.hidden&&background)return;
+  if(running){if(!background)pending=true;return;}
+  running=true;controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);
+  try{await readCustomer(background,controller.signal);delay=2000;}catch{delay=Math.min(30000,delay*2);}
+  finally{clearTimeout(timeout);running=false;if(pending){pending=false;refresh();}else schedule();}
+}
+export function loadCustomer(){return refresh();}
+addEventListener('focus',()=>refresh(true));addEventListener('online',()=>refresh(true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(timer);else refresh(true);});
+addEventListener('pagehide',()=>{stopped=true;clearTimeout(timer);controller?.abort();document.querySelector('h1').textContent='Клиент';});
 retry.addEventListener('click',loadCustomer);
-try{await startShell('customers');await loadCustomer();}catch(error){status.textContent=errorText(error);}
+try{await startShell('customers');ready=true;await loadCustomer();}catch(error){announce(errorText(error));}
