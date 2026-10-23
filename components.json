@@ -1,0 +1,8 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@aceternity": "https://ui.aceternity.com/registry/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}.json"
+  }
+}
