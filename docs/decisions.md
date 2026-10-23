@@ -1,5 +1,27 @@
 # Решения
 
+## 2026-10-23 — Автономное исполнение MVP по образцу MTCH
+
+- По прямому запросу пользователя изучена действующая система `D:\mtch`: trigger в AGENTS.md, оркестратор/исполнитель/независимый reviewer, резерв до Claim, CAS/lock, текущий GO и контроль reviewed bytes. MTCH читался как источник; его очередь, claims и код не изменялись и не запускались.
+- Команда `Выполняй план MVP` определена в нашем AGENTS.md и `docs/EXECUTE_PLAN.md`. Текущий чат — оркестратор, каждый task получает настоящего нового worker, каждый review cycle — нового reviewer. Нет выдуманных thread IDs или пользовательских чатов для внутренних ролей.
+- Детерминированный coordination CLI на Python stdlib использует один local ledger в `.agent-state/mvp-coordination/claims.json`, OS lock/atomic replace/CAS, точные пути/resources, зависимости, plan hash и immutable candidate/review manifest. Runtime статусы не переписывают плановый backlog; state остаётся вне Git.
+- Отличие от MTCH: первая версия работает в одном checkout с явными exact scopes. Механизм worktree-интеграции, R/N/G-gates и legacy совместимость не переносились. Принятый незакоммиченный output передаётся следующему claim только по проверяемой lineage, чужой dirty не присваивается.
+- Команда последовательно ведёт обязательный P0 до B11 или доказанной остановки, не включает P1/публичный release автоматически. Настройка команды не запускает MVP и не отвечает за организатора на B00.
+- Actor/tool receipts — согласованная доказательная запись, не криптографическая аутентификация процесса. Принятие coordination tooling и его isolated tests не доказывает runtime готовность анализатора оттока.
+- Подготовленные этим заданием планы и координатор проходят отдельный проверенный локальный checkpoint до продуктового Claim. Это устраняет конфликт будущего редактирования ещё не зафиксированных документов; фотографии и оригиналы организаторов в checkpoint не включаются. Дальнейшие локальные commits входят в автономный workflow, push не входит.
+
+## 2026-10-23 — План продукта после получения ТЗ
+
+- Получен локальный кейс «Анализатор рисков оттока», middle,14 страниц. [challenge.md](challenge.md), [rules.md](rules.md), [evaluation.md](evaluation.md) заполнены до выбора предметного стека. Реестр требований и API привязан к PDF-страницам, численные баллы жюри не выдуманы.
+- Выбран план объяснимой модели `rules-v1`: признаки по услугам, клиентский максимум/unknown, редактируемые балльные веса, пороги и горизонт; без ML обучения на наборе без labels. Деньги — сценарная стоимость одного ближайшего продления услуги, взвешенная индексом, не калиброванный expected loss/cash flow.
+- `suspended` продолжает приносить деньги, blocked/deleted исключены из будущих продлений; locked бонусы и referral withdrawBalance не добавляются к автоматически доступным средствам. Общий баланс распределяется на корзину один раз. История удалений из текущего snapshot не восстанавливается.
+- Минимальный стек для реализации: Python3.13/FastAPI/Pydantic/Uvicorn/sqlite3/pwdlib/Argon2/prometheus-client; native HTML/CSS/ES modules используют текущие tokens/foundation и Digital Ruins. Dependencies пока не устанавливались, exact pins и notices фиксируются первым проверенным build.
+- SQLite volume хранит active snapshot/settings/sessions; один process, общий coordinator mutex для candidate compute/commit/publication и согласованные immutable evaluations. UI polling2s, cache freshness<=30s, счетчики/деньги/метрики из одного результата.
+- API сохраняет все11 обязательных method+path. OpenAPI экспортируется из будущего app, Swagger assets обслуживаются локально. `/metrics` — exact route с отдельным collector bearer token, без email/ID labels. Детали защиты docs/метрик обозначены трактовкой до ответа Q-007.
+- Source snapshot в JSON принимается напрямую; PostgreSQL fixture constraints name regex/amount<=1000 не становятся требованиями продукта. Деньги входа и всех агрегатов ограничены0..2^53-1 для точного обмена JSON/JavaScript/Prometheus; превышение отклоняется до commit.
+- Правила prebuilt/OSS/AI, cutoff и права публикации не определены PDF. Наличие proprietary PP Neue Machina в локальной основе не подтверждает public redistribution rights. Вопросы и исходники исследованы, внешние сообщения/публикация не выполнялись.
+- Это завершённая подготовка плана, не реализация продукта и не новый release. Probe/Docker/CI/публичная инфраструктура сохранены; старые записи ниже отражают прежние этапы. Точка входа следующего запуска — [START_HERE.md](START_HERE.md).
+
 ## 2026-10-22 — Подготовка до ТЗ
 
 - Не придумывать продукт и не фиксировать стек. Probe на Python stdlib нужен только для инфраструктуры.

@@ -1,0 +1,399 @@
+{
+  "profile_version": 1,
+  "purpose": "planning audit; source files are read only",
+  "source_file": "data.json",
+  "source_size_bytes": 32081,
+  "source_sha256": "6e0e224671a4cd22059431b01fb6fed21e075100bb21b1545d94e746e666292e",
+  "validation_errors": [],
+  "fixture_sql_constraint_deviations": [],
+  "tables": {
+    "accounts": {
+      "count": 10,
+      "fields": {
+        "id": {
+          "types": {
+            "int": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 1,
+          "max": 10,
+          "sum": 55
+        },
+        "email": {
+          "types": {
+            "str": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10
+        },
+        "balance": {
+          "types": {
+            "int": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 3478,
+          "max": 91506,
+          "sum": 495376
+        },
+        "withdrawBalance": {
+          "types": {
+            "int": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 425,
+          "max": 71482,
+          "sum": 182709
+        },
+        "totalReplenished": {
+          "types": {
+            "int": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 70924,
+          "max": 434296,
+          "sum": 2224073
+        },
+        "bonusBalance": {
+          "types": {
+            "int": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 1535,
+          "max": 9863,
+          "sum": 58520
+        },
+        "bonusState": {
+          "types": {
+            "str": 10
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 2,
+          "distribution": {
+            "locked": 5,
+            "unlocked": 5
+          }
+        }
+      }
+    },
+    "services": {
+      "count": 30,
+      "fields": {
+        "id": {
+          "types": {
+            "int": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 30,
+          "min": 1,
+          "max": 30,
+          "sum": 465
+        },
+        "name": {
+          "types": {
+            "str": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 30
+        },
+        "ownerId": {
+          "types": {
+            "int": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 10,
+          "min": 1,
+          "max": 10,
+          "sum": 165
+        },
+        "paymentTerm": {
+          "types": {
+            "str": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 6,
+          "distribution": {
+            "half_year": 5,
+            "hour": 5,
+            "month": 5,
+            "quarter_year": 5,
+            "week": 5,
+            "year": 5
+          }
+        },
+        "autoProlong": {
+          "types": {
+            "bool": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 2,
+          "distribution": {
+            "false": 14,
+            "true": 16
+          }
+        },
+        "createdAt": {
+          "types": {
+            "str": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 14,
+          "min": "2025-09-14T15:00:00.000Z",
+          "max": "2026-10-19T14:30:00.000Z"
+        },
+        "expiresAt": {
+          "types": {
+            "str": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 24,
+          "min": "2025-09-14T16:00:00.000Z",
+          "max": "2027-10-19T14:30:00.000Z"
+        },
+        "status": {
+          "types": {
+            "str": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 5,
+          "distribution": {
+            "active": 6,
+            "blocked": 6,
+            "deleted": 6,
+            "prolong_wait": 6,
+            "suspended": 6
+          }
+        },
+        "price": {
+          "types": {
+            "int": 30
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 30,
+          "min": 72,
+          "max": 960,
+          "sum": 13521
+        }
+      }
+    },
+    "transactions": {
+      "count": 100,
+      "fields": {
+        "id": {
+          "types": {
+            "int": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 100,
+          "min": 1,
+          "max": 100,
+          "sum": 5050
+        },
+        "amount": {
+          "types": {
+            "int": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 94,
+          "min": 0,
+          "max": 1000,
+          "sum": 49416
+        },
+        "status": {
+          "types": {
+            "str": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 2,
+          "distribution": {
+            "not_performed": 33,
+            "performed": 67
+          }
+        },
+        "performedAt": {
+          "types": {
+            "NoneType": 33,
+            "str": 67
+          },
+          "null_count": 33,
+          "distinct_nonnull_count": 66,
+          "min": "2025-09-14T15:00:06.000Z",
+          "max": "2026-10-19T14:35:53.000Z"
+        },
+        "createdAt": {
+          "types": {
+            "str": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 43,
+          "min": "2025-09-14T15:00:00.000Z",
+          "max": "2026-10-19T14:35:00.000Z"
+        },
+        "type": {
+          "types": {
+            "str": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 2,
+          "distribution": {
+            "order": 30,
+            "prolong": 70
+          }
+        },
+        "serviceId": {
+          "types": {
+            "int": 100
+          },
+          "null_count": 0,
+          "distinct_nonnull_count": 30,
+          "min": 1,
+          "max": 30,
+          "sum": 1450
+        }
+      }
+    }
+  },
+  "semantic_observations": {
+    "analysis_reference_utc": "2026-10-19T15:00:00.000Z",
+    "services_per_account": {
+      "1": 3,
+      "2": 3,
+      "3": 3,
+      "4": 3,
+      "5": 3,
+      "6": 3,
+      "7": 3,
+      "8": 3,
+      "9": 3,
+      "10": 3
+    },
+    "transactions_per_service": {
+      "1": 4,
+      "2": 4,
+      "3": 4,
+      "4": 4,
+      "5": 4,
+      "6": 4,
+      "7": 4,
+      "8": 4,
+      "9": 4,
+      "10": 4,
+      "11": 3,
+      "12": 3,
+      "13": 3,
+      "14": 3,
+      "15": 3,
+      "16": 3,
+      "17": 3,
+      "18": 3,
+      "19": 3,
+      "20": 3,
+      "21": 3,
+      "22": 3,
+      "23": 3,
+      "24": 3,
+      "25": 3,
+      "26": 3,
+      "27": 3,
+      "28": 3,
+      "29": 3,
+      "30": 3
+    },
+    "amount_not_equal_to_service_price": 100,
+    "prolong_created_before_service_expiry": 70,
+    "prolong_created_before_first_order_count": 34,
+    "prolong_created_before_first_order_ids": [
+      36,
+      37,
+      38,
+      39,
+      40,
+      42,
+      43,
+      44,
+      45,
+      50,
+      52,
+      55,
+      56,
+      57,
+      59,
+      60,
+      61,
+      64,
+      66,
+      67,
+      68,
+      69,
+      72,
+      73,
+      74,
+      78,
+      80,
+      81,
+      82,
+      83,
+      85,
+      90,
+      91,
+      99
+    ],
+    "all_owners_have_one_service_status": true,
+    "all_services_have_one_transaction_status": true,
+    "transaction_status_matches_id_modulo_3": true,
+    "bonus_state_matches_account_id_parity": true,
+    "every_account_main_balance_above_max_service_price": true,
+    "every_account_bonus_balance_above_max_service_price": true,
+    "expired_service_ids": [
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      13,
+      15,
+      18,
+      19,
+      20,
+      23,
+      25,
+      27,
+      28,
+      30
+    ],
+    "active_but_expired_service_ids": [],
+    "prolong_wait_over_5_days_service_ids": [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
+    "account_ids_with_only_blocked_or_deleted_services": [
+      2,
+      3,
+      7,
+      8
+    ],
+    "main_balance_less_than_sum_of_all_owned_service_prices_account_ids": [],
+    "withdraw_balance_exceeds_main_balance_account_ids": [],
+    "total_replenished_less_than_main_balance_account_ids": []
+  },
+  "adjacent_sql_seed": {
+    "file": "002_seed.sql",
+    "sha256": "071e0318d26155fe0cf9627cb4769607b2c61b76d03f78e352b3b254488851a8",
+    "json_recordsets_equal_source": {
+      "accounts": true,
+      "services": true,
+      "transactions": true
+    },
+    "postgres_execution_performed": false
+  }
+}

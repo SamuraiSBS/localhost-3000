@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "updated_on": "2026-10-23",
+  "language": "ru",
+  "planning_status": "prepared",
+  "product_status": "not_implemented",
+  "status_policy": "These are initial planning statuses. Runtime execution, reservations and accepted evidence live only in the coordination ledger; do not rewrite this plan on each transition. Prepared documentation is not product completion.",
+  "execution_state": ".agent-state/mvp-coordination/claims.json",
+  "contract_documents": ["requirements.md", "evaluation.md", "model.md", "api-contract.md", "architecture.md", "ui-plan.md", "test-plan.md"],
+  "tasks": [
+    {
+      "id": "B00", "priority": "P0", "status": "needs_external_answer",
+      "title": "Правила использования заготовок/OSS/AI для конкурсной реализации",
+      "depends_on": [], "questions": ["Q-001", "Q-002", "Q-003"],
+      "parallel_delivery_questions": ["Q-004", "Q-005"],
+      "outputs": ["rules.md", "open-questions.md"],
+      "acceptance": ["Записан ответ и первоисточник; конкурсные предпосылки не выдуманы"],
+      "evidence": []
+    },
+    {
+      "id": "B01", "priority": "P0", "status": "planned",
+      "title": "Каркас runtime, DTO и зафиксированные совместимые зависимости",
+      "depends_on": ["B00"], "requirements": ["R-001", "R-031", "R-034", "R-035"],
+      "suggested_owner": "coordinator", "suggested_paths": ["app/contracts.py", "app/config.py", "app/main.py", "requirements*.txt"],
+      "acceptance": ["Исходный JSON принят без перезаписи", "Нет fixture name/amount ограничений", "Версии и hashes проверены"],
+      "evidence": []
+    },
+    {
+      "id": "B02", "priority": "P0", "status": "planned",
+      "title": "Pure risk engine, registry, unknown и деньги",
+      "depends_on": ["B01"], "requirements": ["R-002", "R-003", "R-008", "R-011", "R-031", "R-032", "R-033", "R-034", "R-035", "R-037", "R-038"],
+      "suggested_owner": "domain", "suggested_paths": ["app/domain/**", "tests/unit/**"],
+      "acceptance": ["M01-M12 и U01-U11 проходят", "Нет ML training или invented history", "Все explanations происходят из модели"],
+      "evidence": []
+    },
+    {
+      "id": "B03", "priority": "P0", "status": "planned",
+      "title": "SQLite persistence и согласованная публикация Evaluation",
+      "depends_on": ["B01", "B02"], "requirements": ["R-007", "R-009", "R-022"],
+      "suggested_owner": "coordinator", "suggested_paths": ["app/storage.py", "app/evaluation.py", "tests/integration/test_storage*"],
+      "acceptance": ["Candidate validated/computed before commit", "Concurrent writes не публикуют старую revision", "Settings/snapshot переживают restart"],
+      "evidence": []
+    },
+    {
+      "id": "B04", "priority": "P0", "status": "planned",
+      "title": "Защита логином/паролем, sessions, CSRF и logout",
+      "depends_on": ["B01", "B03"], "requirements": ["R-013", "R-014", "R-015", "R-016"],
+      "suggested_owner": "backend", "suggested_paths": ["app/auth.py", "app/api/auth*", "tests/integration/test_auth*"],
+      "acceptance": ["A-02 и I01-I03 проходят", "Никаких default public credentials", "Metrics token не открывает customer API"],
+      "evidence": []
+    },
+    {
+      "id": "B05", "priority": "P0", "status": "planned",
+      "title": "Обязательные REST данные, сортировка, фильтр, settings и snapshot",
+      "depends_on": ["B02", "B03", "B04"], "requirements": ["R-005", "R-006", "R-009", "R-017", "R-018", "R-019", "R-020", "R-021", "R-022"],
+      "suggested_owner": "backend", "suggested_paths": ["app/api/**", "tests/integration/test_api*"],
+      "acceptance": ["8 обязательных сортировок и фильтр", "Полная замена atomic/no-op", "Unknown/detail404/409/422 определены"],
+      "evidence": []
+    },
+    {
+      "id": "B06", "priority": "P0", "status": "planned",
+      "title": "Четыре продуктовых экрана на утверждённом дизайне",
+      "depends_on": ["B01", "B05"], "requirements": ["R-002", "R-003", "R-004", "R-005", "R-006", "R-008", "R-013", "R-018", "R-043"],
+      "suggested_owner": "frontend", "suggested_paths": ["web/**"],
+      "acceptance": ["Реальный backend вместо mocks", "Tokens/foundation/typography сохранены", "Клавиатура/empty/error/unknown и mobile читаемы"],
+      "parallel_preparation": "После B01 можно готовить изолированную верстку по контракту; completion требует B05",
+      "evidence": []
+    },
+    {
+      "id": "B07", "priority": "P0", "status": "planned",
+      "title": "Polling revisions и импорт снимка через UI",
+      "depends_on": ["B05", "B06"], "requirements": ["R-001", "R-009", "R-022"],
+      "suggested_owner": "frontend", "suggested_paths": ["web/assets/**", "tests/browser/**"],
+      "acceptance": ["Две вкладки обновляются без reload", "Нет смешанных revisions/потери фокуса/draft", "A-07 проходит"],
+      "evidence": []
+    },
+    {
+      "id": "B08", "priority": "P0", "status": "planned",
+      "title": "Prometheus, локальный Swagger и экспорт OpenAPI",
+      "depends_on": ["B05"], "requirements": ["R-010", "R-023", "R-024", "R-025"],
+      "suggested_owner": "backend", "suggested_paths": ["app/metrics.py", "openapi.json", "web/vendor/swagger/**", "tests/integration/test_contract*"],
+      "acceptance": ["Exact metrics endpoint + authenticated scrape", "Агрегаты совпали", "Swagger offline и 11 операций в актуальном файле"],
+      "evidence": []
+    },
+    {
+      "id": "B09", "priority": "P0", "status": "planned",
+      "title": "Замена probe, Docker/Compose, check/smoke/CI",
+      "depends_on": ["B03", "B04", "B05", "B06", "B07", "B08"], "requirements": ["R-012", "R-026", "R-027"],
+      "suggested_owner": "coordinator", "suggested_paths": ["Dockerfile", "compose*.yaml", "scripts/check.py", "scripts/smoke.py", ".github/workflows/**", "README.md"],
+      "acceptance": ["Чистый app start и restart volume", "Проверки проверяют продукт", "Probe runtime claims не перенесены на MVP"],
+      "evidence": []
+    },
+    {
+      "id": "B10", "priority": "P0", "status": "planned",
+      "title": "Обязательная приёмка и исправления",
+      "depends_on": ["B07", "B08", "B09"], "requirements": ["R-001", "R-030", "R-037", "R-043"],
+      "suggested_owner": "independent-review + coordinator", "suggested_paths": ["tests/**", "docs/evaluation.md", "artifacts/acceptance/**"],
+      "acceptance": ["A-01-A-12 passed на одной версии", "Настоящий browser narrow/wide+keyboard", "Ограничения и not_run отдельно"],
+      "evidence": []
+    },
+    {
+      "id": "B11", "priority": "P0", "status": "planned",
+      "title": "Сдача и полная репетиция",
+      "depends_on": ["B10"], "requirements": ["R-025", "R-026", "R-027", "R-028", "R-029", "R-030"],
+      "additional_gate": "Q-004 ответ о времени/канале; Q-005 права для фактического способа передачи/публикации",
+      "suggested_owner": "coordinator", "suggested_paths": ["README.md", "docs/demo.md", "docs/model.md", "docs/architecture.md", "openapi.json"],
+      "acceptance": ["Пакет воспроизводим без устных подсказок", "Защита: найти/объяснить/изменить/увидеть", "Время/канал соответствуют Q004 ответу"],
+      "evidence": []
+    },
+    {
+      "id": "B12", "priority": "P1", "status": "planned",
+      "title": "График с различимыми фактом и сценарием",
+      "depends_on": ["B11"], "requirements": ["R-036", "R-042"],
+      "additional_gate": "Есть время на повторную QA; происхождение всех рядов известно",
+      "acceptance": ["Нет fabricated historical deletions", "Статусы текущего снимка не выданы за события", "Таблица fallback и подписи"],
+      "evidence": []
+    },
+    {
+      "id": "B13", "priority": "P1", "status": "planned",
+      "title": "Рабочий OIDC после обязательной приёмки",
+      "depends_on": ["B11"], "requirements": ["R-041"],
+      "additional_gate": "Реальный разрешённый IdP/callback/credentials; сохранён резерв QA",
+      "acceptance": ["Login/callback/logout действительно работают", "State/nonce/provider failure проверены", "Базовый вход сохранён"],
+      "evidence": []
+    }
+  ]
+}

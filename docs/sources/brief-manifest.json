@@ -1,0 +1,83 @@
+{
+  "source": "материалы/ТЗ.pdf",
+  "size_bytes": 403899,
+  "sha256": "d38433ec1d515d5d3fe6e1aec414de23ea391c804bb87ed1705311e7aa2ccd89",
+  "pages": 14,
+  "extraction": "pypdf 6.10.0; extract_text page order",
+  "metadata": {
+    "/CreationDate": "D:20261022202541+05'00'",
+    "/ModDate": "D:20261022202541+05'00'",
+    "/Producer": "Corel PDF Engine Version 25.2.1.313",
+    "/Author": "Александр Неволин",
+    "/Creator": "CorelDRAW 2024",
+    "/Title": "01.cdr"
+  },
+  "normalization": {
+    "output": "artifacts/planning/brief-normalized.txt",
+    "rule": "replace U+0000 with latin r; verified against visually rendered pages 2,5,6,7,9,11",
+    "replacement_count": 13,
+    "original_preserved": "artifacts/planning/brief-extracted.txt"
+  },
+  "visual_review": {
+    "renderer": "pypdfium2; scale=1.3 pages 2-13, scale=1.5 pages 1 and 14",
+    "pages_inspected": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "outputs": "artifacts/planning/brief-page-01.png through brief-page-14.png; original PDF unchanged"
+  },
+  "source_verified_2026_10_23": true,
+  "visual_transcriptions": [
+    {
+      "page": 14,
+      "prize_fund": {
+        "amount": 100000,
+        "currency": "RUB",
+        "display": "100 000 ₽"
+      },
+      "telegram_caption": "чат в telegram",
+      "telegram_url": null,
+      "note": "QR is visible. No decoded or verified Telegram URL is asserted."
+    }
+  ],
+  "link_review": {
+    "pages_checked": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "annotation_count": 0,
+    "annotations": [],
+    "text_urls": [
+      {
+        "page": 2,
+        "url": "https://disk.360.yandex.ru/d/Pl8DQFxByaak1w"
+      }
+    ],
+    "telegram_link_annotation_found": false,
+    "qr_decoded": false
+  }
+}

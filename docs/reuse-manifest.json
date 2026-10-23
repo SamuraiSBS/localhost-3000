@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "project": "localhost-3000 / churn risk analyzer",
+  "checked_on": "2026-10-23",
+  "status": "research_only_not_a_dependency_lock",
+  "research_document": "docs/reuse-research.md",
+  "evidence_scope": "Official documentation and upstream repository licenses read on checked_on; packages were not installed, cloned, or integration-tested. Default-branch licenses must be checked again against exact adopted artifacts.",
+  "organizer_permission": "Open question in docs/rules.md; a software license is not permission under competition rules.",
+  "selected_core": ["fastapi", "pydantic", "uvicorn", "python_sqlite3", "sqlite", "pwdlib", "argon2_cffi", "prometheus_client", "native_design"],
+  "version_policy": {
+    "locked": false,
+    "selected_python_minor": null,
+    "base_image_digest": null,
+    "policy": "Resolve mutually compatible released packages against official metadata at implementation start. Store exact direct and transitive versions and hashes. Do not independently override FastAPI constraints on Starlette or Pydantic. Never use latest or git HEAD as a delivery pin.",
+    "next_checks": ["Verify target Python and Linux wheels for Argon2", "Build minimal container", "Run auth, API, restart, metrics and browser scenario", "Record artifact licenses and notices", "Vendor pinned Swagger UI and optional Chart.js assets with provenance"]
+  },
+  "components": [
+    {
+      "id": "fastapi", "name": "FastAPI", "role": "Exact REST API and generated OpenAPI/Swagger",
+      "decision": "selected_core", "integration_effort": "low",
+      "source_url": "https://github.com/fastapi/fastapi",
+      "documentation_urls": ["https://fastapi.tiangolo.com/tutorial/metadata/", "https://fastapi.tiangolo.com/how-to/custom-docs-ui-assets/"],
+      "license": "MIT", "license_url": "https://github.com/fastapi/fastapi/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Routing, validation integration, schemas, dependency injection, OpenAPI generation",
+      "project_work": "Required endpoint contract, authentication, business rules, errors, static delivery, exported spec and exact Swagger path",
+      "risk": "Default Swagger assets use external URLs unless self-hosted; no integration result yet"
+    },
+    {
+      "id": "pydantic", "name": "Pydantic", "role": "Snapshot, settings and response validation",
+      "decision": "selected_core", "integration_effort": "low",
+      "source_url": "https://github.com/pydantic/pydantic", "documentation_urls": ["https://docs.pydantic.dev/latest/"],
+      "license": "MIT", "license_url": "https://github.com/pydantic/pydantic/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Typed models, enums, constraints, nested validation and schema generation",
+      "project_work": "Billing DTO relations, source errors, missing-data semantics and monetary constraints",
+      "risk": "Schema validation does not establish correct business interpretation"
+    },
+    {
+      "id": "uvicorn", "name": "Uvicorn", "role": "ASGI HTTP server",
+      "decision": "selected_core", "integration_effort": "low",
+      "source_url": "https://github.com/encode/uvicorn", "documentation_urls": [],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/encode/uvicorn/blob/main/LICENSE.md", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "HTTP runtime", "project_work": "One worker, health and startup/shutdown configuration",
+      "risk": "Multiple independent workers would complicate consistent evaluation publication and metrics"
+    },
+    {
+      "id": "starlette", "name": "Starlette", "role": "Transitive ASGI toolkit through FastAPI",
+      "decision": "transitive_through_fastapi", "integration_effort": "low",
+      "source_url": "https://github.com/encode/starlette", "documentation_urls": ["https://starlette.dev/middleware/"],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/encode/starlette/blob/main/LICENSE.md", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Request/response/static/middleware primitives", "project_work": "Protect data routes and server-side session lifecycle",
+      "risk": "SessionMiddleware signed cookie is readable, not encrypted or independently revocable; do not store confidential data in it"
+    },
+    {
+      "id": "python_sqlite3", "name": "Python sqlite3 and standard library", "role": "Persistence adapter, cents arithmetic and session token utilities",
+      "decision": "selected_core", "integration_effort": "low",
+      "source_url": "https://github.com/python/cpython", "documentation_urls": ["https://docs.python.org/3/library/sqlite3.html"],
+      "license": "PSF-2.0 and incorporated-software notices", "license_url": "https://docs.python.org/3/license.html", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "sqlite3, decimal, datetime, secrets and hashlib",
+      "project_work": "Transactional schema, revisions, immutable evaluation, TTL sessions and restart persistence",
+      "risk": "Python distribution carries additional incorporated-software notices; use target-version docs for exact API"
+    },
+    {
+      "id": "sqlite", "name": "SQLite core", "role": "Embedded persistent database",
+      "decision": "selected_core", "integration_effort": "low_for_single_process",
+      "source_url": "https://www.sqlite.org/", "documentation_urls": ["https://www.sqlite.org/whentouse.html"],
+      "license": "Public domain dedication", "license_url": "https://www.sqlite.org/copyright.html", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "On-disk data and transactions without a database server",
+      "project_work": "Volume, backups where needed, transactional update and seed-once behavior",
+      "risk": "Concurrent writers and multi-process scaling need a revised persistence design"
+    },
+    {
+      "id": "pwdlib", "name": "pwdlib[argon2]", "role": "Password hashing and verification",
+      "decision": "selected_core", "integration_effort": "low_library_medium_auth_flow",
+      "source_url": "https://github.com/frankie567/pwdlib", "documentation_urls": ["https://frankie567.github.io/pwdlib/", "https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/"],
+      "license": "MIT", "license_url": "https://github.com/frankie567/pwdlib/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Recommended password hash and verification API",
+      "project_work": "Login/me/logout, admin bootstrap, rate limits, opaque sessions, CSRF and route protection",
+      "risk": "Do not mistake a hash utility or JWT tutorial for complete logout/session security"
+    },
+    {
+      "id": "argon2_cffi", "name": "argon2-cffi", "role": "Argon2 implementation behind pwdlib extra",
+      "decision": "selected_core_transitive", "integration_effort": "low",
+      "source_url": "https://github.com/hynek/argon2-cffi", "documentation_urls": [],
+      "license": "MIT", "license_url": "https://github.com/hynek/argon2-cffi/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Existing password hashing implementation", "project_work": "Verify compatible target-container wheels and hash round trip",
+      "risk": "Bindings and native dependencies need artifact-level license and compatibility checks"
+    },
+    {
+      "id": "prometheus_client", "name": "prometheus-client / client_python", "role": "Business metrics exposition",
+      "decision": "selected_core", "integration_effort": "low",
+      "source_url": "https://github.com/prometheus/client_python",
+      "documentation_urls": ["https://prometheus.github.io/client_python/exporting/http/fastapi-gunicorn/", "https://prometheus.io/docs/concepts/data_model/"],
+      "license": "Apache-2.0 AND BSD-2-Clause", "license_url": "https://github.com/prometheus/client_python/blob/master/LICENSE", "license_verified": true,
+      "additional_license_evidence": ["https://github.com/prometheus/client_python/blob/master/pyproject.toml", "https://github.com/prometheus/client_python/blob/master/NOTICE"],
+      "version": null, "artifact_sha256": null,
+      "reuse": "Collector/Gauge, generate_latest, content type and parser",
+      "project_work": "Exact protected /metrics, collector token and aggregates from same evaluation as API",
+      "risk": "ASGI mount path redirects and add_route compatibility differ by version; use exact GET route and verify without redirect following"
+    },
+    {
+      "id": "swagger_ui", "name": "Swagger UI", "role": "Interactive /api/v1/docs assets",
+      "decision": "selected_delivery_asset", "integration_effort": "low",
+      "source_url": "https://github.com/swagger-api/swagger-ui", "documentation_urls": ["https://fastapi.tiangolo.com/how-to/custom-docs-ui-assets/"],
+      "license": "Apache-2.0", "license_url": "https://github.com/swagger-api/swagger-ui/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Interactive docs rendering", "project_work": "Local assets, API schema URL, authentication and offline browser check",
+      "risk": "A docs endpoint with unavailable CDN assets or unusable authorization fails the practical purpose"
+    },
+    {
+      "id": "native_design", "name": "Existing Digital Ruins native design", "role": "Frontend foundation",
+      "decision": "selected_core_local", "integration_effort": "medium_product_adapter",
+      "source_url": "local:docs/design/README.md", "documentation_urls": ["local:docs/design/IMPLEMENTATION_GUIDE.md"],
+      "license": "Mixed local assets; inspect per-asset provenance", "license_url": null, "license_verified": false,
+      "version": null, "artifact_sha256": null,
+      "reuse": "design/tokens.css, foundation.css, fonts.css, forms, states and reusable modules",
+      "project_work": "Terminal Bar, ranking, detail, settings, live updates and true auth",
+      "risk": "Competition prebuilt/AI permission and font public distribution are separate pending checks"
+    },
+    {
+      "id": "pp_neue_machina", "name": "PP Neue Machina Inktrap Variable", "role": "User-approved typography",
+      "decision": "preserve_local_public_rights_pending", "integration_effort": "already_local",
+      "source_url": "https://pangrampangram.com/products/neue-machina",
+      "documentation_urls": ["https://pangrampangram.com/pages/faq#free-fonts-and-personal-use", "local:design/assets/fonts/README.md", "local:design/assets/fonts/sources.json"],
+      "license": "Proprietary; free personal trial terms; not OFL", "license_url": "https://pangrampangram.com/pages/faq", "license_verified": true,
+      "version": null, "artifact_sha256": "f83a8fdd5345d351f80bee8cdbc25e9521e081ec51fd0e5131f1813ab8eebdbd",
+      "hash_evidence": "Existing local sources.json inspected; bytes not rehashed during OSS research",
+      "reuse": "Existing approved local font", "project_work": "Establish appropriate rights before public font redistribution or product publication",
+      "risk": "No commercial license recorded; downloading specimen bytes does not prove public redistribution permission; do not replace or purchase without user decision"
+    },
+    {
+      "id": "pixel_icons", "name": "HackerNoon Pixel Icon Library", "role": "Already-selected SVG icons",
+      "decision": "reuse_existing_assets_with_notices", "integration_effort": "low",
+      "source_url": "https://github.com/hackernoon/pixel-icon-library",
+      "documentation_urls": ["local:design/assets/icons/README.md", "local:design/assets/icons/sources.json"],
+      "license": "Icons: upstream README says CC 4.0 with attribution; local provenance specifies CC BY 4.0. Other repo files: MIT.",
+      "license_url": "https://github.com/hackernoon/pixel-icon-library#license-free--starter--pro", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Only SVG icons already included", "project_work": "Preserve credits page, source and change notices",
+      "risk": "Do not label all assets MIT or add runtime icon-font/CDN dependencies"
+    },
+    {
+      "id": "chart_js", "name": "Chart.js", "role": "Optional fact/forecast chart",
+      "decision": "optional_after_core_acceptance", "integration_effort": "low_to_medium",
+      "source_url": "https://github.com/chartjs/Chart.js",
+      "documentation_urls": ["https://www.chartjs.org/docs/latest/developers/updates.html", "https://www.chartjs.org/docs/latest/general/accessibility.html"],
+      "license": "MIT", "license_url": "https://github.com/chartjs/Chart.js/blob/master/LICENSE.md", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Canvas rendering, series updates, responsive charts",
+      "project_work": "Distinct actual/predicted series, truthful missing-history state, accessible alternative and token styling",
+      "risk": "A chart library cannot infer missing deletion dates; canvas accessibility must be added"
+    },
+    {
+      "id": "authlib", "name": "Authlib", "role": "Optional OIDC client",
+      "decision": "optional_after_core_acceptance", "integration_effort": "medium",
+      "source_url": "https://github.com/authlib/authlib",
+      "documentation_urls": ["https://docs.authlib.org/en/latest/oauth2/client/web/fastapi.html", "https://docs.authlib.org/en/latest/oauth2/client/web/starlette.html"],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/authlib/authlib/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Discovery, authorization code flow, token validation integration",
+      "project_work": "Provider config, redirect URI, state/nonce, app session, logout and local fallback",
+      "risk": "Current docs use HTTPX2 transport; select transport per pinned release. Working OIDC requires full browser flow, not just config"
+    },
+    {
+      "id": "keycloak", "name": "Keycloak", "role": "Optional local OIDC provider",
+      "decision": "conditional_optional_compose_profile", "integration_effort": "medium_to_high",
+      "source_url": "https://github.com/keycloak/keycloak", "documentation_urls": ["https://www.keycloak.org/getting-started/getting-started-docker"],
+      "license": "Apache-2.0", "license_url": "https://github.com/keycloak/keycloak/blob/main/LICENSE.txt", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Identity provider and realm/user configuration",
+      "project_work": "Reproducible realm export, secrets, hostname/callback setup and application integration",
+      "risk": "Extra service boot and resources; disabled profile must not prevent P0 password login"
+    },
+    {
+      "id": "tabulator", "name": "Tabulator", "role": "Alternative data grid",
+      "decision": "reserve_not_selected_for_core", "integration_effort": "medium_adapter_and_theming",
+      "source_url": "https://github.com/olifolkerd/tabulator", "documentation_urls": ["https://www.tabulator.info/docs/6.x/sort/"],
+      "license": "MIT", "license_url": "https://github.com/olifolkerd/tabulator/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Header sorting, filtering and data update controls",
+      "project_work": "API sorting adapter, accessibility checks and native theme adaptation",
+      "risk": "For 100 rows semantic native table is simpler; client-only sorting does not implement required API sorting"
+    },
+    {
+      "id": "sqlalchemy", "name": "SQLAlchemy", "role": "Alternative persistence ORM",
+      "decision": "reserve_not_selected_for_core", "integration_effort": "medium",
+      "source_url": "https://github.com/sqlalchemy/sqlalchemy", "documentation_urls": ["https://docs.sqlalchemy.org/en/20/orm/quickstart.html"],
+      "license": "MIT", "license_url": "https://github.com/sqlalchemy/sqlalchemy/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "ORM, relationships and transactions", "project_work": "Domain schema, migrations and snapshot publication",
+      "risk": "Additional abstraction is not required for selected small SQLite state store"
+    },
+    {
+      "id": "fastapi_full_stack", "name": "Full Stack FastAPI Template", "role": "Whole-app template comparison",
+      "decision": "reference_recipes_only", "integration_effort": "high_full_adoption",
+      "source_url": "https://github.com/fastapi/full-stack-fastapi-template", "documentation_urls": [],
+      "license": "MIT", "license_url": "https://github.com/fastapi/full-stack-fastapi-template/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Backend/test/Docker/auth architecture recipes", "project_work": "Entire billing risk engine, required API and current visual identity",
+      "risk": "React/PostgreSQL/SQLModel/Tailwind/shadcn/Traefik/email broaden scope; no need to import wholesale"
+    },
+    {
+      "id": "django", "name": "Django", "role": "Alternative backend",
+      "decision": "evaluated_not_selected", "integration_effort": "medium",
+      "source_url": "https://github.com/django/django", "documentation_urls": ["https://docs.djangoproject.com/en/6.0/topics/auth/default/"],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/django/django/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Auth, sessions, CSRF, ORM and admin", "project_work": "Exact API/OpenAPI adapter, risk model and product interface",
+      "risk": "Good if team already knows it; do not mix with selected FastAPI stack"
+    },
+    {
+      "id": "streamlit", "name": "Streamlit", "role": "Alternative dashboard framework",
+      "decision": "evaluated_not_selected", "integration_effort": "high_for_exact_contract_and_design",
+      "source_url": "https://github.com/streamlit/streamlit", "documentation_urls": ["https://docs.streamlit.io/develop/concepts/connections/authentication"],
+      "license": "Apache-2.0", "license_url": "https://github.com/streamlit/streamlit/blob/develop/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Rapid data exploration UI and built-in OIDC", "project_work": "Required REST/auth password/Swagger and Digital Ruins adaptation",
+      "risk": "Fast UI prototype is not acceptance-complete application"
+    },
+    {
+      "id": "dash", "name": "Dash", "role": "Alternative reactive analytics UI",
+      "decision": "evaluated_not_selected", "integration_effort": "medium_to_high_for_current_native_design",
+      "source_url": "https://github.com/plotly/dash", "documentation_urls": ["https://dash.plotly.com/"],
+      "license": "MIT core", "license_url": "https://github.com/plotly/dash/blob/dev/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Analytical callbacks and chart components", "project_work": "Required API, domain model and UI identity",
+      "risk": "Enterprise features have separate terms; selected native interface makes migration unnecessary"
+    },
+    {
+      "id": "supabase", "name": "Supabase self-hosted", "role": "Backend platform comparison",
+      "decision": "evaluated_deferred", "integration_effort": "high",
+      "source_url": "https://github.com/supabase/supabase", "documentation_urls": ["https://supabase.com/docs/guides/self-hosting/docker"],
+      "license": "Apache-2.0 umbrella repo; component licenses separate", "license_url": "https://github.com/supabase/supabase/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Auth, PostgreSQL, realtime and storage", "project_work": "Required exact API adapter, scoring, explanations, money and product UI",
+      "risk": "Multiple services and new configuration; not necessary for selected scope"
+    },
+    {
+      "id": "appwrite", "name": "Appwrite self-hosted", "role": "Backend platform comparison",
+      "decision": "evaluated_deferred", "integration_effort": "high",
+      "source_url": "https://github.com/appwrite/appwrite", "documentation_urls": ["https://appwrite.io/docs/advanced/self-hosting/installation"],
+      "license": "BSD-3-Clause main repo; component licenses separate", "license_url": "https://github.com/appwrite/appwrite/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Authentication, database, functions and realtime", "project_work": "Business model, exact API contract and frontend",
+      "risk": "New multi-service platform does not provide case-specific churn model"
+    },
+    {
+      "id": "evidently", "name": "Evidently", "role": "Data quality and drift monitoring comparison",
+      "decision": "future_data_quality_only", "integration_effort": "not_justified_for_core",
+      "source_url": "https://github.com/evidentlyai/evidently", "documentation_urls": ["https://docs.evidentlyai.com/metrics/explainer_drift"],
+      "license": "Apache-2.0", "license_url": "https://github.com/evidentlyai/evidently/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Data quality and reference/current drift reports", "project_work": "All operational billing risk semantics and required app functionality",
+      "risk": "Distribution drift is different from client non-renewal risk; no reference history in case dataset"
+    },
+    {
+      "id": "scikit_learn", "name": "scikit-learn", "role": "ML pipeline comparison",
+      "decision": "not_selected_no_labels_or_history", "integration_effort": "not_justified_for_core",
+      "source_url": "https://github.com/scikit-learn/scikit-learn", "documentation_urls": ["https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html"],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/scikit-learn/scikit-learn/blob/main/COPYING", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Future preprocessing/training/evaluation pipeline after labeled history exists", "project_work": "Current deterministic model needs no ML library",
+      "risk": "Cannot validate predictive quality from this unlabeled snapshot; do not copy Telco probabilities"
+    },
+    {
+      "id": "ibm_churn", "name": "IBM/customer-churn-prediction", "role": "Churn example application",
+      "decision": "rejected_as_application_base", "integration_effort": "high_and_wrong_scope",
+      "source_url": "https://github.com/IBM/customer-churn-prediction", "documentation_urls": [],
+      "license": "Apache-2.0", "license_url": "https://github.com/IBM/customer-churn-prediction/blob/master/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "maintenance_evidence": "Owner marks repository archived/read-only since 2022-01-14 and warns no longer maintained",
+      "reuse": "Historical data-science workflow reference only", "project_work": "Would require replacing model, data, cloud integration and app contract",
+      "risk": "Archived, Watson workflow and different labeled Telco dataset"
+    },
+    {
+      "id": "adarsh_telco", "name": "Adarsh-GPT/telco-churn-prediction", "role": "Public modern churn example",
+      "decision": "reference_only_not_runtime", "integration_effort": "high_wrong_data_semantics",
+      "source_url": "https://github.com/Adarsh-GPT/telco-churn-prediction", "documentation_urls": ["https://github.com/Adarsh-GPT/telco-churn-prediction/blob/main/README.md"],
+      "license": "MIT", "license_url": "https://github.com/Adarsh-GPT/telco-churn-prediction/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Preprocessing/evaluation organization and limitations-writing reference", "project_work": "All case-specific scoring and app acceptance features",
+      "risk": "Different IBM Telco labeled data; project runtime and README quality claims not independently validated"
+    },
+    {
+      "id": "pytest", "name": "pytest", "role": "Unit and integration tests",
+      "decision": "selected_dev_tool", "integration_effort": "low",
+      "source_url": "https://github.com/pytest-dev/pytest", "documentation_urls": ["https://fastapi.tiangolo.com/tutorial/testing/"],
+      "license": "MIT", "license_url": "https://github.com/pytest-dev/pytest/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Test discovery, assertions, fixtures", "project_work": "Business invariants, restart and auth tests",
+      "risk": "API/unit pass does not prove real browser flow"
+    },
+    {
+      "id": "httpx", "name": "HTTPX", "role": "FastAPI TestClient-compatible HTTP tests",
+      "decision": "selected_dev_tool_subject_to_compatibility", "integration_effort": "low",
+      "source_url": "https://github.com/encode/httpx", "documentation_urls": ["https://fastapi.tiangolo.com/tutorial/testing/"],
+      "license": "BSD-3-Clause", "license_url": "https://github.com/encode/httpx/blob/master/LICENSE.md", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "HTTP client in API tests", "project_work": "Requests, cookies, assertions and target test setup",
+      "risk": "Pin compatible TestClient/Starlette/client releases; optional Authlib transport may use another package"
+    },
+    {
+      "id": "playwright", "name": "Playwright", "role": "Optional reproducible browser acceptance automation",
+      "decision": "dev_tool_or_existing_browser_tool", "integration_effort": "medium",
+      "source_url": "https://github.com/microsoft/playwright", "documentation_urls": [],
+      "license": "Apache-2.0", "license_url": "https://github.com/microsoft/playwright/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Real browser automation", "project_work": "Login/ranking/detail/settings/snapshot/restart scenario and wide/narrow UI checks",
+      "risk": "Browser binaries have separate notices; use available browser tool if shell launch is unavailable"
+    },
+    {
+      "id": "docker_compose", "name": "Docker Compose", "role": "Required reproducible startup",
+      "decision": "reuse_existing_infrastructure_adapt_for_product", "integration_effort": "medium",
+      "source_url": "https://github.com/docker/compose", "documentation_urls": ["https://docs.docker.com/compose/intro/features-uses/"],
+      "license": "Apache-2.0 for Compose source; images and Docker Desktop terms are separate", "license_url": "https://github.com/docker/compose/blob/main/LICENSE", "license_verified": true,
+      "version": null, "artifact_sha256": null,
+      "reuse": "Existing project build/run/health scripts", "project_work": "Product image, volume, healthchecks, local README and clean restart check",
+      "risk": "Prepared infrastructure probe does not establish product startup or public deployment"
+    }
+  ],
+  "non_library_project_code": [
+    "Feature registry and deterministic service/customer score with explicit unknown",
+    "Monetary proxy from next renewal prices and score; shared balance/eligible bonus funding allocation",
+    "Snapshot validation and atomic versioned evaluation publication",
+    "Persistent editable weights and settings",
+    "Ranking filters and stable server sorting",
+    "Same-origin opaque-session application authentication and CSRF checks",
+    "2-second polling, focus-preserving UI updates, offline and expired-session states",
+    "Shared summary/detail/metrics evaluation and documented collector authorization",
+    "Jury scenario, fixture preparation, README and acceptance evidence"
+  ],
+  "publication_gates": [
+    "Confirm organizer permission for third-party and prebuilt/AI-assisted assets",
+    "Verify PP Neue Machina rights for exact intended public distribution; do not silently replace approved typography",
+    "Preserve third-party notices and exact artifact provenance",
+    "Keep public deployment, local Docker, API and browser verification claims separate"
+  ]
+}
