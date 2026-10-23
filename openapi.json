@@ -1,0 +1,3725 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "localhost3000",
+    "version": "0.1.0",
+    "description": "Cookie-session protected API. Monetary values are integer euro cents; unknown score/money is null. All evaluation metadata belongs to one immutable Evaluation. Mutations require CSRF and Origin. Metrics uses a separate collector bearer. Documentation and schema require a session."
+  },
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Session-bound CSRF token from login or auth/me."
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/customers": {
+      "get": {
+        "summary": "List Customers",
+        "operationId": "list_customers_api_v1_customers_get",
+        "parameters": [
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "id",
+                "email",
+                "balance",
+                "totalReplenished",
+                "risk_score"
+              ],
+              "type": "string",
+              "default": "risk_score",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
+          },
+          {
+            "name": "risk_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Risk Level"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/customers/{customer_id}": {
+      "get": {
+        "summary": "Get Customer",
+        "operationId": "get_customer_api_v1_customers__customer_id__get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/analytics/summary": {
+      "get": {
+        "summary": "Analytics Summary",
+        "operationId": "analytics_summary_api_v1_analytics_summary_get",
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/model/settings": {
+      "get": {
+        "summary": "Get Settings",
+        "operationId": "get_settings_api_v1_model_settings_get",
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Patch Settings",
+        "operationId": "patch_settings_api_v1_model_settings_patch",
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Session-bound CSRF token from login or auth/me."
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/source/snapshot": {
+      "put": {
+        "summary": "Replace Source Snapshot",
+        "operationId": "replace_source_snapshot_api_v1_source_snapshot_put",
+        "responses": {
+          "200": {
+            "description": "Current evaluation/configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceSnapshot"
+              },
+              "example": {
+                "accounts": [],
+                "services": [],
+                "transactions": []
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Session-bound CSRF token from login or auth/me."
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Prometheus exposition from one Evaluation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "MetricsBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/docs": {
+      "get": {
+        "summary": "Swagger Docs",
+        "operationId": "swagger_docs_api_v1_docs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthResponse": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "csrf_token": {
+            "type": "string",
+            "title": "Csrf Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user",
+          "csrf_token"
+        ],
+        "title": "AuthResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "SettingsPatch": {
+        "properties": {
+          "horizon_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 90.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Days"
+          },
+          "thresholds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThresholdsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weights": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "ge": 0,
+                  "le": 100
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weights"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SettingsPatch",
+        "description": "A partial patch is merged then validated as a complete ModelSettings."
+      },
+      "ThresholdsPatch": {
+        "properties": {
+          "medium": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "ge": 0,
+                "le": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Medium"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "ge": 0,
+                "le": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ThresholdsPatch"
+      },
+      "UserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "login": {
+            "type": "string",
+            "title": "Login"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "login"
+        ],
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "AccountSource": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "exclusiveMinimum": 0,
+            "maximum": 9223372036854775807,
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "balance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Balance",
+            "type": "integer"
+          },
+          "withdrawBalance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Withdrawbalance",
+            "type": "integer"
+          },
+          "totalReplenished": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Totalreplenished",
+            "type": "integer"
+          },
+          "bonusBalance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Bonusbalance",
+            "type": "integer"
+          },
+          "bonusState": {
+            "enum": [
+              "locked",
+              "unlocked"
+            ],
+            "title": "Bonusstate",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "balance",
+          "withdrawBalance",
+          "totalReplenished",
+          "bonusBalance",
+          "bonusState"
+        ],
+        "title": "AccountSource",
+        "type": "object"
+      },
+      "ServiceSource": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "exclusiveMinimum": 0,
+            "maximum": 9223372036854775807,
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ownerId": {
+            "exclusiveMinimum": 0,
+            "maximum": 9223372036854775807,
+            "title": "Ownerid",
+            "type": "integer"
+          },
+          "paymentTerm": {
+            "enum": [
+              "hour",
+              "week",
+              "month",
+              "quarter_year",
+              "half_year",
+              "year"
+            ],
+            "title": "Paymentterm",
+            "type": "string"
+          },
+          "autoProlong": {
+            "title": "Autoprolong",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "title": "Expiresat",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "suspended",
+              "prolong_wait",
+              "deleted",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "price": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Price",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ownerId",
+          "paymentTerm",
+          "autoProlong",
+          "createdAt",
+          "expiresAt",
+          "status",
+          "price"
+        ],
+        "title": "ServiceSource",
+        "type": "object"
+      },
+      "TransactionSource": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "exclusiveMinimum": 0,
+            "maximum": 9223372036854775807,
+            "title": "Id",
+            "type": "integer"
+          },
+          "amount": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Amount",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "performed",
+              "not_performed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "performedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Performedat"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "prolong",
+              "order"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "serviceId": {
+            "exclusiveMinimum": 0,
+            "maximum": 9223372036854775807,
+            "title": "Serviceid",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "status",
+          "performedAt",
+          "createdAt",
+          "type",
+          "serviceId"
+        ],
+        "title": "TransactionSource",
+        "type": "object"
+      },
+      "SourceSnapshot": {
+        "additionalProperties": true,
+        "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountSource"
+            },
+            "title": "Accounts",
+            "type": "array"
+          },
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceSource"
+            },
+            "title": "Services",
+            "type": "array"
+          },
+          "transactions": {
+            "items": {
+              "$ref": "#/components/schemas/TransactionSource"
+            },
+            "title": "Transactions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "accounts",
+          "services",
+          "transactions"
+        ],
+        "title": "SourceSnapshot",
+        "type": "object"
+      },
+      "Thresholds": {
+        "additionalProperties": false,
+        "properties": {
+          "medium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "default": "35",
+            "ge": 0,
+            "le": 100,
+            "title": "Medium"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "default": "65",
+            "ge": 0,
+            "le": 100,
+            "title": "High"
+          }
+        },
+        "title": "Thresholds",
+        "type": "object"
+      },
+      "CustomerListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "email": {
+            "type": "string"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "total_replenished_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "unknown"
+            ]
+          },
+          "monetary_risk_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Integer euro cents (EUR)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "top_reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data_quality_warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "balance_cents",
+          "total_replenished_cents",
+          "risk_score",
+          "risk_level",
+          "monetary_risk_cents",
+          "top_reasons",
+          "data_quality_warnings"
+        ],
+        "example": {
+          "id": "1001",
+          "email": "manual-renewal@example.test",
+          "balance_cents": 1000,
+          "total_replenished_cents": 10000,
+          "risk_score": 45,
+          "risk_level": "medium",
+          "monetary_risk_cents": 450,
+          "top_reasons": [
+            "Автопродление отключено"
+          ],
+          "data_quality_warnings": []
+        }
+      },
+      "CustomerList": {
+        "type": "object",
+        "properties": {
+          "analysis_revision": {
+            "type": "string"
+          },
+          "data_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "settings_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "evaluated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "const": "EUR"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerListItem"
+            }
+          }
+        },
+        "required": [
+          "analysis_revision",
+          "data_revision",
+          "settings_revision",
+          "model_version",
+          "evaluated_at",
+          "horizon_days",
+          "currency",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ]
+      },
+      "CustomerDetail": {
+        "type": "object",
+        "properties": {
+          "analysis_revision": {
+            "type": "string"
+          },
+          "data_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "settings_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "evaluated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "const": "EUR"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "total_replenished_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "unknown"
+            ]
+          },
+          "monetary_risk_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Integer euro cents (EUR)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "top_reasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeatureContribution"
+            }
+          },
+          "data_quality_warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spendable_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "due_services_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "funding_gap_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "unscored_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponse"
+            }
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionResponse"
+            }
+          },
+          "balance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Balance",
+            "type": "integer"
+          },
+          "withdrawBalance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Withdrawbalance",
+            "type": "integer"
+          },
+          "totalReplenished": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Totalreplenished",
+            "type": "integer"
+          },
+          "bonusBalance": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Bonusbalance",
+            "type": "integer"
+          },
+          "bonusState": {
+            "enum": [
+              "locked",
+              "unlocked"
+            ],
+            "title": "Bonusstate",
+            "type": "string"
+          },
+          "withdraw_balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "bonus_balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "top_service_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "analysis_revision",
+          "data_revision",
+          "settings_revision",
+          "model_version",
+          "evaluated_at",
+          "horizon_days",
+          "currency",
+          "id",
+          "email",
+          "balance_cents",
+          "total_replenished_cents",
+          "risk_score",
+          "risk_level",
+          "monetary_risk_cents",
+          "top_reasons",
+          "data_quality_warnings",
+          "spendable_cents",
+          "due_services_price_cents",
+          "funding_gap_cents",
+          "unscored_reason",
+          "services",
+          "transactions",
+          "balance",
+          "withdrawBalance",
+          "totalReplenished",
+          "bonusBalance",
+          "bonusState",
+          "withdraw_balance_cents",
+          "bonus_balance_cents",
+          "top_service_id"
+        ]
+      },
+      "AnalyticsSummary": {
+        "type": "object",
+        "properties": {
+          "analysis_revision": {
+            "type": "string"
+          },
+          "data_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "settings_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "evaluated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "const": "EUR"
+          },
+          "customers_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "customers_evaluated": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "risk_counts": {
+            "type": "object",
+            "properties": {
+              "low": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "medium": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "high": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "low",
+              "medium",
+              "high",
+              "unknown"
+            ]
+          },
+          "monetary_risk_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "monetary_coverage": {
+            "type": "object",
+            "properties": {
+              "evaluated": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "evaluated",
+              "unknown"
+            ]
+          },
+          "due_services_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "funding_gap_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "data_quality_warnings": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mean_risk_score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "analysis_revision",
+          "data_revision",
+          "settings_revision",
+          "model_version",
+          "evaluated_at",
+          "horizon_days",
+          "currency",
+          "customers_total",
+          "customers_evaluated",
+          "risk_counts",
+          "monetary_risk_cents",
+          "monetary_coverage",
+          "due_services_price_cents",
+          "funding_gap_cents",
+          "data_quality_warnings",
+          "mean_risk_score"
+        ]
+      },
+      "SettingsResponse": {
+        "type": "object",
+        "properties": {
+          "settings_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thresholds": {
+            "$ref": "#/components/schemas/Thresholds"
+          },
+          "weights": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "settings_revision",
+          "model_version",
+          "horizon_days",
+          "thresholds",
+          "weights",
+          "features"
+        ]
+      },
+      "SettingsUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "settings_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thresholds": {
+            "$ref": "#/components/schemas/Thresholds"
+          },
+          "weights": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "analysis_revision": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "settings_revision",
+          "model_version",
+          "horizon_days",
+          "thresholds",
+          "weights",
+          "features",
+          "analysis_revision"
+        ]
+      },
+      "SnapshotResponse": {
+        "type": "object",
+        "properties": {
+          "data_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "analysis_revision": {
+            "type": "string"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checksum": {
+            "type": "string"
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "accounts": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "services": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "transactions": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "accounts",
+              "services",
+              "transactions"
+            ]
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "data_revision",
+          "analysis_revision",
+          "received_at",
+          "checksum",
+          "changed",
+          "counts",
+          "warnings"
+        ]
+      },
+      "APIError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "current_revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "FeatureContribution": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weight": {
+            "type": "number"
+          },
+          "contribution": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "title",
+          "value",
+          "weight",
+          "contribution",
+          "available",
+          "explanation",
+          "evidence"
+        ]
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "paymentTerm": {
+            "enum": [
+              "hour",
+              "week",
+              "month",
+              "quarter_year",
+              "half_year",
+              "year"
+            ],
+            "title": "Paymentterm",
+            "type": "string"
+          },
+          "autoProlong": {
+            "title": "Autoprolong",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "title": "Expiresat",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "suspended",
+              "prolong_wait",
+              "deleted",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "price": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Price",
+            "type": "integer"
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "in_horizon": {
+            "type": "boolean"
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "excluded_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "covered_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Integer euro cents (EUR)."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when no allocation is performed outside the horizon or for an excluded service."
+          },
+          "funding_gap_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Integer euro cents (EUR)."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when no allocation is performed outside the horizon or for an excluded service."
+          },
+          "raw_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "unknown"
+            ]
+          },
+          "score_clamped": {
+            "type": "boolean"
+          },
+          "monetary_risk_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Integer euro cents (EUR)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeatureContribution"
+            }
+          },
+          "top_reasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeatureContribution"
+            }
+          },
+          "unscored_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_quality_warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ownerId",
+          "paymentTerm",
+          "autoProlong",
+          "createdAt",
+          "expiresAt",
+          "status",
+          "price",
+          "price_cents",
+          "eligible",
+          "in_horizon",
+          "overdue",
+          "excluded_reason",
+          "covered_cents",
+          "funding_gap_cents",
+          "raw_score",
+          "risk_score",
+          "risk_level",
+          "score_clamped",
+          "monetary_risk_cents",
+          "features",
+          "top_reasons",
+          "unscored_reason",
+          "data_quality_warnings"
+        ]
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "title": "Amount",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "performed",
+              "not_performed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "performedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Performedat"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "prolong",
+              "order"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Integer euro cents (EUR)."
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "status",
+          "performedAt",
+          "createdAt",
+          "type",
+          "serviceId",
+          "amount_cents"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      },
+      "MetricsBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Separate collector METRICS_TOKEN; grants no customer API access."
+      }
+    }
+  }
+}
