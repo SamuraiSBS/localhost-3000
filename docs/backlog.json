@@ -26,6 +26,14 @@
       "evidence": []
     },
     {
+      "id": "B14", "priority": "P0", "status": "planned",
+      "title": "Аудируемый snapshot завершённой отдельной работы в checkout",
+      "depends_on": ["B01"], "requirements": [],
+      "suggested_owner": "coordination", "suggested_paths": ["scripts/mvp_coordination.py", "tests/test_mvp_coordination.py", "docs/coordination/cli-reference.md", "docs/coordination/orchestrator.md", "docs/coordination/validation.md", "docs/EXECUTE_PLAN.md", "docs/backlog.json"],
+      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim"],
+      "evidence": []
+    },
+    {
       "id": "B02", "priority": "P0", "status": "planned",
       "title": "Pure risk engine, registry, unknown и деньги",
       "depends_on": ["B01"], "requirements": ["R-002", "R-003", "R-008", "R-011", "R-031", "R-032", "R-033", "R-034", "R-035", "R-037", "R-038"],
