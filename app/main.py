@@ -1,11 +1,13 @@
 """FastAPI application with a public health check and protected product API."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi.exceptions import RequestValidationError
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.responses import JSONResponse
+from starlette.responses import FileResponse, JSONResponse, RedirectResponse
+from starlette.staticfiles import StaticFiles
 
 from app.api.analytics import router as analytics_router
 from app.api.auth import router as auth_router
@@ -18,6 +20,7 @@ from app.auth import (
     LoginRateLimiter,
     SessionStore,
     api_auth_middleware,
+    require_session,
     validate_runtime_credentials,
 )
 from app.config import RuntimeConfig
@@ -128,6 +131,51 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
     application.add_exception_handler(RequestValidationError, _request_validation_response)
     application.add_exception_handler(StarletteHTTPException, _http_error_response)
     application.middleware("http")(api_auth_middleware)
+
+    @application.middleware("http")
+    async def product_asset_cache(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/assets/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+    project_root = Path(__file__).resolve().parents[1]
+    web_root = project_root / "web"
+    application.mount("/assets", StaticFiles(directory=web_root / "assets"), name="web-assets")
+    application.mount("/design", StaticFiles(directory=project_root / "design"), name="design")
+
+    def page(name: str) -> FileResponse:
+        return FileResponse(web_root / name, headers={"Cache-Control": "no-store"})
+
+    @application.get("/", include_in_schema=False)
+    def entry_page():
+        return page("index.html")
+
+    @application.get("/login", include_in_schema=False)
+    def login_page():
+        return page("login.html")
+
+    def protected_page(request: Request, name: str):
+        try:
+            require_session(request)
+        except AuthError:
+            # Only fixed internal destinations are accepted by the login page.
+            destination = request.url.path
+            return RedirectResponse("/login?next=" + destination, status_code=303,
+                                    headers={"Cache-Control": "no-store"})
+        return page(name)
+
+    @application.get("/customers", include_in_schema=False)
+    def customers_page(request: Request):
+        return protected_page(request, "customers.html")
+
+    @application.get("/customers/{customer_id}", include_in_schema=False)
+    def customer_page(request: Request, customer_id: str):
+        return protected_page(request, "customer.html")
+
+    @application.get("/settings", include_in_schema=False)
+    def settings_page(request: Request):
+        return protected_page(request, "settings.html")
 
     @application.get("/healthz", include_in_schema=False)
     def health() -> dict[str, str]:

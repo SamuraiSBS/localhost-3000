@@ -264,19 +264,19 @@ def test_https_login_sets_secure_cookie(auth_data_dir):
 def test_metrics_bearer_does_not_authorize_guarded_customer_route(auth_data_dir):
     app = create_app(configured_app_config(auth_data_dir))
 
-    @app.get("/api/v1/customers")
+    @app.get("/api/v1/test-only-guarded-customer")
     def customers(user: AuthenticatedUser = Depends(require_session)):
         return {"operator": user.login}
 
     with TestClient(app) as client:
         guest = client.get(
-            "/api/v1/customers",
+            "/api/v1/test-only-guarded-customer",
             headers={"Authorization": f"Bearer {METRICS_TOKEN}"},
         )
         assert guest.status_code == 401
         assert guest.json()["error"]["code"] == "authentication_required"
 
         assert login(client).status_code == 200
-        authorized = client.get("/api/v1/customers")
+        authorized = client.get("/api/v1/test-only-guarded-customer")
         assert authorized.status_code == 200
         assert authorized.json() == {"operator": LOGIN}
