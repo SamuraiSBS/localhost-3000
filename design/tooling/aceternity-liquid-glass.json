@@ -1,0 +1,12 @@
+{
+  "component": "Aceternity UI Liquid Glass",
+  "url": "https://ui.aceternity.com/components/liquid-glass",
+  "terms_url": "https://ui.aceternity.com/licence",
+  "source_access": "Public Manual installation code",
+  "retrieved": "2026-10-22",
+  "source_snapshot_sha256": "8e0f5a058150263fa8c066f98286296268a690f9f982a0e608d3ca214049d9e6",
+  "source_snapshot_bytes": 12877,
+  "optics_sha256": "81df7640328c6b72bc765728a7d16ffab5380891096807184f38b2357702472f",
+  "adaptation": "Original displacement-map and SVG filter helpers, TypeScript types and trailing whitespace removed; native lifecycle adapter; React useDialKit Controls reference generated from CSS tokens",
+  "scope": "Independent design specimen, no product stack selection or React runtime installed"
+}

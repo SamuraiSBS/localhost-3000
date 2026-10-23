@@ -1,0 +1,40 @@
+{
+  "repository": "https://github.com/hackernoon/pixel-icon-library",
+  "commit": "5fe05c9c81a3eb43448e820b4521307102c248e7",
+  "downloaded": "2026-10-22",
+  "outputs": {
+    "arrow-right.svg": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/icons/SVG/regular/arrow-right.svg",
+      "bytes": 614,
+      "sha256": "60df33de4d306bdbf0f398dc398c58f1a750974e482476481c804ef564859d36"
+    },
+    "LICENSE": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/LICENSE",
+      "bytes": 1067,
+      "sha256": "32366d2c9b33ba0f64b196014b7d0de346be93740282760b482f8b6fad1dfaf8"
+    },
+    "UPSTREAM_README.md": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/README.md",
+      "bytes": 3724,
+      "sha256": "eef551920c4a4f64b20f4145455d87d586047a7ed5e10ac73a4cbb2bcd520188",
+      "source_bytes": 3725,
+      "source_sha256": "676dbce141cf3600a288bbfe90765c52d547f27b581715c93b76368fe07f2ca3",
+      "normalization": "Removed trailing whitespace"
+    },
+    "check.svg": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/icons/SVG/regular/check.svg",
+      "bytes": 527,
+      "sha256": "e5c5a21f48760885d8023f186682c2026a55ecdaad3ef4337c4f273b5b7a5057"
+    },
+    "info-circle.svg": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/icons/SVG/regular/info-circle.svg",
+      "bytes": 574,
+      "sha256": "a25c00763790dee32662d361d0329faad91d6f57bdae1ac8551151dbaf3a10d2"
+    },
+    "info-circle-solid.svg": {
+      "source": "https://raw.githubusercontent.com/hackernoon/pixel-icon-library/5fe05c9c81a3eb43448e820b4521307102c248e7/icons/SVG/solid/info-circle-solid.svg",
+      "bytes": 381,
+      "sha256": "ebbd7facd0cc342919a4c946fd8c4ae4011f01b65bd256c64bb1a3664ad3ca7f"
+    }
+  }
+}

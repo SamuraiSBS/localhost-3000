@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Вход в localhost3000.">
+    <title>Вход — localhost3000</title>
+    <link rel="icon" href="data:,">
+    <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="fonts.css">
+    <link rel="stylesheet" href="tokens.css?v=20261022-4">
+    <link rel="stylesheet" href="foundation.css">
+    <link rel="stylesheet" href="liquid-glass.css?v=20261022-1">
+    <link rel="stylesheet" href="scene.css?v=20261022-8">
+    <link rel="stylesheet" href="auth-page.css?v=20261022-3">
+    <script src="auth-page.js" type="module"></script>
+  </head>
+  <body class="ds-root">
+    <a class="ds-skip ds-button" href="#auth-title">К форме входа</a>
+    <main class="scene-shell auth-shell">
+      <div class="scene-backdrop" id="scene-backdrop" data-renderer="fallback" aria-hidden="true">
+        <img src="assets/photo_8_2026-10-22_21-11-47.png" width="1280" height="853" alt="" fetchpriority="high">
+        <canvas></canvas>
+        <div class="scene-backdrop__scrim"></div>
+      </div>
+      <p class="auth__sr-only" id="dither-status" role="status" aria-live="polite" hidden></p>
+      <div class="auth__content">
+        <section class="auth__form-area" aria-labelledby="auth-title">
+          <h1 class="auth__title" id="auth-title" tabindex="-1">Вход</h1>
+          <form class="auth-form" method="post" data-auth-mode="login">
+            <div class="auth-form__fields">
+              <div class="ds-field">
+                <label class="ds-label" for="email">Электронная почта</label>
+                <input class="ds-input" id="email" name="email" type="email" autocomplete="email" aria-describedby="email-error" required>
+                <p class="ds-error auth-form__error" id="email-error" aria-live="polite" aria-atomic="true" hidden></p>
+              </div>
+              <div class="ds-field">
+                <label class="ds-label" for="password">Пароль</label>
+                <div class="auth-password">
+                  <input class="ds-input auth-password__input" id="password" name="password" type="password" autocomplete="current-password" aria-describedby="password-error" required>
+                  <button class="ds-button ds-button--secondary hero-glass hero-glass--action auth-password__toggle" type="button" data-renderer="frosted" aria-label="Показать пароль" aria-controls="password" hidden>
+                    <span class="liquid-filter" aria-hidden="true"></span>
+                    <span class="hero-glass__content auth-password__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" focusable="false"><path d="M3 12 6 8h3V6h6v2h3l3 4-3 4h-3v2H9v-2H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/><rect x="10" y="9" width="4" height="6" fill="currentColor"/></svg>
+                      <svg viewBox="0 0 24 24" focusable="false" hidden><path d="M3 12 6 8h3V6h6v2h3l3 4-3 4h-3v2H9v-2H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/><rect x="10" y="9" width="4" height="6" fill="currentColor"/><path d="m4 4 16 16" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </span>
+                  </button>
+                </div>
+                <p class="ds-error auth-form__error" id="password-error" aria-live="polite" aria-atomic="true" hidden></p>
+              </div>
+            </div>
+            <button class="ds-button ds-button--secondary enter-button hero-glass hero-glass--action auth__submit" type="submit" data-renderer="frosted">
+              <span class="liquid-filter" aria-hidden="true"></span>
+              <span class="hero-glass__content">Войти</span>
+            </button>
+          </form>
+          <p class="auth__form-status" role="status" aria-live="polite" hidden>Поля заполнены правильно. Отправка пока не подключена.</p>
+          <p class="auth__switch">Нет аккаунта? <a href="register.html">Создать аккаунт</a></p>
+        </section>
+      </div>
+      <p class="auth__sr-only" id="glass-status" role="status" aria-live="polite" hidden></p>
+    </main>
+  </body>
+</html>

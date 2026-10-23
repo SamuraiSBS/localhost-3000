@@ -1,0 +1,11 @@
+{
+  "asset": "photo_8_2026-10-22_21-11-47.png",
+  "source": "user-provided file at repository root: photo_8_2026-10-22_21-11-47.png",
+  "sha256": "3CD8B459D5E748480A7E574A2A1B51E2683ED667B0457BA540D33A4FF7883BCF",
+  "dimensions": {
+    "width": 1280,
+    "height": 853
+  },
+  "mode": "RGBA with transparency",
+  "processing": "Original bytes copied unchanged. Transparent pixels use the page background; the browser applies the approved Bayer/duotone dithering at 1 CSS px and threshold 0.50."
+}

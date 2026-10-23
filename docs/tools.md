@@ -7,9 +7,13 @@
 - GitHub MCP: live get_repo вернул 404; доступ этого подключения к репозиторию не подтверждён. Для работы используется CLI. Новые токены не нужны.
 - Browser automation: в сессии доступны browser tools; доступность конкретной страницы проверять отдельным вызовом. Это не установленный в CI Playwright.
 - Документация: доступен web tool; новые MCP не нужны только ради чтения официальной документации.
-- Сервер: SSH-клиент установлен; live SSH невозможен до появления VM/доступа. Yandex CLI в PATH не обнаружен. Наличие доступа к облаку не установлено.
+- Сервер: SSH-клиент установлен. Timeweb VM `9400609` создана (`185.42.14.141`), но Firewall-группа, SSH-ключ и bootstrap ещё не настроены; live SSH пока не проверен. Yandex CLI в PATH не обнаружен.
 - API и диагностика: Python urllib, curl, Docker logs, Actions logs. Sentry/внешний мониторинг пока не подключены: необходимость определяется продуктом.
 
 Skills проекта лежат в `.agents/skills` и валидируются bundled skill-creator. Они используют проектные документы и команды, не заменяют доступные специализированные навыки UI, документов или браузера. Уже открытый чат может потребовать перезагрузки каталога навыков; файлы также можно явно читать по пути.
 
 Источники: [OpenAI skills](https://learn.chatgpt.com/docs/build-skills), [Compose health ordering](https://docs.docker.com/compose/how-tos/startup-order/), [GitHub environments](https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments), [Caddy HTTPS](https://caddyserver.com/docs/automatic-https).
+
+## Дизайн и графика
+
+Актуальный аудит от 2026-10-22: [design/IMPLEMENTATION_GUIDE.md](design/IMPLEMENTATION_GUIDE.md). ImageGen реально создал включённые колонны; Figma identity/auth read успешен, запись файла не выполнялась; Pencil не подключился к приложению. Изолированные Node Playwright tests прошли в Edge/Firefox/WebKit. FontTools и Sharp используются только для сборки ассетов. Рецепты: [design/EFFECTS.md](design/EFFECTS.md); результаты и границы: [design/VERIFICATION.md](design/VERIFICATION.md). Эти инструменты не входят в runtime probe или его CI-зависимости.
