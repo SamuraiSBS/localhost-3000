@@ -73,3 +73,17 @@ Disposable-repo regression tests покрывают точное сохране�
 ## Локальный checkpoint
 
 Планы и tooling подготовлены для отдельного exact-path локального checkpoint в ветке `docs/mvp-autonomy`. После commit проверить чистоту именно его файлов; пользовательские фото и `материалы/` остаются вне коммита. SHA checkpoint находится в Git history и итоговом сообщении задачи, а не подставляется заранее. Push/CI/Docker/VPS/HTTPS и продуктовый browser E2E этой проверкой не выполнялись.
+
+## 2026-10-23 — Повторная проверка B14 после восстановления координации
+
+На HEAD `08ba40d2e0136323cb8d8492b1da90884bb95d8e` повторно проверен существующий snapshot-механизм вместе с recovery guards. SHA-256 `scripts/mvp_coordination.py`: `75f72132083cffee5f87dc4d5ab8f140ac2a8d3df007c226e535492275b78525`. Хеши скрипта, тестов, CLI reference и orchestrator совпали с точным четырёхфайловым manifest независимого bootstrap GO в `artifacts/coordination/recovery-review1.json`. Ранее указанные хеши выше относятся к историческим версиям, а не к текущему коду.
+
+Worker `/root/b14_revalidate`, actual run `01a16988-111b-7260-b486-870a90128894`, самостоятельно получил Claim revision 119, attempt `53769908-e9a0-4b56-bf5b-8fd0e66dcfa0`. Собственная targeted проверка через `.venv/Scripts/python.exe -m unittest` охватывает шесть `test_snapshot_*` и три `test_recovery_*` из `tests/test_mvp_coordination.py`: точный manifest/источник/разрешение, отсутствие продуктовой приёмки, active-scope conflict, byte/deletion drift, запрет замены snapshot, legacy history, атомарность recovery, CAS/identity/evidence/manifest отказы и ограничения adoption. Результат: 9 tests passed за 75.059 s, exit 0. Точная команда сохранена в `artifacts/coordination/b14-recovery-worker.json`.
+
+Наблюдаемый live event sequence 116 — `recover-handoff`; B07 attempt `8e8bba80-efab-4923-ac29-1619b341a8be` имеет статус `cancelled`, `closed_manifest` и `operator_abandonment`, без `quiescence`. В evidence сохранены исходное прямое разрешение пользователя и точные прежняя/новая пары владельца. Events 1–115 присутствуют последовательно; отдельной копии старого ledger для независимого побайтового сравнения нет. Автоматический recovery test отдельно сравнивает всю прежнюю event history и gates до/после перехода в disposable repo.
+
+Независимый bootstrap reviewer ранее выполнил 27 coordination tests и три собственных adversarial cases на тех же source hashes. Это его evidence, не собственный повторный прогон B14 worker. Нового дефекта targeted проверка не выявила; source, backlog и контракты этой повторной проверкой не меняются. Прежняя accepted B14 остаётся историей, а текущему candidate ещё нужны новый независимый review и Accept.
+
+Recovery не принимает B07 и не подтверждает остановку внешнего filesystem writer. Snapshot остаётся provenance, а не принятой реализацией. Эта проверка локального tooling не доказывает product/browser E2E, Docker, CI, VPS, HTTPS или готовность сдачи.
+
+Решение о восстановлении зафиксировано здесь: старый B07 закрывается без приёмки; продолжение требует нового Claim и review. Добавление той же записи в `docs/decisions.md` отклонено guard `snapshot_drift`: файл закреплён прежним snapshot `142585de-4874-43d4-a084-bb623d59388d`. Собственная добавка полностью удалена, исходный SHA-256 `1fd89cd02d456b916057cf1bcab6206116e669406465e4bd8c066db5b3461cbd` восстановлен и проверен; snapshot и guard не менялись. Отказ Submit не изменил ledger.
