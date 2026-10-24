@@ -14,7 +14,10 @@ from app.domain import DEFAULT_FEATURE_REGISTRY
 from app.evaluation import Evaluation, SettingsRevisionConflict
 
 router = APIRouter()
-_ETAG_PATTERN = re.compile(r'"settings-([1-9][0-9]*)"\Z')
+# Caddy's `encode zstd gzip` appends the selected content encoding to strong
+# entity tags. Accept only those documented proxy variants, then compare the
+# underlying settings revision exactly as for the uncompressed representation.
+_ETAG_PATTERN = re.compile(r'"settings-([1-9][0-9]*)(?:-(?:zstd|gzip))?"\Z')
 
 
 def _etag(revision: int) -> str:

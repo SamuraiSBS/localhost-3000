@@ -1,0 +1,58 @@
+diff --git a/app/contracts.py b/app/contracts.py
+--- a/app/contracts.py
++++ b/app/contracts.py
+@@ -25,8 +25,8 @@
+ TransactionStatus = Literal["performed", "not_performed"]
+ TransactionType = Literal["prolong", "order"]
+ RiskLevel = Literal["low", "medium", "high", "unknown"]
+-FEATURE_IDS = ("renewal_proximity", "manual_renewal", "funding_gap", "payment_wait")
+-DEFAULT_WEIGHTS = dict(zip(FEATURE_IDS, (Decimal(20), Decimal(25), Decimal(35), Decimal(20))))
++FEATURE_IDS = ("renewal_proximity", "manual_renewal", "funding_gap", "payment_wait", "high_renewal_cost")
++DEFAULT_WEIGHTS = dict(zip(FEATURE_IDS, (Decimal(20), Decimal(25), Decimal(35), Decimal(20), Decimal(10))))
+ 
+ 
+ def checked_money(value: int) -> int:
+diff --git a/app/domain/features.py b/app/domain/features.py
+--- a/app/domain/features.py
++++ b/app/domain/features.py
+@@ -244,7 +244,24 @@
+     )
+ 
+ 
+-DEFAULT_FEATURE_REGISTRY = FeatureRegistry(
++def _high_renewal_cost(service: ServiceSource, context: AccountContext) -> FeatureValue:
++    outside = _zero_outside_horizon(service, context)
++    if outside is not None:
++        return outside
++    high_cost = service.price >= 800
++    return FeatureValue(
++        value=_ONE if high_cost else _ZERO,
++        available=True,
++        explanation=(
++            f"Продление стоит {service.price} евроцентов; сигнал включён от 800 евроцентов."
++            if high_cost
++            else f"Продление стоит {service.price} евроцентов; порог сигнала — 800 евроцентов."
++        ),
++        evidence={"price_cents": service.price, "threshold_cents": 800},
++    )
++
++
++BASE_FEATURE_REGISTRY = FeatureRegistry(
+     (
+         FeatureDefinition(
+             id="renewal_proximity",
+@@ -284,3 +301,14 @@
+         ),
+     )
+ )
++
++HIGH_RENEWAL_COST = FeatureDefinition(
++    id="high_renewal_cost",
++    version="1",
++    title="Высокая стоимость продления",
++    description="Дополнительный сигнал для стоимости услуги от 800 евроцентов",
++    default_weight=Decimal(10),
++    required_fields=("price",),
++    evaluator=_high_renewal_cost,
++)
++DEFAULT_FEATURE_REGISTRY = BASE_FEATURE_REGISTRY.with_feature(HIGH_RENEWAL_COST)

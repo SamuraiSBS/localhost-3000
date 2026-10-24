@@ -474,6 +474,13 @@ def test_i06_settings_patch_noop_validation_conflict_and_etag(api_environment):
     )
     assert malformed.status_code == 400
     assert malformed.json()["error"]["code"] == "if_match_invalid"
+    unsupported_encoding = client.patch(
+        "/api/v1/model/settings",
+        json={"horizon_days": 40},
+        headers=_unsafe_headers(csrf, etag='"settings-2-br"'),
+    )
+    assert unsupported_encoding.status_code == 400
+    assert unsupported_encoding.json()["error"]["code"] == "if_match_invalid"
 
     for invalid in (
         {"weights": {"unknown_feature": 10}},
@@ -491,6 +498,40 @@ def test_i06_settings_patch_noop_validation_conflict_and_etag(api_environment):
         assert rejected.status_code == 422, rejected.text
         assert rejected.json()["error"]["details"]
         assert rejected.json()["error"]["details"][0]["path"]
+
+
+@pytest.mark.parametrize("encoding", ("zstd", "gzip"))
+def test_i06_settings_patch_accepts_caddy_encoded_etag_variants(api_environment, encoding):
+    start_app, _, _, _ = api_environment
+    client, _, csrf = start_app()
+    assert _put_snapshot(client, api_snapshot(), csrf).status_code == 200
+
+    first = client.patch(
+        "/api/v1/model/settings",
+        json={"weights": {"manual_renewal": 50}},
+        headers=_unsafe_headers(csrf, etag=f'"settings-1-{encoding}"'),
+    )
+    assert first.status_code == 200, first.text
+    assert first.headers["etag"] == '"settings-2"'
+    assert first.json()["settings_revision"] == 2
+    assert first.json()["weights"]["manual_renewal"] == 50
+    assert client.get("/api/v1/customers/2").json()["risk_score"] == 70
+
+    second = client.patch(
+        "/api/v1/model/settings",
+        json={"horizon_days": 31},
+        headers=_unsafe_headers(csrf, etag=f'"settings-2-{encoding}"'),
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["settings_revision"] == 3
+
+    stale = client.patch(
+        "/api/v1/model/settings",
+        json={"horizon_days": 40},
+        headers=_unsafe_headers(csrf, etag=f'"settings-2-{encoding}"'),
+    )
+    assert stale.status_code == 409
+    assert stale.json()["error"]["current_revision"] == 3
 
 
 def test_i07_settings_and_replaced_snapshot_survive_app_restart_without_seed_import(api_environment):
