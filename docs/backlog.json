@@ -30,7 +30,7 @@
       "title": "Аудируемый snapshot завершённой отдельной работы в checkout",
       "depends_on": ["B01"], "requirements": [],
       "suggested_owner": "coordination", "suggested_paths": ["scripts/mvp_coordination.py", "tests/test_mvp_coordination.py", "docs/coordination/cli-reference.md", "docs/coordination/orchestrator.md", "docs/coordination/validation.md", "docs/EXECUTE_PLAN.md", "docs/backlog.json", "docs/decisions.md"],
-      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim", "Reviewed recovery оформляется отдельной append-only записью с неизменным исходным snapshot, прямой авторизацией пользователя, точным текущим manifest и ссылкой на исходную provenance", "Pending recovery доступен только привязанной к proposal B14 попытке; переход в действующую provenance требует независимого GO по точным bytes и отдельного orchestrator Accept", "Любое последующее изменение bytes, режима или отсутствие файла снова блокирует Submit/Accept; отказ review, закрытие попытки и неполная либо неверная авторизация не дают обхода"],
+      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim", "Reviewed recovery оформляется отдельной append-only записью с неизменным исходным snapshot, прямой авторизацией пользователя, точным текущим manifest и ссылкой на исходную provenance", "Pending recovery доступен только привязанной к proposal claimed B14 попытке; переход в действующую provenance требует свежего независимого GO по точным candidate/iteration и отдельного orchestrator Accept", "Если исходный proposal устарел до первого candidate, допускается ровно одна root-only append-only amendment для той же live claimed B14 attempt, snapshot и исходной iteration; amendment требует отдельной прямой авторизации текущего чата и закрепляет один новый exact manifest, не изменяя исходные proposal и snapshot", "Amendment запрещена после candidate, review, NO_GO, изменения iteration или закрытия попытки; повторная amendment запрещена, а любое новое изменение manifest после amendment снова блокирует Submit/Accept", "Для одной пары B14 attempt/snapshot нельзя создать повторный proposal после NO_GO или смены iteration", "Любое последующее изменение bytes, режима или отсутствие файла снова блокирует Submit/Accept; отказ review, закрытие попытки и неполная либо неверная авторизация не дают обхода", "Старая v1 ledger читается без принудительной миграции нового поля recovery"],
       "evidence": []
     },
     {
@@ -149,9 +149,9 @@
       ],
       "acceptance": [
         "Baseline и ownership проверены по live ledger и коду",
-        "Зафиксированы DTO preview/sensitivity/worklist, revisions/409, auth/CSRF и вычислительные лимиты",
+        "Зафиксирован полный контракт preview/sensitivity/worklist/solve/source-preview+подтверждение/case+replay, revisions/409, auth/CSRF и лимиты",
         "UX отличает baseline, изменение модели и предполагаемое действие; сохраняет design system",
-        "Ручные ожидаемые результаты L01-L14 и точные будущие paths/resources описаны"
+        "Ручные ожидаемые результаты L01-L20, точные paths/resources, пределы точного поиска, контракт replay и атомарного импорта описаны"
       ],
       "evidence": []
     },
@@ -219,7 +219,7 @@
       ],
       "acceptance": [
         "Веса ±10% и пороги ±5 отдельно, фиксированные H/as_of, явный список вариантов",
-        "L07: стабильные ties, дедупликация, валидность, покрытие unknown и честный знаменатель",
+        "L07: стабильные ties, дедупликация и unknown; top-K считает только варианты весов, категории имеют отдельный набор вариантов порогов и знаменатель",
         "Максимум 32 уникальных варианта; нет статистических claims",
         "API сохраняет гарантии auth/revisions/no-write из B17"
       ],
@@ -288,7 +288,7 @@
       "status": "planned",
       "title": "Лаборатория: полная приёмка и регрессии MVP/P1",
       "depends_on": [
-        "B20"
+        "B25"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
@@ -300,7 +300,7 @@
         "artifacts/acceptance/decision-lab/narrow.png"
       ],
       "acceptance": [
-        "L01-L13 passed на соответствующей проверяемой версии, обязательные регрессии сохранены",
+        "L01-L13 и L15-L19 passed на проверяемой версии; solver минимален, preview/apply атомарны, replay воспроизводим, обязательные регрессии сохранены",
         "Реальный browser: 1440x900 и 360x900, клавиатура, zoom200%, reduced-motion, ошибки/409/stale",
         "Evidence с версиями и окружением; not_run не выдан за passed",
         "Найденные дефекты исправлены через точное расширение claim и новый независимый review"
@@ -327,10 +327,100 @@
         "artifacts/acceptance/decision-lab/package-results.json"
       ],
       "acceptance": [
-        "Точный package allowlist включает новые runtime/UI файлы и актуальный OpenAPI",
-        "L14: запуск распакованного ZIP и browser walkthrough в чистом профиле с task-owned runtime",
+        "Точный package allowlist включает solver, source-preview+подтверждение, case/replay, остальные новые runtime/UI файлы, feature-документы и актуальный OpenAPI",
+        "L14/L20: запуск распакованного ZIP и browser journey всех трёх добавлений в чистом профиле с task-owned runtime",
         "Сохранены правила исключения secrets/источников/шрифта/фото, прежний candidate не перезаписан",
         "Checksum, запуск, сброс, 90-120 секунд feature-demo и ограничения документированы; пакет не опубликован"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B23",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: точный поиск минимального достаточного действия",
+      "depends_on": [
+        "B20"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_solver.py",
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/unit/test_lab_solver.py",
+        "tests/integration/test_lab_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Две цели: покрытие выбранных продлений или score ниже порога; ограничения суммы/услуг/числа переключений проверяются",
+        "Оптимизация по сумме, числу переключений и IDs точна; учитывается вся корзина, включая невыбранные услуги",
+        "L15/L16: независимый перебор малых случаев, контроль cents, нулевое действие, недостижимость/unsupported/лимит различимы",
+        "Защищённые API/UI, revisions/409 и no-write соблюдены; результат открывается в симуляторе, нет гарантий удержания"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B24",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: preview импорта и объяснение изменений до публикации",
+      "depends_on": [
+        "B23"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_source_diff.py",
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "app/evaluation.py",
+        "app/api/source.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/unit/test_lab_source_diff.py",
+        "tests/integration/test_lab_api.py",
+        "tests/integration/test_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Diff исходных полей и результатов рассчитан при одинаковых settings/as_of; исчезновение записи не выдано за отток",
+        "L17: preview read-only; подтверждение только тех же checksum и baseline с атомарной проверкой/публикацией без TOCTOU",
+        "Единственный действующий coordinator writer, PUT совместим, no-op сохраняется, невалидный/изменённый кандидат и stale preview отклоняются",
+        "UI позволяет отклонить/подтвердить, раскрывает изменения и время результата, auth/CSRF и размер полного snapshot соблюдены"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B25",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: безопасный паспорт решения и sandbox replay",
+      "depends_on": [
+        "B24"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_case.py",
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/unit/test_lab_case.py",
+        "tests/integration/test_lab_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Паспорт содержит минимальную полную корзину клиента, settings/as_of, модель/схему, сценарий или цель/ограничения, результат/checksum; лишние персональные поля исключены",
+        "L18: экспорт/restart/replay совместимого кейса воспроизводим, повреждённый/несовместимый/слишком большой файл получает явную ошибку",
+        "Импорт только sandbox без записи source/settings/metrics, без кода из файла; нет обещания восстановить портфельный рейтинг из кейса одного клиента",
+        "L19: browser journey preview импорта -> минимальное действие -> проверка cents -> экспорт/replay; ручной разбор отличается от проверки тем же engine"
       ],
       "evidence": []
     }
