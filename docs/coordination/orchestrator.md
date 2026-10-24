@@ -100,3 +100,7 @@ python scripts/mvp_coordination.py --root WORKSPACE accept --attempt ATTEMPT_UUI
 Перед разрешённым коммитом выполнить project checks, просмотреть только именованные принятые пути и индекс. Коммит/публикация не являются техническим условием освобождения booking. Push, deploy, платные сервисы, изменение DNS/доступа и сообщения людям требуют своего контекста и полномочий; этот workflow их не добавляет.
 
 После принятого task продолжить `next` до проверенного P0, явного пользовательского stop или отсутствия готового независимого scope. Финальный отчёт: принятые задачи, реальные worker/reviewer identities, evidence и ограничения, сохранённые blockers/next actions. Принятие отдельного task не означает завершение всего MVP.
+
+## B31 — reviewed recovery exact snapshot
+
+Для B31 root выполняет ровно одно начальное `propose-snapshot-recovery` только для claimed B31 attempt и snapshot `ac1a0c41-a76b-46c6-84f2-aa2008ae2837`, после восстановления task-owned `AGENTS.md` и до первого candidate. Proposal сохраняет исходные snapshot/provenance/B14 history и закрепляет exact manifest `AGENTS.md` + `components.json`. После proposal оба пути заморожены до Accept. B31 не поддерживает amendment или continuation: любое изменение, добавление, удаление либо mode drift блокирует Submit и Accept. Candidate, независимый review и Accept должны связывать тот же proposal, task, attempt, iteration, provenance, авторизацию и manifest. Приёмка B31 проходит обычный Submit → новый независимый reviewer → GO → root Accept.

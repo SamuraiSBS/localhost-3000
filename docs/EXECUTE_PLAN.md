@@ -81,3 +81,7 @@ python scripts/mvp_coordination.py next
 Отчёты B10/B11 хранить в `artifacts/acceptance/` и документах сдачи. Изменение файлов из `contract_documents` означает изменение основы приёмки: старые accepted зависимости становятся неактуальными и требуют повторной проверки. Добавлять результаты тестов в такой контракт вместо отдельного отчёта не следует.
 
 Краткий итог запуска: accepted task IDs, реальные worker/reviewer IDs, проверки/окружение/revision, текущий blocker или следующая задача. Полная готовность ставится только после приёмки всего P0 и подготовленного пакета сдачи.
+
+## Узкое правило B31 snapshot recovery
+
+Preflight B31 разрешает ровно одно начальное recovery proposal для claimed B31 attempt и неизменяемого snapshot `ac1a0c41-a76b-46c6-84f2-aa2008ae2837`. Root записывает его после Claim и после восстановления task-owned `AGENTS.md`, до первого candidate. Исходный snapshot, provenance и B14 history остаются неизменными; proposal фиксирует exact current manifest двух claimed путей. `AGENTS.md` и `components.json` остаются замороженными до Accept. B31 запрещает amendment и continuation, а любой manifest drift блокирует Submit/Accept. Candidate, review и Accept связываются с единственным proposal, точной provenance, прямой авторизацией, task/attempt/iteration и manifest. Другие tasks или snapshots не получают этот recovery allowlist.

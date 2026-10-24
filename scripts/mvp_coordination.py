@@ -28,6 +28,8 @@ SNAPSHOT_EVIDENCE_KIND = "mvp_separate_workspace_snapshot"
 SNAPSHOT_AUTH_SOURCE = "direct_user_reply_in_current_chat"
 SNAPSHOT_RECOVERY_AUTH_SOURCE = "direct_user_reply_in_current_chat"
 SNAPSHOT_RECOVERY_EVIDENCE_KIND = "mvp_snapshot_recovery_proposal"
+SNAPSHOT_RECOVERY_B31_TASK = "B31"
+SNAPSHOT_RECOVERY_B31_SNAPSHOT = "ac1a0c41-a76b-46c6-84f2-aa2008ae2837"
 WORKSPACE_DELTA_RECOVERY_AUTHORIZATION = "Разработать reviewed recovery — расширить scope на отдельный проверенный механизм координатора, сохранив исходный snapshot."
 SNAPSHOT_RECOVERY_CONTINUATION_AUTHORIZATION = WORKSPACE_DELTA_RECOVERY_AUTHORIZATION
 TARGET = re.compile(r"^/root(?:/[a-z][a-z0-9_]*)*$")
@@ -102,6 +104,12 @@ def uuid_text(value):
 
 def nonempty(value):
     return isinstance(value, str) and bool(value.strip())
+
+
+def snapshot_recovery_scope_allowed(task_id, snapshot_id):
+    """Keep the established B14 path and narrowly allow B31's named snapshot."""
+    return task_id == "B14" or (task_id == SNAPSHOT_RECOVERY_B31_TASK
+                                and snapshot_id == SNAPSHOT_RECOVERY_B31_SNAPSHOT)
 
 
 def no_reparse(path):
@@ -552,7 +560,7 @@ class Coordinator:
         continuation = self.snapshot_recovery_continuation_for_iteration(state, proposal, iteration)
         expected_summary = self.snapshot_recovery_candidate_summary(
             proposal, attempt, iteration, amendment, continuation)
-        if (candidate.get("task_id") != "B14" or candidate.get("task_hash") != attempt.get("task_hash")
+        if (candidate.get("task_id") != attempt.get("task_id") or candidate.get("task_hash") != attempt.get("task_hash")
                 or candidate.get("plan_hash") != attempt.get("plan_hash")
                 or candidate.get("base_head") != attempt.get("base_head")
                 or candidate.get("index_sha256") != attempt.get("baseline_index_sha256")
@@ -585,10 +593,14 @@ class Coordinator:
                 or submit_events[0].get("candidate_iteration") != iteration
                 or review_events[0].get("review_result") != "NO_GO"
                 or review_events[0].get("sequence", 0) <= submit_events[0].get("sequence", 0)
-                or payload.get("task_id") != "B14" or payload.get("attempt_id") != attempt["id"]
+                or payload.get("task_id") != attempt.get("task_id") or payload.get("attempt_id") != attempt["id"]
                 or payload.get("iteration") != iteration or payload.get("candidate_digest") != candidate_digest
                 or payload.get("plan_hash") != attempt.get("plan_hash") or payload.get("result") != "NO_GO"
                 or payload.get("review_nonce") != reviewer.get("nonce")):
+            return None
+        if (attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK
+                and (payload.get("snapshot_recoveries") != candidate.get("snapshot_recoveries")
+                     or review.get("snapshot_recoveries") != candidate.get("snapshot_recoveries"))):
             return None
         if continuation is not None and payload.get("snapshot_recoveries") != candidate.get("snapshot_recoveries"):
             return None
@@ -760,9 +772,12 @@ class Coordinator:
             bindings.add(binding)
             snapshot = snapshot_by_id.get(proposal["snapshot_id"])
             attempt = attempt_by_id.get(proposal["target_attempt_id"])
-            require(snapshot is not None and attempt is not None and proposal["task_id"] == "B14"
-                    and attempt["task_id"] == "B14" and attempt.get("claimed_at") and attempt.get("worker"),
-                    "corrupt_state", "Snapshot recovery must reference its claimed B14 attempt and source snapshot")
+            require(snapshot is not None and attempt is not None
+                    and proposal["task_id"] == attempt["task_id"]
+                    and snapshot_recovery_scope_allowed(attempt["task_id"], snapshot["id"])
+                    and attempt.get("claimed_at") and attempt.get("worker")
+                    and any(self.overlap(name, owned) for name in snapshot["files"] for owned in attempt["files"]),
+                    "corrupt_state", "Snapshot recovery must reference an allowed claimed task, source snapshot, and overlapping scope")
             require(type(proposal["iteration"]) is int and proposal["iteration"] >= 1,
                     "corrupt_state", "Malformed snapshot recovery iteration")
             require(type(attempt.get("iteration")) is int and proposal["iteration"] <= attempt["iteration"],
@@ -799,16 +814,32 @@ class Coordinator:
         for proposal in recoveries:
             event = proposal_events.get((proposal["id"], proposal["target_attempt_id"]))
             require(event is not None and event.get("snapshot_recovery_proposal") == proposal
-                    and event.get("task_id") == "B14" and event.get("actor") == proposal["actor"]
+                    and event.get("task_id") == proposal["task_id"] and event.get("actor") == proposal["actor"]
                     and event.get("run_id") == proposal["run_id"],
                     "corrupt_state", "Snapshot recovery proposal is missing its immutable audit event")
             attempt = attempt_by_id[proposal["target_attempt_id"]]
             amendment = amendment_by_proposal.get(proposal["id"])
+            if proposal["task_id"] == SNAPSHOT_RECOVERY_B31_TASK:
+                previous = event.get("previous")
+                earlier = [item for item in state["events"] if isinstance(item, dict)
+                           and item.get("attempt_id") == attempt["id"]
+                           and item.get("sequence", 0) < event.get("sequence", 0)]
+                require(isinstance(previous, dict) and previous.get("status") == "in_progress"
+                        and previous.get("iteration") == proposal["iteration"]
+                        and not any(item.get("action") in {"submit", "review", "accept"} for item in earlier)
+                        and amendment is None
+                        and not any(item.get("target_attempt_id") == attempt["id"]
+                                    for item in state.get("snapshot_recovery_continuations", [])),
+                        "corrupt_state", "B31 recovery proposal must be the sole initial proposal before every candidate")
             for candidate in attempt.get("submissions", []):
                 if not isinstance(candidate, dict):
                     continue
                 summaries = [item for item in candidate.get("snapshot_recoveries", [])
                              if isinstance(item, dict) and item.get("proposal_id") == proposal["id"]]
+                if proposal["task_id"] == SNAPSHOT_RECOVERY_B31_TASK:
+                    require(candidate.get("iteration", 0) >= proposal["iteration"]
+                            and len(summaries) == 1,
+                            "corrupt_state", "Every B31 candidate must bind its one immutable snapshot recovery proposal")
                 if summaries:
                     continuation = self.snapshot_recovery_continuation_for_iteration(
                         state, proposal, candidate.get("iteration"))
@@ -1281,7 +1312,11 @@ class Coordinator:
         """Require each reused iteration to follow a submitted candidate and matching NO_GO."""
         origin = proposal["iteration"]
         if (type(origin) is not int or type(target_iteration) is not int or target_iteration < origin
-                or attempt.get("task_id") != "B14" or attempt.get("id") != proposal["target_attempt_id"]):
+                or attempt.get("id") != proposal["target_attempt_id"]
+                or proposal.get("task_id") != attempt.get("task_id")
+                or not snapshot_recovery_scope_allowed(attempt.get("task_id"), proposal.get("snapshot_id"))
+                or (attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK
+                    and (amendment is not None or self.snapshot_recovery_continuation_chain_started(state, proposal)))):
             return False
         submissions = attempt.get("submissions", [])
         reviews = attempt.get("reviews", [])
@@ -1315,7 +1350,7 @@ class Coordinator:
             unsigned = copy.deepcopy(candidate)
             unsigned.pop("digest", None)
             if (not recorded_digest or recorded_digest != digest(unsigned)
-                    or candidate.get("task_id") != "B14" or candidate.get("task_hash") != attempt.get("task_hash")
+                    or candidate.get("task_id") != attempt.get("task_id") or candidate.get("task_hash") != attempt.get("task_hash")
                     or candidate.get("plan_hash") != attempt.get("plan_hash")
                     or candidate.get("base_head") != attempt.get("base_head")
                     or candidate.get("index_sha256") != attempt.get("baseline_index_sha256")
@@ -1334,23 +1369,29 @@ class Coordinator:
                              if isinstance(item, dict) and item.get("target") == review.get("reviewer")
                              and item.get("run_id") == review.get("run_id")), None)
             if (review.get("result") != "NO_GO" or not isinstance(payload, dict) or reviewer is None
-                    or payload.get("task_id") != "B14" or payload.get("attempt_id") != attempt["id"]
+                    or payload.get("task_id") != attempt.get("task_id") or payload.get("attempt_id") != attempt["id"]
                     or payload.get("iteration") != iteration or payload.get("candidate_digest") != recorded_digest
                     or payload.get("plan_hash") != candidate.get("plan_hash") or payload.get("result") != "NO_GO"
                     or payload.get("review_nonce") != reviewer.get("nonce")):
+                return False
+            if (attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK
+                    and (payload.get("snapshot_recoveries") != candidate.get("snapshot_recoveries")
+                         or review.get("snapshot_recoveries") != candidate.get("snapshot_recoveries"))):
                 return False
             if continuation is not None and payload.get("snapshot_recoveries") != candidate.get("snapshot_recoveries"):
                 return False
         return True
 
     def recovery_candidate_proposals(self, state, attempt):
-        if attempt.get("task_id") != "B14" or not attempt.get("claimed_at"):
+        if attempt.get("task_id") not in {"B14", SNAPSHOT_RECOVERY_B31_TASK} or not attempt.get("claimed_at"):
             return []
         snapshots = {item["id"]: item for item in state.get("snapshots", [])}
         result = []
         for proposal in state.get("snapshot_recoveries", []):
             amendment = self.snapshot_recovery_amendment(state, proposal)
             if (proposal["target_attempt_id"] == attempt["id"]
+                    and proposal.get("task_id") == attempt.get("task_id")
+                    and snapshot_recovery_scope_allowed(attempt.get("task_id"), proposal.get("snapshot_id"))
                     and self.snapshot_recovery_iteration_history_valid(
                         state, attempt, proposal, attempt["iteration"], amendment)):
                 snapshot = snapshots.get(proposal["snapshot_id"])
@@ -1373,8 +1414,35 @@ class Coordinator:
                 result.append(summary)
         return sorted(result, key=lambda item: (item["snapshot_id"], item["proposal_id"]))
 
+    def require_b31_snapshot_recovery_current(self, state, attempt):
+        if attempt.get("task_id") != SNAPSHOT_RECOVERY_B31_TASK:
+            return None
+        proposals = [item for item in state.get("snapshot_recoveries", [])
+                     if item.get("target_attempt_id") == attempt.get("id")]
+        require(len(proposals) == 1
+                and snapshot_recovery_scope_allowed(attempt.get("task_id"), proposals[0].get("snapshot_id")),
+                "snapshot_recovery_required", "B31 requires its sole proposal for the named immutable snapshot")
+        proposal = proposals[0]
+        snapshot = next((item for item in state.get("snapshots", [])
+                         if item.get("id") == SNAPSHOT_RECOVERY_B31_SNAPSHOT), None)
+        require(snapshot is not None and proposal.get("snapshot_id") == snapshot.get("id"),
+                "snapshot_recovery_required", "B31 recovery must remain bound to its exact source snapshot")
+        require(not any(item.get("proposal_id") == proposal["id"]
+                        for item in state.get("snapshot_recovery_amendments", []))
+                and not any(item.get("proposal_id") == proposal["id"]
+                            for item in state.get("snapshot_recovery_continuations", [])),
+                "snapshot_recovery_unsupported", "B31 has no amendment or continuation path")
+        try:
+            current = self.exact_manifest(snapshot["files"])
+        except Refusal as exc:
+            raise Refusal("stale_snapshot_recovery", "A B31 snapshot path is missing or unsafe") from exc
+        require(current == proposal.get("manifest") and current != snapshot.get("manifest"),
+                "stale_snapshot_recovery", "B31 snapshot bytes, mode, or presence changed after its sole proposal")
+        return proposal
+
     def candidate_recoveries_current(self, state, attempt, *, allow_stale_workspace_delta=False):
         candidate = attempt.get("candidate") or {}
+        self.require_b31_snapshot_recovery_current(state, attempt)
         require(candidate.get("snapshot_recoveries", []) == self.recovery_candidate_proposals(state, attempt),
                 "stale_snapshot_recovery", "Snapshot recovery proposal changed after candidate submission")
         record = self.workspace_delta_recovery_for_attempt(state, attempt)
@@ -1410,7 +1478,9 @@ class Coordinator:
                 if not isinstance(acceptance, dict) or acceptance.get("proposal_id") != proposal["id"]:
                     continue
                 attempt = next((item for item in state["attempts"] if item["id"] == proposal["target_attempt_id"]), None)
-                if not attempt or attempt.get("status") != "accepted" or attempt.get("task_id") != "B14":
+                if (not attempt or attempt.get("status") != "accepted"
+                        or proposal.get("task_id") != attempt.get("task_id")
+                        or not snapshot_recovery_scope_allowed(attempt.get("task_id"), proposal.get("snapshot_id"))):
                     return None
                 candidate, review = attempt.get("candidate"), attempt.get("review")
                 if not isinstance(candidate, dict) or not isinstance(review, dict):
@@ -1479,6 +1549,11 @@ class Coordinator:
                             or review_payload.get("snapshot_recoveries") != candidate.get("snapshot_recoveries")
                             or review.get("snapshot_recoveries") != candidate.get("snapshot_recoveries")):
                         return None
+                if (attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK
+                        and (review.get("snapshot_recoveries") != candidate.get("snapshot_recoveries")
+                             or not isinstance(review_evidence.get("payload"), dict)
+                             or review_evidence["payload"].get("snapshot_recoveries") != candidate.get("snapshot_recoveries"))):
+                    return None
                 if candidate.get("workspace_delta_recovery") is not None and not self.paired_recovery_acceptances_valid(
                         attempt, event):
                     return None
@@ -1771,10 +1846,14 @@ class Coordinator:
                     if manifest == current_snapshot:
                         authorized_manifest = manifest
                         break
-            elif (authorized_manifest is None and attempt.get("task_id") == "B14" and attempt.get("claimed_at")
+            elif (authorized_manifest is None
+                  and attempt.get("task_id") in {"B14", SNAPSHOT_RECOVERY_B31_TASK}
+                  and attempt.get("claimed_at")
                   and attempt.get("status") in {"in_progress", "awaiting_review", "changes_requested"}):
                 for item in proposals:
                     if (item["target_attempt_id"] != attempt["id"]
+                            or item.get("task_id") != attempt.get("task_id")
+                            or not snapshot_recovery_scope_allowed(attempt.get("task_id"), item.get("snapshot_id"))
                             or not self.snapshot_recovery_iteration_history_valid(
                                 state, attempt, item, attempt.get("iteration"),
                                 self.snapshot_recovery_amendment(state, item))):
@@ -2071,13 +2150,22 @@ class Coordinator:
                 "Direct user authorization is required")
         uuid_text(args.snapshot_id)
         attempt = self.attempt(state, args.attempt)
-        require(attempt.get("task_id") == "B14", "invalid_snapshot_recovery_target",
-                "Only a claimed B14 attempt may receive pending snapshot recovery")
+        require(snapshot_recovery_scope_allowed(attempt.get("task_id"), args.snapshot_id),
+                "invalid_snapshot_recovery_target",
+                "Recovery is limited to B14 or the exact named B31 snapshot")
         require(attempt.get("status") in {"in_progress", "changes_requested"} and attempt.get("claimed_at")
                 and attempt.get("worker"), "invalid_snapshot_recovery_target",
-                "Pending recovery requires the live claimed B14 worker attempt")
+                "Pending recovery requires a live claimed worker attempt")
         require(attempt.get("orchestrator") == state["orchestrator"], "wrong_owner",
-                "B14 attempt must remain bound to the current orchestrator")
+                "Attempt must remain bound to the current orchestrator")
+        if attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK:
+            require(attempt.get("status") == "in_progress" and not attempt.get("candidate")
+                    and not attempt.get("submissions") and not attempt.get("reviews")
+                    and not attempt.get("reviewer") and not attempt.get("review")
+                    and not any(item.get("target_attempt_id") == attempt["id"]
+                                for item in state.get("snapshot_recoveries", [])),
+                    "invalid_snapshot_recovery_target",
+                    "B31 permits one initial proposal only before its first candidate")
         self.require_plan(attempt, plan)
         matches = [item for item in state.get("snapshots", []) if item["id"] == args.snapshot_id]
         require(len(matches) == 1, "unknown_snapshot", "Exact immutable source snapshot ID required")
@@ -2086,7 +2174,7 @@ class Coordinator:
                 "invalid_snapshot_recovery_target", "Source snapshot must overlap a path claimed by this B14 attempt")
         require(not any(item["target_attempt_id"] == attempt["id"] and item["snapshot_id"] == snapshot["id"]
                         for item in state.get("snapshot_recoveries", [])),
-                "duplicate_snapshot_recovery", "This B14 attempt already has an append-only proposal for the source snapshot")
+                "duplicate_snapshot_recovery", "This attempt already has an append-only proposal for the source snapshot")
         try:
             manifest = self.exact_manifest(snapshot["files"])
         except Refusal as exc:
@@ -2111,6 +2199,9 @@ class Coordinator:
         require(nonempty(args.reason), "missing_reason", "Snapshot recovery amendment reason required")
         require(nonempty(args.user_authorization), "invalid_snapshot_recovery_authorization",
                 "Direct user authorization is required for a recovery amendment")
+        require(attempt.get("task_id") != SNAPSHOT_RECOVERY_B31_TASK,
+                "snapshot_recovery_amendment_unsupported",
+                "B31 snapshot recovery is immutable and does not support amendments")
         require(attempt.get("task_id") == "B14" and attempt.get("status") == "in_progress"
                 and attempt.get("claimed_at") and attempt.get("worker")
                 and attempt.get("orchestrator") == state["orchestrator"],
@@ -2172,6 +2263,9 @@ class Coordinator:
                 "invalid_snapshot_recovery_continuation_authorization",
                 "Fresh exact direct user authorization is required")
         require(nonempty(args.reason), "missing_reason", "Snapshot continuation reason is required")
+        require(attempt.get("task_id") != SNAPSHOT_RECOVERY_B31_TASK,
+                "snapshot_recovery_continuation_unsupported",
+                "B31 snapshot recovery is immutable and does not support continuations")
         require(attempt.get("task_id") == "B14" and attempt.get("status") == "changes_requested"
                 and attempt.get("claimed_at") and attempt.get("worker")
                 and attempt.get("orchestrator") == state.get("orchestrator"),
@@ -2472,6 +2566,7 @@ class Coordinator:
             attempt["claimed_at"] = iso()
         elif action == "submit":
             require(attempt["status"] in {"in_progress", "changes_requested"}, "invalid_transition", "Submit requires active worker/repair")
+            self.require_b31_snapshot_recovery_current(state, attempt)
             self.outside_changes(state, attempt)
             for dep in plan["tasks"][attempt["task_id"]]["depends_on"]:
                 require(self.accepted(state, plan, dep, attempt), "dependency_changed", "Dependency changed before submission")
@@ -2540,9 +2635,9 @@ class Coordinator:
                 review["workspace_delta_recovery"] = copy.deepcopy(candidate["workspace_delta_recovery"])
             continuation_summaries = [item for item in candidate.get("snapshot_recoveries", [])
                                       if item.get("continuation_id")]
-            if continuation_summaries:
+            if attempt.get("task_id") == SNAPSHOT_RECOVERY_B31_TASK or continuation_summaries:
                 require(payload.get("snapshot_recoveries") == candidate.get("snapshot_recoveries"),
-                        "invalid_review", "Review must bind the exact snapshot continuation and workspace origin")
+                        "invalid_review", "Review must bind the exact snapshot recovery summary")
                 review["snapshot_recoveries"] = copy.deepcopy(candidate["snapshot_recoveries"])
             if workspace_delta_stale:
                 review["workspace_delta_stale_observation"] = copy.deepcopy(observation)

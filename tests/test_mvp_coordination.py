@@ -26,6 +26,7 @@ SNAPSHOT_RECOVERY_AUTHORIZATION = "Разработать reviewed recovery — 
 SNAPSHOT_RECOVERY_AMENDMENT_AUTHORIZATION = "Разработать reviewed recovery — расширить scope на отдельный проверенный механизм координатора, сохранив исходный snapshot."
 WORKSPACE_DELTA_RECOVERY_AUTHORIZATION = "Разработать reviewed recovery — расширить scope на отдельный проверенный механизм координатора, сохранив исходный snapshot."
 SNAPSHOT_RECOVERY_CONTINUATION_AUTHORIZATION = WORKSPACE_DELTA_RECOVERY_AUTHORIZATION
+B31_SNAPSHOT_ID = "ac1a0c41-a76b-46c6-84f2-aa2008ae2837"
 
 
 class CoordinationTests(unittest.TestCase):
@@ -43,11 +44,19 @@ class CoordinationTests(unittest.TestCase):
             {"id": "B02", "priority": "P0", "status": "planned", "depends_on": ["B01"]},
             {"id": "B03", "priority": "P0", "status": "planned", "depends_on": ["B00"]},
             {"id": "B14", "priority": "P0", "status": "planned", "depends_on": ["B01"], "suggested_paths": ["b.py"]},
+            {"id": "B12", "priority": "P1", "status": "planned", "depends_on": ["B01"]},
+            {"id": "B31", "priority": "P0", "status": "planned", "depends_on": ["B14"],
+             "suggested_paths": ["AGENTS.md", "components.json"]},
         ]}
         self.save_plan()
         self.write("a.py", "old a\n")
         self.write("b.py", "old b\n")
         self.write("c.py", "old c\n")
+        self.write("AGENTS.md", "Original commit rules\n")
+        self.write("components.json", "{}\n")
+        self.write("other.py", "Other snapshotted source\n")
+        self.write("b12.py", "B12 fixture source\n")
+        self.write("b03.py", "B03 fixture source\n")
         self.git("init", "--quiet")
         self.git("add", "--all")
         self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "fixture")
@@ -144,13 +153,19 @@ class CoordinationTests(unittest.TestCase):
         payload.update(updates)
         return payload
 
-    def record_snapshot(self, files, payload=None, *, run_id=None, environment_run=None, reason="User-authorized fixture snapshot"):
+    def record_snapshot(self, files, payload=None, *, run_id=None, environment_run=None,
+                        reason="User-authorized fixture snapshot", snapshot_id=None):
         run_id = run_id or self.root_run
         evidence = self.json_file(payload or self.snapshot_payload(files))
         environment_run = environment_run or run_id
         with mock.patch.dict(os.environ, {"CODEX_THREAD_ID": environment_run}):
-            result = self.call("record-snapshot", actor="/root", run_id=run_id, file=files,
-                               evidence=evidence, reason=reason)
+            if snapshot_id is None:
+                result = self.call("record-snapshot", actor="/root", run_id=run_id, file=files,
+                                   evidence=evidence, reason=reason)
+            else:
+                with mock.patch.object(COORD.uuid, "uuid4", return_value=uuid.UUID(snapshot_id)):
+                    result = self.call("record-snapshot", actor="/root", run_id=run_id, file=files,
+                                       evidence=evidence, reason=reason)
         return result["snapshot"], evidence
 
     def propose_snapshot_recovery(self, attempt, snapshot_id, *, authorization=SNAPSHOT_RECOVERY_AUTHORIZATION,
@@ -249,6 +264,20 @@ class CoordinationTests(unittest.TestCase):
         self.write("b.py", "amended B14 snapshot recovery state\n")
         amendment = self.amend_snapshot_recovery(attempt, snapshot["id"])["amendment"]
         return accepted, snapshot, attempt, proposal, amendment
+
+    def prepare_b31_snapshot_attempt(self):
+        self.gate()
+        accepted = self.complete("B01", ["b.py"])
+        self.complete("B14", ["b.py"], adopt_accepted=[accepted["id"]])
+        snapshot, _ = self.record_snapshot(["AGENTS.md", "components.json"], snapshot_id=B31_SNAPSHOT_ID)
+        attempt = self.worker(self.reserve("B31", ["AGENTS.md", "components.json"]))
+        return snapshot, attempt
+
+    def prepare_b31_snapshot_recovery(self):
+        snapshot, attempt = self.prepare_b31_snapshot_attempt()
+        self.write("AGENTS.md", "Restored task-owned commit rules\n")
+        proposal = self.propose_snapshot_recovery(attempt, snapshot["id"])["proposal"]
+        return snapshot, attempt, proposal
 
     def record_workspace_delta_recovery(self, attempt, *, authorization=WORKSPACE_DELTA_RECOVERY_AUTHORIZATION,
                                         actor="/root", run_id=None, environment_run=None, manifest_sha256=None,
@@ -362,7 +391,8 @@ class CoordinationTests(unittest.TestCase):
                   "findings": [] if result == "GO" else ["Repair fixture calculation"]}
         if attempt.get("candidate", {}).get("workspace_delta_recovery") is not None:
             report["workspace_delta_recovery"] = copy.deepcopy(attempt["candidate"]["workspace_delta_recovery"])
-        if any(item.get("continuation_id") for item in attempt.get("candidate", {}).get("snapshot_recoveries", [])):
+        if (attempt.get("task_id") == COORD.SNAPSHOT_RECOVERY_B31_TASK
+                or any(item.get("continuation_id") for item in attempt.get("candidate", {}).get("snapshot_recoveries", []))):
             report["snapshot_recoveries"] = copy.deepcopy(attempt["candidate"]["snapshot_recoveries"])
         if workspace_delta_stale_observation is not None:
             report["workspace_delta_stale_observation"] = copy.deepcopy(workspace_delta_stale_observation)
@@ -701,6 +731,113 @@ class CoordinationTests(unittest.TestCase):
         self.assertNotIn("workspace_delta_recoveries", current)
         self.assertEqual(current["events"][:-1], prior_events)
         self.assertEqual(current["schema_version"], 1)
+
+    def test_b31_snapshot_recovery_uses_exact_snapshot_and_preserves_b14_history(self):
+        snapshot, b31 = self.prepare_b31_snapshot_attempt()
+        before = self.coordinator.read()
+        original_snapshot = copy.deepcopy(snapshot)
+        b14_attempts = copy.deepcopy([item for item in before["attempts"] if item["task_id"] == "B14"])
+        b14_ids = {item["id"] for item in b14_attempts}
+        b14_events = copy.deepcopy([item for item in before["events"] if item.get("attempt_id") in b14_ids])
+        original_recoveries = copy.deepcopy(before.get("snapshot_recoveries", []))
+        self.write("AGENTS.md", "Restored task-owned commit rules\n")
+
+        proposal = self.propose_snapshot_recovery(b31, snapshot["id"])["proposal"]
+        state = self.coordinator.read()
+        self.assertEqual(proposal["task_id"], "B31")
+        self.assertEqual(proposal["target_attempt_id"], b31["id"])
+        self.assertEqual(proposal["iteration"], b31["iteration"])
+        self.assertEqual(proposal["snapshot_id"], B31_SNAPSHOT_ID)
+        self.assertEqual(proposal["manifest"], self.coordinator.exact_manifest(snapshot["files"]))
+        self.assertNotEqual(proposal["manifest"], snapshot["manifest"])
+        self.assertEqual(proposal["source_provenance"], self.coordinator.snapshot_recovery_source(snapshot))
+        self.assertEqual(proposal["authorization"]["source"], COORD.SNAPSHOT_RECOVERY_AUTH_SOURCE)
+        self.assertTrue(proposal["authorization"]["authorized"])
+        self.assertEqual(proposal["authorization"]["current_chat_run_id"], self.root_run)
+        self.assertEqual(proposal["authorization"]["user_authorization"], SNAPSHOT_RECOVERY_AUTHORIZATION)
+        self.assertEqual(state["snapshots"], before["snapshots"], "B31 must not rewrite source snapshots")
+        self.assertEqual([item for item in state["attempts"] if item["task_id"] == "B14"], b14_attempts)
+        self.assertEqual([item for item in state["events"] if item.get("attempt_id") in b14_ids], b14_events)
+        self.assertEqual([item for item in state.get("snapshot_recoveries", [])
+                          if item["task_id"] == "B14"], original_recoveries)
+        self.assertEqual(self.coordinator.recovery_candidate_proposals(state, b31), [
+            self.coordinator.snapshot_recovery_candidate_summary(proposal, b31, b31["iteration"])])
+
+        submitted = self.submit(b31)["attempt"]
+        summary = submitted["candidate"]["snapshot_recoveries"][0]
+        self.assertEqual(submitted["candidate"]["task_id"], "B31")
+        self.assertEqual(summary["proposal_id"], proposal["id"])
+        self.assertEqual(summary["target_attempt_id"], b31["id"])
+        self.assertEqual(summary["iteration"], b31["iteration"])
+        self.assertEqual(summary["snapshot_id"], B31_SNAPSHOT_ID)
+        self.assertEqual(summary["manifest"], proposal["manifest"])
+        self.assertEqual(summary["manifest_sha256"], COORD.digest(proposal["manifest"]))
+        self.assertEqual(summary["source_provenance"], proposal["source_provenance"])
+        self.assertEqual(summary["authorization"], proposal["authorization"])
+        reviewed = self.review(self.reviewer(submitted))["attempt"]
+        self.assertEqual(reviewed["review"]["snapshot_recoveries"], submitted["candidate"]["snapshot_recoveries"])
+        accepted = self.call("accept", attempt=b31["id"], reason="Fresh independent GO for exact B31 snapshot")["attempt"]
+        self.assertEqual(accepted["status"], "accepted")
+        accepted_state = self.coordinator.read()
+        self.assertEqual(accepted_state["snapshots"], [original_snapshot])
+        accept_event = next(item for item in reversed(accepted_state["events"])
+                            if item.get("action") == "accept" and item.get("attempt_id") == b31["id"])
+        self.assertEqual(accept_event["snapshot_recovery_acceptances"][0]["proposal_sha256"], COORD.digest(proposal))
+        self.assertEqual(accept_event["snapshot_recovery_acceptances"][0]["manifest_sha256"],
+                         COORD.digest(proposal["manifest"]))
+        self.assertIsNotNone(self.coordinator.accepted_snapshot_recovery(accepted_state, proposal))
+        self.assertEqual([item for item in accepted_state["attempts"] if item["task_id"] == "B14"], b14_attempts)
+        self.assertEqual([item for item in accepted_state["events"] if item.get("attempt_id") in b14_ids], b14_events)
+
+    def test_b31_snapshot_recovery_rejects_other_tasks_and_snapshots(self):
+        snapshot, b31 = self.prepare_b31_snapshot_attempt()
+        other_snapshot, _ = self.record_snapshot(["other.py"])
+        b12 = self.worker(self.reserve("B12", ["b12.py"]))
+        b03 = self.worker(self.reserve("B03", ["b03.py"]))
+        self.refused_snapshot_recovery("invalid_snapshot_recovery_target", b12, snapshot["id"])
+        self.refused_snapshot_recovery("invalid_snapshot_recovery_target", b03, snapshot["id"])
+        self.refused_snapshot_recovery("invalid_snapshot_recovery_target", b31, other_snapshot["id"])
+        self.refused_snapshot_recovery("invalid_snapshot_recovery_target", b31, str(uuid.uuid4()))
+
+    def test_b31_snapshot_recovery_rejects_cross_task_tampering(self):
+        snapshot, _, proposal = self.prepare_b31_snapshot_recovery()
+        valid = self.coordinator.read()
+        tampered = copy.deepcopy(valid)
+        b14 = next(item for item in tampered["attempts"] if item["task_id"] == "B14")
+        forged = next(item for item in tampered["snapshot_recoveries"] if item["id"] == proposal["id"])
+        forged["task_id"] = "B14"
+        forged["target_attempt_id"] = b14["id"]
+        event = next(item for item in tampered["events"]
+                     if item.get("snapshot_recovery_proposal_id") == proposal["id"])
+        event["task_id"] = "B14"
+        event["attempt_id"] = b14["id"]
+        event["snapshot_recovery_proposal"] = copy.deepcopy(forged)
+        self.assertEqual(snapshot["id"], B31_SNAPSHOT_ID)
+        self.coordinator.write(tampered)
+        with self.assertRaises(COORD.Refusal) as caught:
+            self.coordinator.read()
+        self.assertEqual(caught.exception.code, "corrupt_state")
+
+    def test_b31_snapshot_recovery_rejects_amendment_continuation_and_any_drift(self):
+        snapshot, b31, _ = self.prepare_b31_snapshot_recovery()
+        self.refused_snapshot_recovery_amendment("snapshot_recovery_amendment_unsupported", b31, snapshot["id"])
+        self.refused_snapshot_recovery_continuation(
+            "snapshot_recovery_continuation_unsupported", b31, snapshot["id"])
+
+        self.write("AGENTS.md", "Drift after the B31 proposal\n")
+        self.refused("stale_snapshot_recovery", "submit", attempt=b31["id"],
+                     actor=b31["worker"]["target"], run_id=b31["worker"]["run_id"],
+                     evidence=self.json_file({"task_id": "B31", "attempt_id": b31["id"],
+                                              "summary": "Drift must block B31 Submit",
+                                              "checks": [{"name": "fixture", "status": "passed",
+                                                          "evidence": "not reached"}]}))
+        self.write("AGENTS.md", "Restored task-owned commit rules\n")
+        submitted = self.submit(b31)["attempt"]
+        reviewed = self.review(self.reviewer(submitted))["attempt"]
+        self.write("components.json", "{\"drift\":true}\n")
+        self.refused("stale_candidate", "accept", attempt=b31["id"],
+                     reason="Drift must block B31 Accept")
+        self.assertEqual(self.coordinator.read()["attempts"][-1]["status"], "awaiting_review")
 
     def test_snapshot_recovery_is_pending_only_for_claimed_b14_then_reviewed_accept_unlocks_exact_manifest(self):
         _, snapshot, b14, proposal = self.prepare_snapshot_recovery()
