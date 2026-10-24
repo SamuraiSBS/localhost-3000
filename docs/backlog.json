@@ -29,8 +29,8 @@
       "id": "B14", "priority": "P0", "status": "planned",
       "title": "Аудируемый snapshot завершённой отдельной работы в checkout",
       "depends_on": ["B01"], "requirements": [],
-      "suggested_owner": "coordination", "suggested_paths": ["scripts/mvp_coordination.py", "tests/test_mvp_coordination.py", "docs/coordination/cli-reference.md", "docs/coordination/orchestrator.md", "docs/coordination/validation.md", "docs/EXECUTE_PLAN.md", "docs/backlog.json"],
-      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim"],
+      "suggested_owner": "coordination", "suggested_paths": ["scripts/mvp_coordination.py", "tests/test_mvp_coordination.py", "docs/coordination/cli-reference.md", "docs/coordination/orchestrator.md", "docs/coordination/validation.md", "docs/EXECUTE_PLAN.md", "docs/backlog.json", "docs/decisions.md"],
+      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim", "Reviewed recovery оформляется отдельной append-only записью с неизменным исходным snapshot, прямой авторизацией пользователя, точным текущим manifest и ссылкой на исходную provenance", "Pending recovery доступен только привязанной к proposal B14 попытке; переход в действующую provenance требует независимого GO по точным bytes и отдельного orchestrator Accept", "Любое последующее изменение bytes, режима или отсутствие файла снова блокирует Submit/Accept; отказ review, закрытие попытки и неполная либо неверная авторизация не дают обхода"],
       "evidence": []
     },
     {
