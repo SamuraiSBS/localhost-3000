@@ -5,7 +5,7 @@ export class ApiError extends Error {
 }
 export function clearSession() {
   csrf = null;
-  document.querySelectorAll('#customer-detail, #summary, #customers-table tbody, #feature-fields').forEach(node => node.replaceChildren());
+  document.querySelectorAll('#customer-detail, #summary, #churn-chart, #customers-table tbody, #feature-fields').forEach(node => node.replaceChildren());
   document.querySelectorAll('input').forEach(node => { node.value = ''; });
 }
 export function loginDestination() {

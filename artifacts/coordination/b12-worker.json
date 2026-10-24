@@ -1,0 +1,145 @@
+{
+  "task_id": "B12",
+  "attempt_id": "2747bfaa-71a3-4b28-9af9-f0ae93c70e6a",
+  "worker": {
+    "target": "/root/p1_b12_worker",
+    "run_id": "01a16cdb-fe19-76c3-a285-7b912adcbfda"
+  },
+  "iteration": 3,
+  "summary": "Native service-risk chart and explicit conditional nonrenewal scenario on /customers, after mandatory ranking; protected endpoint uses one immutable Evaluation; source/date/scenario/history absence and accessible table; coherent live update, stale/error and auth cleanup. No new runtime dependencies. Local B12 delivery package updated.",
+  "files_changed": [
+    "app/api/analytics.py",
+    "app/domain/churn_chart.py",
+    "artifacts/acceptance/b12-narrow.png",
+    "artifacts/acceptance/b12-package-manifest.json",
+    "artifacts/acceptance/b12-results.json",
+    "artifacts/acceptance/b12-submission-README.md",
+    "artifacts/acceptance/b12-submission.zip",
+    "artifacts/acceptance/b12-wide.png",
+    "artifacts/coordination/b12-worker.json",
+    "docs/demo.md",
+    "docs/p1-chart.md",
+    "openapi.json",
+    "scripts/package_delivery.py",
+    "tests/integration/test_analytics_chart.py",
+    "tests/unit/test_churn_chart.py",
+    "web/assets/api.js",
+    "web/assets/app.css",
+    "web/assets/churn-chart.js",
+    "web/assets/customers.js",
+    "web/customers.html"
+  ],
+  "files_deleted": [],
+  "reserved_absent": [
+    "tests/integration/test_churn_chart.py"
+  ],
+  "reserved_absent_reason": "Moved own new integration test to test_analytics_chart.py under approved Extend to avoid duplicate pytest module basename; old path never existed in baseline.",
+  "checks": [
+    {
+      "name": "protected_login_and_rating",
+      "status": "passed",
+      "evidence": "Real local login form accepted; /customers rating and chart loaded."
+    },
+    {
+      "name": "honest_series",
+      "status": "passed",
+      "evidence": "3 high-risk eligible services, 2 gap/no-new-funds scenario services; 1 current deleted excluded; history unavailable."
+    },
+    {
+      "name": "live_settings_chart_rows_summary",
+      "status": "passed",
+      "evidence": "{\"analysis_revision\": \"a-8\", \"high_risk_services\": 1, \"method\": \"Saved high threshold 2 to 100 in real settings UI; background chart/list updated without reload.\"}"
+    },
+    {
+      "name": "keyboard_fallback",
+      "status": "passed",
+      "evidence": "Native details toggled with Enter, visible keyboard focus; table contains same counts."
+    },
+    {
+      "name": "responsive_1440_360_320_768",
+      "status": "passed",
+      "evidence": "Real Chromium viewports, no document horizontal overflow, chart text >=16 CSS px; wide/narrow full-page PNG uses Playwright standard mask for task login only."
+    },
+    {
+      "name": "zoom_200_percent",
+      "status": "passed",
+      "evidence": "CSS zoom 2 in Chromium; no document overflow. Browser toolbar zoom not measured."
+    },
+    {
+      "name": "chart_failure_preserves_rating",
+      "status": "passed",
+      "evidence": "Injected chart HTTP503 only; real customer/summary endpoints refreshed successfully, stale chart date retained and explicitly marked."
+    },
+    {
+      "name": "offline_fallback",
+      "status": "passed",
+      "evidence": "Chromium context offline: stale rating and chart retained with honest error/date; retry available."
+    },
+    {
+      "name": "empty_source_live",
+      "status": "passed",
+      "evidence": "Imported actual empty snapshot with UI confirmation; chart and rating refreshed to empty without fake low-risk values."
+    },
+    {
+      "name": "p0_detail_regression",
+      "status": "passed",
+      "evidence": "Actual rating link opened customer detail and rendered source services."
+    },
+    {
+      "name": "logout_clears_chart",
+      "status": "passed",
+      "evidence": "Actual logout redirects to login; chart and customer content absent; guest chart endpoint denied."
+    },
+    {
+      "name": "final_layout_primary_rating_first",
+      "status": "passed",
+      "evidence": "Final HTML places chart after primary rating/pagination. Keyboard intro anchor focuses chart; disclosure toggles with Enter. Repeated real1440/360/320/768 layouts and regenerated final PNG after reorder; table closed in final screenshots."
+    },
+    {
+      "name": "packaged_application_and_allowlist",
+      "status": "passed",
+      "evidence": "{\"method\": \"Fresh UUID task-owned extraction; all116 paths/hash/sizes verified; actual extracted app imported and TestClient lifespan started with packaged synthetic seed. Health, login, chart, static JS, OpenAPI equality passed; omitted proprietary font returns expected404. No ZIP Docker/browser run claimed.\", \"members\": 116}"
+    },
+    {
+      "name": "targeted_chart_and_p0_tests",
+      "status": "passed",
+      "evidence": ".venv/Scripts/python.exe -m pytest tests/unit/test_churn_chart.py tests/integration/test_analytics_chart.py tests/integration/test_web.py tests/integration/test_auth.py tests/integration/test_api.py -q -p no:cacheprovider -p no:tmpdir: 43 passed, exit0. No tmp_path tests are in this targeted set."
+    },
+    {
+      "name": "full_check",
+      "status": "passed",
+      "evidence": "{\"command\": \"PYTEST_ADDOPTS=--basetemp=D:/localhost-3000/.state/p1-b12/pytest-elevated .venv/Scripts/python.exe scripts/check.py (exec require_escalated)\", \"exit_code\": 0, \"result\": \"213 passed, 1 Starlette deprecation warning; design assets/local links/font headers/tokens/mobile budgets/Python syntax passed. No ACL changes or tmpdir-plugin disabling in this full run.\", \"initial_sandbox_attempt\": {\"exit_code\": 1, \"result\": \"205 passed +8 setup errors in test_delivery.py: WinError5 while enumerating C:/Temp/pytest-of-Boris. Superseded by complete successful escalated run.\"}}"
+    },
+    {
+      "name": "git_diff_check",
+      "status": "passed",
+      "evidence": "git -c safe.directory=D:/localhost-3000 diff --check exit0; line-ending notice for api.js is not a whitespace error."
+    },
+    {
+      "name": "final_console_and_network",
+      "status": "passed",
+      "evidence": "Actual Playwright pageerror, console.error and requestfailed listeners during final login/rating/chart/responsive/keyboard run: all empty. Intentional prior chart503/offline faults were tested separately."
+    }
+  ],
+  "limits": [
+    "B12 current Docker build/Compose, CI, VPS/HTTPS and public deployment not run; prior B10/B11 evidence is historical.",
+    "Package runtime validated by importing extracted app and actual TestClient lifespan/API/static/OpenAPI; current ZIP Docker/browser launch not claimed.",
+    "CSS zoom200% tested; browser toolbar zoom and physical assistive/mobile devices not measured.",
+    "213-test full check passed only in exec require_escalated with task-owned pytest basetemp; initial sandbox attempt had205passed+8tmp_path access setup errors. No system ACL changes.",
+    "Proprietary font/source photographs excluded from package by user decision; packaged font route404 and Arial fallback intentionally differ from checkout."
+  ],
+  "artifacts": [
+    "artifacts/acceptance/b12-results.json",
+    "artifacts/acceptance/b12-wide.png",
+    "artifacts/acceptance/b12-narrow.png",
+    "artifacts/acceptance/b12-package-manifest.json",
+    "artifacts/acceptance/b12-submission.zip"
+  ],
+  "archive_sha256": "66f86caead7d267b51faa137aed56460f73d9306219613be15a6c9c68fa7e528",
+  "runtime": {
+    "url": "http://127.0.0.1:8372",
+    "credentials_path": ".state/p1-b12/credentials.json",
+    "source": "task-owned synthetic4-service fixture; current chart metadata in b12-results.json"
+  },
+  "freeze": "All claimed outputs saved; no further source/runtime writes after Submit."
+}

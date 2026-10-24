@@ -1,4 +1,13 @@
 body { margin: 0; }
+.churn-figure { margin: 0; }
+.churn-figure figcaption { font-weight: var(--weight-label); }
+.churn-row { display: grid; grid-template-columns: minmax(7rem, 1fr) minmax(4rem, 3fr) minmax(5rem, 1fr); align-items: center; gap: var(--space-4); margin-block: var(--space-3); }
+.churn-bar { width: 100%; height: var(--space-6); display: block; overflow: visible; }
+.churn-bar__fact { fill: var(--color-text); }
+.churn-bar__scenario { fill: transparent; stroke: var(--color-text); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.churn-period { padding-block: var(--space-4); border-top: var(--border-width) solid var(--color-border); }
+.churn-period > p { margin-top: 0; }
+@media (max-width: 40rem) { .churn-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2); } .churn-row > span:first-child { grid-column: 1 / -1; } }
 .main { padding-block: var(--space-12) var(--space-24); }
 .main > h1 { margin: 0 0 var(--space-4); }
 .intro { max-width: var(--measure-prose); margin-bottom: var(--space-12); }

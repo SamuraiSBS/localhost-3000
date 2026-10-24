@@ -1,7 +1,8 @@
 import { startShell, api, el, eur, score, metadata, errorText } from './shell.js';
+import { showChart, chartUnavailable } from './churn-chart.js';
 const summary = document.querySelector('#summary');
 const region = document.querySelector('#rating-region');
-const body = document.querySelector('tbody');
+const body = document.querySelector('#customers-table tbody');
 function announce(text){if(status.textContent!==text)status.textContent=text;}
 const status = document.querySelector('#list-status');
 const retry = document.querySelector('#retry');
@@ -81,6 +82,17 @@ async function readCustomers(background=false, signal) {
       if (attempt === 1) throw new Error('revision_mismatch');
     }
     if (stopped || current !== requestId) return;
+    // A chart failure never prevents the mandatory rating from refreshing.
+    let chart;
+    try {
+      chart=(await api('/analytics/churn-chart',{signal})).data;
+      if (!['analysis_revision','data_revision','settings_revision','model_version'].every(key=>chart[key]===rows.data[key])) throw new Error('revision_mismatch');
+    } catch (error) {
+      if(error.status===401){stopped=true;return;}
+      chart=null;
+    }
+    if (stopped || current !== requestId) return;
+    if(chart)showChart(chart);else chartUnavailable('Не удалось получить график той же версии. Повторная попытка произойдёт автоматически.');
     if(!background || shownRevision!==rows.data.analysis_revision){
     const focused=document.activeElement, scrollY=window.scrollY, scrollX=region.scrollLeft;
     const rowFocused=body.contains(focused);
@@ -114,6 +126,7 @@ async function readCustomers(background=false, signal) {
   } catch (error) {
     if(error.status===401){stopped=true;return;}
     if (current !== requestId) return;
+    chartUnavailable('Не удалось обновить данные. Повторите загрузку рейтинга.');
     const reason = error.message === 'revision_mismatch' ? 'Данные изменились во время загрузки.' : errorText(error);
     if (confirmed) {
       if(!background)restoreConfirmed();

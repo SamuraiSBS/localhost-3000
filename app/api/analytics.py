@@ -9,8 +9,21 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.auth import AuthenticatedUser, require_session
 from app.evaluation import Evaluation
+from app.domain.churn_chart import renewal_chart
 
 router = APIRouter()
+
+
+@router.get("/analytics/churn-chart")
+def analytics_churn_chart(
+    request: Request,
+    _user: AuthenticatedUser = Depends(require_session),
+) -> dict[str, object]:
+    """Current service risk and an explicitly conditional renewal scenario."""
+    evaluation = request.app.state.coordinator.current
+    if evaluation is None:
+        raise HTTPException(status_code=503, detail={"code": "evaluation_unavailable", "message": "No active source snapshot is available."})
+    return {**_metadata(evaluation), **renewal_chart(evaluation)}
 
 
 def _metadata(evaluation: Evaluation) -> dict[str, object]:

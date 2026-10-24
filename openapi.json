@@ -1040,6 +1040,192 @@
         ]
       }
     },
+    "/api/v1/analytics/churn-chart": {
+      "get": {
+        "summary": "Analytics Churn Chart",
+        "description": "Current service risk and an explicitly conditional renewal scenario.",
+        "operationId": "analytics_churn_chart_api_v1_analytics_churn_chart_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Analytics Churn Chart Api V1 Analytics Churn Chart Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "example": {
+                  "error": {
+                    "code": "request_failed",
+                    "message": "Request failed."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/analytics/summary": {
       "get": {
         "summary": "Analytics Summary",
