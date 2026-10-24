@@ -1,4 +1,3 @@
-import { DitherPreview } from '/design/dither.js';
 import { api, loginDestination } from './api.js';
 const form = document.querySelector('#login-form');
 const error = document.querySelector('#login-error');
@@ -31,5 +30,3 @@ form.addEventListener('submit', async event => {
   catch (failure) { error.textContent = failure.status === 401 ? 'Неверный логин или пароль.' : failure.status === 429 ? 'Слишком много попыток. Подождите и повторите.' : 'Не удалось войти. Проверьте соединение и повторите.'; error.hidden = false; if (failure.status === 401) for (const input of form.querySelectorAll('input')) input.setAttribute('aria-invalid', 'true'); }
   finally { submit.disabled = false; submit.removeAttribute('aria-busy'); submit.textContent = 'Войти'; }
 });
-
-new DitherPreview(document.querySelector('#scene-backdrop'),document.querySelector('#dither-status'));

@@ -99,6 +99,26 @@
   --entry-scrim: transparent;
   --entry-action-glass-fill: color-mix(in srgb, var(--color-action-bg) 88%, transparent);
 
+  /* React Bits FaultyTerminal settings from the supplied usage example. */
+  --terminal-field-ink: #E4E4E7;
+  --terminal-field-scale: 2.4;
+  --terminal-field-grid-x: 2;
+  --terminal-field-grid-y: 1;
+  --terminal-field-digit-size: 1.1;
+  --terminal-field-time-scale: 0.5;
+  --terminal-field-brightness: 0.7;
+  --terminal-field-glow: 1;
+  --terminal-field-persistence: 0.37;
+  --terminal-field-mouse-react: 0;
+  --terminal-field-mouse-strength: 0.5;
+  --terminal-field-mouse-glow: 0.6;
+  --terminal-field-curvature: 0;
+  --terminal-field-vignette: 0.25;
+  --terminal-field-click-effect: none;
+  --terminal-field-scramble: 0.9;
+  --terminal-field-glitch-amount: 1.1;
+  --terminal-field-glyphs: characters;
+
   /* User-selected Aceternity Liquid Glass / Controls defaults. */
   --liquid-glass-shape: circle;
   --liquid-glass-scale: 50;

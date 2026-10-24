@@ -1,5 +1,43 @@
 # Проверка визуальной основы
 
+## 2026-10-24 — FaultyTerminal из пользовательского источника
+
+Проверка после замены Canvas 2D приближения на FaultyTerminal из пользовательского
+источника. Браузер: in-app Chromium, 1280×720; временный loopback FastAPI runtime на
+127.0.0.1:3302, локальная seed-база и одноразовые QA credentials.
+
+- Browser passed: эффект отрисован на /, /login, /customers, /customers/5 и /settings;
+  WebGL2-символы, свечение и фон видны, главные колонны остаются на переднем плане.
+  Shared module и конфигурация совпадают с Usage Example пользователя.
+- Static passed: Node syntax check для terminal-field.js, check_design.py и git diff --check.
+- scripts/check.py: полный прогон pytest был прерван после продолжительного ожидания;
+  итоговое число тестов не заявляется. Актуально прошли только перечисленные выше
+  design-integrity, Node syntax и diff-check проверки.
+- Reduced motion, forced colors и мобильная ширина в браузере не эмулировались.
+  Проверка локальная; CI, публичный deployment и Safari не запускались.
+
+
+## 2026-10-24 — Общий терминальный фон
+
+Локальная рабочая копия на ветке `feat/living-digital-ruins`, runtime
+`127.0.0.1:3300`, исходный синтетический `data/seed.json` и отдельная временная
+SQLite-база. Для просмотра защищённых экранов использовалась временная локальная
+учётная запись; production-конфигурация не менялась.
+
+- In-app Chromium при 1280×720: открыты `/`, `/login`, `/customers`,
+  `/customers/5` и `/settings`. Глифовый Canvas виден на каждой рабочей странице;
+  главные колонны остаются поверх него, прежнее фото на входе отсутствует.
+- Контраст после настройки плотности и прозрачности дополнительно осмотрен на
+  странице модели. Скриншоты не сохранялись в репозитории.
+- `python scripts/check_design.py`, `node --check` для нового Canvas-модуля и
+  login-скрипта, `git diff --check` — passed. В `python scripts/check.py` design
+  integrity checks прошли; 242 pytest прошли, 8 тестов `tests/integration/test_delivery.py`
+  завершились ошибкой setup из-за `WinError 5` при доступе к pytest temp root.
+  Повтор с task-owned `--basetemp` упёрся в тот же отказ ACL при cleanup.
+- Это локальная проверка. Мобильный viewport, Safari, reduced motion и forced
+  colors в браузере в этом проходе не эмулировались; публичный deployment не
+  выполнялся.
+
 ## 2026-10-24 — Живой сайт и рабочие экраны
 
 Проверена рабочая копия `feat/living-digital-ruins` на базе `a42d1a6`, с

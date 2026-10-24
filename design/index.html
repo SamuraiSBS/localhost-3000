@@ -1,69 +1,33 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <meta name="description" content="localhost3000 — Digital Ruins / Lost Signal.">
-    <title>localhost3000</title>
-    <link rel="icon" href="data:,">
-    <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="fonts.css">
-    <link rel="stylesheet" href="tokens.css?v=20261022-4">
-    <link rel="stylesheet" href="foundation.css">
-    <link rel="stylesheet" href="liquid-glass.css?v=20261022-1">
-    <link rel="stylesheet" href="scene.css?v=20261023-1">
-    <script src="scene.js?v=20261023-1" type="module"></script>
-  </head>
-  <body class="ds-root">
-    <a class="ds-skip ds-button" href="#workspace">К рабочей области</a>
-    <main class="scene-shell">
-      <div class="scene-backdrop" aria-hidden="true">
-        <canvas id="chroma-current"></canvas>
-      </div>
-      <section class="entry" id="entry" aria-labelledby="entry-title">
-        <div class="entry__composition">
-          <h1 id="entry-title" class="entry__wordmark" tabindex="-1">localhost3000</h1>
-          <a class="ds-button entry__connect enter-button hero-glass hero-glass--action" data-renderer="frosted" href="login.html">
-            <span class="liquid-filter" aria-hidden="true"></span>
-            <span class="hero-glass__content">CONNECT</span>
-          </a>
-          <p class="entry__effect-status" id="glass-status" role="status" aria-live="polite" hidden></p>
-        </div>
-      </section>
-      <section class="workspace" id="workspace" aria-labelledby="workspace-title" tabindex="-1" hidden>
-        <header class="ds-terminal">
-          <div class="ds-container ds-terminal__inner">
-            <a class="compact-mark" href="#entry" aria-label="localhost3000 — на главную">localhost3000</a>
-            <nav aria-label="Навигация оболочки"><a href="#entry">На главную</a></nav>
-          </div>
-        </header>
-        <div class="ds-container workspace__content">
-          <h2 id="workspace-title" tabindex="-1">Пространство для задачи.</h2>
-          <p class="workspace__intro">Здесь появится основной сценарий после получения технического задания.</p>
-          <div class="workspace__actions">
-            <a class="ds-button ds-button--secondary" href="preview.html">Основа интерфейса</a>
-            <button class="ds-button ds-button--secondary" id="open-material" type="button" hidden>Посмотреть Prism Glass</button>
-          </div>
-        </div>
-      </section>
-    </main>
-    <dialog class="material-dialog" id="material-dialog" aria-labelledby="material-title" aria-describedby="material-description">
-      <div class="material-dialog__header">
-        <div><h2 id="material-title">Prism Glass</h2><p id="material-description">Преломление света на архитектурной подложке.</p></div>
-        <form method="dialog"><button class="ds-button ds-button--secondary" autofocus>Закрыть</button></form>
-      </div>
-      <div class="prism-stage" id="prism-stage" data-renderer="fallback">
-        <img class="prism-stage__image" src="assets/columns-768.webp" width="768" height="512" alt="" aria-hidden="true">
-        <canvas class="prism-stage__canvas" id="prism-canvas" aria-hidden="true"></canvas>
-        <div class="prism-lens" id="prism-lens">
-          <div class="prism-lens__copy"><h3>Свет меняет форму.</h3><p>Текст остаётся чётким. Оптический слой преломляет только изображение под панелью.</p></div>
-        </div>
-      </div>
-      <div class="material-dialog__footer">
-        <label class="material-switch"><input type="checkbox" id="refraction-toggle" checked>Оптическое преломление</label>
-        <p class="ds-hint" id="material-fallback">Показана непрозрачная панель: эффект недоступен или отключён для этого устройства.</p>
-      </div>
-    </dialog>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="localhost3000 — Digital Ruins / Lost Signal. Объяснимый риск непродления.">
+  <title>localhost3000</title>
+  <link rel="icon" href="data:,">
+  <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="foundation.css">
+  <link rel="stylesheet" href="terminal-field.css?v=20261024-2">
+  <script type="module" src="terminal-field.js?v=20261024-2"></script>
+  <link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="landing.css">
+  <script type="module" src="landing.js"></script>
+</head>
+<body class="ds-root">
+  <canvas class="terminal-field" aria-hidden="true"></canvas>
+  <a class="ds-skip ds-button" href="login.html">К форме входа</a>
+  <main class="ruins" id="entry">
+    <div class="ruins__composition">
+      <figure class="ruins__art" aria-hidden="true">
+        <img src="assets/columns.webp" srcset="assets/columns-768.webp 768w, assets/columns.webp 1536w" sizes="(max-width: 640px) 145vw, 928px" width="1536" height="1024" alt="" fetchpriority="high">
+      </figure>
+      <h1 class="ruins__title" id="entry-title">localhost3000</h1>
+      <a class="ds-button ruins__enter" href="login.html">ENTER SYSTEM</a>
+    </div>
+  </main>
+</body>
 </html>
