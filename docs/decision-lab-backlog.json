@@ -1,12 +1,42 @@
 {
   "schema_version": 2,
-  "prepared_on": "2026-10-24",
+  "prepared_on": "2026-10-25",
   "status": "prepared_update_activation_requires_no_active_attempts",
   "scope": "decision-lab",
   "scope_plan": "docs/DECISION_LAB_PLAN.md",
   "execution_instructions": "docs/EXECUTE_DECISION_LAB.md",
-  "registration_policy": "With no active attempts, append missing B15-B25 and apply only listed exact previous-hash updates to B15/B18/B21/B22. Preserve runtime status/evidence, B00-B14, other definitions and contract_documents. This file is a plan, not a ledger.",
+  "registration_policy": "With no active attempts, append missing B31 as preflight-support and missing B15-B25 as product tasks; apply only listed exact previous-hash updates to B15/B19/B21. B12 and visual/layout-only QA are deferred by direct user instruction; functional journeys remain in scope. Preserve runtime status/evidence, B00-B14, other definitions and contract_documents. B31 does not change the product execution order or completion task. This file is a plan, not a ledger.",
   "tasks": [
+    {
+      "id": "B31",
+      "priority": "P0",
+      "status": "planned",
+      "title": "Reviewed recovery для второго неизменяемого snapshot",
+      "depends_on": [
+        "B14"
+      ],
+      "requirements": [],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_owner": "coordination",
+      "suggested_paths": [
+        "scripts/mvp_coordination.py",
+        "tests/test_mvp_coordination.py",
+        "docs/coordination/cli-reference.md",
+        "docs/coordination/orchestrator.md",
+        "docs/coordination/validation.md",
+        "docs/EXECUTE_PLAN.md",
+        "AGENTS.md",
+        "artifacts/acceptance/decision-lab/b31-snapshot-recovery-results.json"
+      ],
+      "acceptance": [
+        "Snapshot recovery разрешён только для B14 и B31; B31 привязан к точному snapshot ac1a0c41-a76b-46c6-84f2-aa2008ae2837, а исходные snapshot, provenance и B14 histories остаются неизменными",
+        "Положительный путь B31 связывает точные task/attempt/iteration/snapshot/manifest/provenance, прямую авторизацию, candidate, свежий независимый GO и root Accept",
+        "B31 допускает только одно начальное предложение до первого candidate; amendment и continuation отвергаются, последующий drift блокирует Submit/Accept",
+        "Тесты покрывают B31 success, неизменность/регрессию B14, отказ для B12 и произвольной задачи/snapshot, cross-task tampering, amendment/continuation и legacy v1 ledger",
+        "Пользовательские правила коммитов возвращены в AGENTS.md из сохранённого task-owned источника и входят в exact reviewed manifest"
+      ],
+      "evidence": []
+    },
     {
       "id": "B15",
       "priority": "P2",
@@ -14,7 +44,6 @@
       "title": "Лаборатория: baseline, feature-контракт, fixtures и UX",
       "depends_on": [
         "B11",
-        "B12",
         "B13"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
@@ -26,7 +55,7 @@
       "acceptance": [
         "Baseline и ownership проверены по live ledger и коду",
         "Зафиксирован полный контракт preview/sensitivity/worklist/solve/source-preview+подтверждение/case+replay, revisions/409, auth/CSRF и лимиты",
-        "UX отличает baseline, изменение модели и предполагаемое действие; сохраняет design system",
+        "Контракт различает baseline, изменение модели и предполагаемое действие; фиксирует простой функциональный UI без требований к визуальному дизайну",
         "Ручные ожидаемые результаты L01-L20, точные paths/resources, пределы точного поиска, контракт replay и атомарного импорта описаны"
       ],
       "evidence": []
@@ -125,7 +154,7 @@
         "Прозрачный расчёт, песочница весов/порогов, устойчивость, top-up/autoprolong и reset работают с backend",
         "Нет применения сценария к рабочей модели или реального платежа/сообщения",
         "Draft/stale/409/empty/error и гонки ответов обработаны",
-        "Digital Ruins, tokens, полезный текст от 16px и доступность; локальный browser walkthrough с exact evidence"
+        "Простые controls выполняют сценарии; локальный browser walkthrough проверяет функции, keyboard controls и exact evidence без визуальной/верстальной приёмки"
       ],
       "evidence": []
     },
@@ -262,12 +291,11 @@
         "tests/integration/test_lab_api.py",
         "docs/decision-lab-verification.md",
         "artifacts/acceptance/decision-lab/results.json",
-        "artifacts/acceptance/decision-lab/wide.png",
-        "artifacts/acceptance/decision-lab/narrow.png"
+        "artifacts/acceptance/decision-lab/wide.png"
       ],
       "acceptance": [
         "L01-L13 и L15-L19 passed на проверяемой версии; solver минимален, preview/apply атомарны, replay воспроизводим, обязательные регрессии сохранены",
-        "Реальный browser: 1440x900 и 360x900, клавиатура, zoom200%, reduced-motion, ошибки/409/stale",
+        "Реальный browser: функциональные journeys, keyboard controls, ошибки/409/stale; проверки только дизайна, layout, responsive, zoom и motion пропускаются",
         "Evidence с версиями и окружением; not_run не выдан за passed",
         "Найденные дефекты исправлены через точное расширение claim и новый независимый review"
       ],
@@ -301,23 +329,19 @@
       "evidence": []
     }
   ],
-  "plan_revision": 2,
+  "plan_revision": 4,
   "registration_updates": [
     {
       "id": "B15",
-      "expected_previous_task_hash": "3f4a66be225b52ab124f9a8e7df7c9c59397b35ae4620fb79cbf3deec8658f84"
+      "expected_previous_task_hash": "e17c6c2a904cd9c51160ce635a096f8f349d5fc8da2f8c73233abbf5df043f77"
     },
     {
-      "id": "B18",
-      "expected_previous_task_hash": "222f95cfa84a34db0f11fc21faf7b9425313306e65b897d76cea23bd273a459a"
+      "id": "B19",
+      "expected_previous_task_hash": "6a6c89ddd1973a56ef6d8f2104263c7b32117d573a94cc99f6a021c0ea6d0095"
     },
     {
       "id": "B21",
-      "expected_previous_task_hash": "fc0388d807a062a5a31b0e109c9606a46854a09c8a9f3bf6f4096186c1e3ac3a"
-    },
-    {
-      "id": "B22",
-      "expected_previous_task_hash": "c4060c9f69aa486e1027e2fd36a9a03216bb3c7340539f805a40824905401950"
+      "expected_previous_task_hash": "d0adbea92ae961561e231ec0999ec898aac0e8e83b44ca81a971eb1ea4351715"
     }
   ],
   "execution_order": [
@@ -333,6 +357,9 @@
     "B21",
     "B22"
   ],
+  "preflight_support_tasks": [
+    "B31"
+  ],
   "completion_task": "B22",
-  "command_compatibility": "The existing command referencing docs/EXECUTE_DECISION_LAB.md remains valid; historical B15-B22 means final B22 including all current dependencies B23-B25."
+  "command_compatibility": "The existing command referencing docs/EXECUTE_DECISION_LAB.md remains valid; historical B15-B22 means final B22 including all current dependencies B23-B25. B31 is an authorized preflight-support task, not a product completion task."
 }
