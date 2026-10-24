@@ -17,7 +17,7 @@ export async function startShell(active) {
   const logout = document.querySelector('#logout');
   logout.addEventListener('click', async () => {
     logout.disabled = true;
-    try { await api('/auth/logout', { method: 'POST' }); clearSession(); location.replace('/login'); }
+    try { const result = await api('/auth/logout', { method: 'POST' }); clearSession(); location.replace(result.logoutUrl || '/login'); }
     catch (error) { if (error.status !== 401) { logout.disabled = false; logout.textContent = 'Повторить выход'; const notice = el('p', errorText(error)); notice.setAttribute('role', 'alert'); logout.after(notice); } }
   });
   // A page restored from back/forward cache must revalidate before showing data.

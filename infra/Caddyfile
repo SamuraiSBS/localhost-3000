@@ -2,8 +2,11 @@
   encode zstd gzip
   header {
     X-Content-Type-Options nosniff
-    Referrer-Policy strict-origin-when-cross-origin
     -Server
   }
+  @oidc path /api/v1/auth/oidc/*
+  @ordinary not path /api/v1/auth/oidc/*
+  header @oidc Referrer-Policy no-referrer
+  header @ordinary Referrer-Policy strict-origin-when-cross-origin
   reverse_proxy app:3000
 }

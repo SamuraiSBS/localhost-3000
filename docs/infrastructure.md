@@ -170,3 +170,15 @@ PR [#6](https://github.com/SamuraiSBS/localhost-3000/pull/6) объединён 
 - Извне HTTP отвечает 308 с переходом на HTTPS. Встроенный браузер открыл главную страницу по HTTPS и `/healthz`; health ответил `status=ok` и тем же SHA. TLS проверен браузером; локальный Windows `curl` не смог проверить TLS из-за ошибки SChannel, поэтому его результат не использовался как подтверждение.
 - Главная страница всё ещё содержит прежнюю фразу, что деплой ждёт VM в Yandex Cloud. Перед демонстрацией обновить это видимое сообщение. Текущая версия — инфраструктурный probe, а не продуктовый MVP.
 - `DEPLOY_ENABLED=false` подтверждена через GitHub CLI. Значение не меняли; Tailscale/OIDC не настроены, автоматический CD остаётся выключенным. Повторный CD-деплой и откат в этом прогоне не выполнялись.
+
+## Локальный P1 OIDC — 2026-10-24
+
+По прямому выбору пользователя добавлен отдельный `compose.oidc.yaml` / profile `oidc`.
+Фактически собран Linux app image `p1-b13:local`, запущен отдельный Compose project
+`p1-b13`: app, proxy на loopback8373, Keycloak26.8.1 на loopback8390, отдельные volumes.
+Проверенная свободная сеть этого прогона —10.253.251.0/24; соседние проекты не менялись.
+Вместо временного task-owned `p1-oidc-preflight` запущен только этот профиль.
+Секреты остались в ignored private `.state/p1-b13/compose.env`, исходный prereqenv сохранён.
+Реальный браузер прошёл IdPlogin/callback/logout; остановка своего IdP сохранила ordinarylogin.
+Точные результаты и ограничения — `artifacts/acceptance/b13-results.json`, запуск — `docs/p1-oidc.md`.
+Это локальная проверка. DNS, VPS, публичный HTTPS, GitHubCI/CD и deploy не выполнялись.

@@ -4,3 +4,5 @@ pydantic
 uvicorn
 pwdlib[argon2]
 prometheus-client
+Authlib==1.9.1
+httpx2

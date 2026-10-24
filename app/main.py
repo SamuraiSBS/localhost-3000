@@ -30,6 +30,7 @@ from app.contracts import load_source
 from app.evaluation import EvaluationCoordinator
 from app.storage import SQLiteRepository
 from app.metrics import render_metrics, require_metrics_token
+from app.oidc import OIDCService, PUBLIC_ROUTES
 
 
 def _request_validation_response(request: object, error: RequestValidationError) -> JSONResponse:
@@ -100,6 +101,7 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
         if type(config.max_snapshot_bytes) is not int or config.max_snapshot_bytes < 1:
             raise ValueError("MAX_SNAPSHOT_BYTES must be a positive integer")
         application.state.config = config
+        application.state.oidc = OIDCService(config)
         database_path = config.data_dir / SESSION_DATABASE_NAME
         repository = SQLiteRepository(database_path)
         coordinator = EvaluationCoordinator(repository)
@@ -350,7 +352,7 @@ def _document_contract(schema: dict) -> None:
         for method, operation in operations.items():
             if method not in {"get", "post", "patch", "put"}:
                 continue
-            login = path == "/api/v1/auth/login"
+            login = path == "/api/v1/auth/login" or (method.upper(), path) in PUBLIC_ROUTES
             operation["security"] = ([] if login else
                 [{"MetricsBearer": []}] if path == "/metrics" else [{"SessionCookie": []}])
             if not login and method in {"post", "patch", "put"}:
@@ -358,7 +360,7 @@ def _document_contract(schema: dict) -> None:
                     {"name": "X-CSRF-Token", "in": "header", "required": True, "schema": string,
                      "description": "Session-bound CSRF token from login or auth/me."},
                     {"name": "Origin", "in": "header", "required": True, "schema": string}])
-            if login:
+            if path == "/api/v1/auth/login":
                 operation.setdefault("parameters", []).append(
                     {"name": "Origin", "in": "header", "required": True, "schema": string})
             response_name = responses.get((path, method))

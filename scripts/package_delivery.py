@@ -36,6 +36,7 @@ MEMBERS = (
     'app/domain/scoring.py',
     'app/evaluation.py',
     'app/main.py',
+    'app/oidc.py',
     'app/metrics.py',
     'app/storage.py',
     'artifacts/acceptance/b10-narrow.png',
@@ -45,6 +46,11 @@ MEMBERS = (
     'artifacts/acceptance/b12-results.json',
     'artifacts/acceptance/b12-submission-README.md',
     'artifacts/acceptance/b12-wide.png',
+    'artifacts/acceptance/b13-results.json',
+    'artifacts/acceptance/b13-login-wide.png',
+    'artifacts/acceptance/b13-login-narrow.png',
+    'artifacts/acceptance/b13-keycloak.png',
+    'artifacts/acceptance/b13-submission-README.md',
     'compose.production.yaml',
     'compose.yaml',
     'data/seed.json',
@@ -90,6 +96,7 @@ MEMBERS = (
     'docs/model.md',
     'docs/open-questions.md',
     'docs/p1-chart.md',
+    'docs/p1-oidc.md',
     'docs/requirements.md',
     'docs/reuse-manifest.json',
     'docs/reuse-research.md',
@@ -98,12 +105,15 @@ MEMBERS = (
     'docs/test-plan.md',
     'infra/Caddyfile',
     'infra/prometheus.yml',
+    'infra/keycloak/localhost3000-p1-realm.json',
+    'compose.oidc.yaml',
     'openapi.json',
     'requirements-dev.in',
     'requirements-dev.txt',
     'requirements.in',
     'requirements.txt',
     'scripts/configure_local.py',
+    'scripts/configure_oidc.py',
     'scripts/dev.ps1',
     'scripts/dev.sh',
     'scripts/package_delivery.py',
@@ -130,7 +140,7 @@ MEMBERS = (
 
 
 def build():
-    output=ROOT/'artifacts/acceptance/b12-submission.zip'
+    output=ROOT/'artifacts/acceptance/b13-submission.zip'
     entries=[]
     with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED) as archive:
         for name in MEMBERS:
@@ -145,13 +155,13 @@ def build():
             entries.append({'path':name,'size_bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()})
     with zipfile.ZipFile(output) as archive:
         if archive.testzip() is not None: raise ValueError('invalid_zip')
-    manifest={'task_id':'B12','archive':output.name,'archive_size_bytes':output.stat().st_size,
+    manifest={'task_id':'B13','archive':output.name,'archive_size_bytes':output.stat().st_size,
         'archive_sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'member_count':len(entries),'members':entries,
-        'scope':'B11 explicit safe members plus B12; no directory expansion',
-        'exclusions':['proprietary font and source photographs','original organizer data and root uploads','.env and credentials','.state and .git','tests and check.py (same B11 distribution boundary)','unclaimed B13 changes'],
+        'scope':'B11 explicit safe members plus B12 chart and B13 OIDC; no directory expansion',
+        'exclusions':['proprietary font and source photographs','original organizer data and root uploads','.env and credentials','.state and .git','tests and check.py (same B11 distribution boundary)'],
         'validation':{'zip_integrity':'passed','exact_allowlist':'passed'},
-        'runtime_validation':'See b12-results.json. ZIP integrity does not prove Docker, CI, or public deployment.'}
-    (ROOT/'artifacts/acceptance/b12-package-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        'runtime_validation':'See b13-results.json and docs/p1-oidc.md. ZIP integrity does not prove Docker, CI, or public deployment.'}
+    (ROOT/'artifacts/acceptance/b13-package-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({key:manifest[key] for key in ('archive','member_count','archive_sha256')}))
 
 

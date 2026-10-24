@@ -191,6 +191,9 @@ class SessionStore:
                 "CREATE INDEX IF NOT EXISTS auth_sessions_expires_at_idx "
                 "ON auth_sessions(expires_at)"
             )
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(auth_sessions)")}
+            if "auth_method" not in columns:
+                connection.execute("ALTER TABLE auth_sessions ADD COLUMN auth_method TEXT NOT NULL DEFAULT 'local'")
             connection.commit()
         except BaseException:
             connection.rollback()
@@ -198,7 +201,9 @@ class SessionStore:
         finally:
             connection.close()
 
-    def create(self, token: str) -> int:
+    def create(self, token: str, *, auth_method: str = "local") -> int:
+        if auth_method not in {"local", "oidc"}:
+            raise ValueError("invalid_auth_method")
         now = int(self.clock())
         expires_at = now + self.ttl_seconds
         connection = self._connect()
@@ -206,8 +211,8 @@ class SessionStore:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute("DELETE FROM auth_sessions WHERE expires_at <= ?", (now,))
             connection.execute(
-                "INSERT INTO auth_sessions(token_hash, created_at, expires_at) VALUES (?, ?, ?)",
-                (hash_session_token(token), now, expires_at),
+                "INSERT INTO auth_sessions(token_hash, created_at, expires_at, auth_method) VALUES (?, ?, ?, ?)",
+                (hash_session_token(token), now, expires_at, auth_method),
             )
             connection.commit()
             return expires_at
@@ -242,6 +247,28 @@ class SessionStore:
             connection.execute("DELETE FROM auth_sessions WHERE token_hash = ?", (token_hash,))
         finally:
             connection.close()
+
+    def authentication_method(self, token_hash: str) -> str:
+        connection = self._connect()
+        try:
+            row = connection.execute("SELECT auth_method FROM auth_sessions WHERE token_hash = ?", (token_hash,)).fetchone()
+            return str(row[0]) if row else "local"
+        finally:
+            connection.close()
+
+
+def issue_session(request: Request, response: Response, *, auth_method: str = "local") -> str:
+    """Rotate any old browser session; expose only an opaque HttpOnly cookie."""
+    store: SessionStore = request.app.state.session_store
+    old = request.cookies.get(SESSION_COOKIE_NAME)
+    if _valid_session_token(old):
+        store.revoke_hash(hash_session_token(old))
+    token = secrets.token_urlsafe(32)
+    store.create(token, auth_method=auth_method)
+    config = request.app.state.config
+    response.set_cookie(SESSION_COOKIE_NAME, token, max_age=config.session_ttl_seconds, path="/",
+        secure=cookie_is_secure(config.public_origin), httponly=True, samesite="lax")
+    return csrf_token_for_session(token)
 
 
 class LoginRateLimiter:
@@ -377,8 +404,9 @@ async def api_auth_middleware(request: Request, call_next) -> Response:
     if not request.url.path.startswith("/api/v1/"):
         return await call_next(request)
 
-    is_primary_login = request.method.upper() == "POST" and request.url.path == LOGIN_PATH
-    if not is_primary_login:
+    from app.oidc import PUBLIC_ROUTES
+    is_public_auth = (request.method.upper() == "POST" and request.url.path == LOGIN_PATH) or (request.method.upper(), request.url.path) in PUBLIC_ROUTES
+    if not is_public_auth:
         try:
             require_session(request)
         except AuthError as error:
@@ -389,4 +417,6 @@ async def api_auth_middleware(request: Request, call_next) -> Response:
         response = await call_next(request)
 
     response.headers["Cache-Control"] = "no-store"
+    if (request.method.upper(), request.url.path) in PUBLIC_ROUTES:
+        response.headers["Referrer-Policy"] = "no-referrer"
     return response

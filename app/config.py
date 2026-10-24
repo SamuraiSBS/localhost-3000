@@ -19,6 +19,13 @@ class RuntimeConfig:
     revision: str = "local"
     session_ttl_seconds: int = 28800
     max_snapshot_bytes: int = 10 * 1024 * 1024
+    oidc_enabled: bool = False
+    oidc_issuer_url: str = ""
+    oidc_metadata_url: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = field(default="", repr=False)
+    oidc_redirect_uri: str = ""
+    oidc_allowed_subjects: tuple[str, ...] = ()
 
     @classmethod
     def from_env(cls) -> "RuntimeConfig":
@@ -30,6 +37,13 @@ class RuntimeConfig:
             password_hash=os.environ.get("APP_PASSWORD_HASH"),
             metrics_token=os.environ.get("METRICS_TOKEN"),
             public_origin=os.environ.get("PUBLIC_ORIGIN", "http://127.0.0.1:8311"),
+            oidc_enabled=os.environ.get("OIDC_ENABLED", "false").lower() == "true",
+            oidc_issuer_url=os.environ.get("OIDC_ISSUER_URL", ""),
+            oidc_metadata_url=os.environ.get("OIDC_METADATA_URL", ""),
+            oidc_client_id=os.environ.get("OIDC_CLIENT_ID", ""),
+            oidc_client_secret=os.environ.get("OIDC_CLIENT_SECRET", ""),
+            oidc_redirect_uri=os.environ.get("OIDC_REDIRECT_URI", ""),
+            oidc_allowed_subjects=tuple(x.strip() for x in os.environ.get("OIDC_ALLOWED_SUBJECTS", "").split(",") if x.strip()),
         )
 
     def require_credentials(self) -> None:

@@ -1,0 +1,102 @@
+{
+  "task_id": "B13",
+  "attempt_id": "fb010b57-8a38-4d30-8a16-6fdd32d0c3ea",
+  "observed_at": "2026-10-24T08:53:55.817098+00:00",
+  "base_head": "d02db10d086a868a8215c157587d8b5a91a0cc35",
+  "environment": "WindowsPython3.13, DockerLinuxAlpine, localKeycloak26.8.1, CUAin-appbrowser",
+  "url": "http://127.0.0.1:8373",
+  "issuer": "http://127.0.0.1:8390/realms/localhost3000-p1",
+  "checks": [
+    {
+      "name": "targeted_auth_tests",
+      "status": "passed",
+      "evidence": "43 passed: pytest tests/unit/test_oidc_validation.py tests/integration/test_oidc_auth.py tests/integration/test_auth.py; actual RS256 signatures/issuer/aud/azp/exp/iat/nonce, state/browser binding/TTL/replay, rotation, logout204/CSRF, primary fallback."
+    },
+    {
+      "name": "locked_dependencies",
+      "status": "passed",
+      "evidence": "pip compile preserved existing pins; Authlib1.9.1/httpx2 2.16.0 and four transitives added. OfficialPyPI SHA256 lock; Windows --require-hashes install and pip check success; Linux Alpine Docker hash install success."
+    },
+    {
+      "name": "docker_profile",
+      "status": "passed",
+      "evidence": "Separate project p1-b13, network10.253.251.0/24, app/proxy8373/Keycloak8390; apphealthy. Only task-owned preflight replaced. Source/env secrets omitted."
+    },
+    {
+      "name": "real_oidc_login_logout",
+      "status": "passed",
+      "evidence": "CUA real browser: login UI -> actual Keycloak credentials -> callback -> customer ranking+chart; logout204 -> Keycloak confirmation -> validated logout-return -> success message. NextOIDC requires credentials. Repeated after logout/poll401guard fix."
+    },
+    {
+      "name": "real_nonce_negative",
+      "status": "passed",
+      "evidence": "In real Keycloak authorization URL nonce removed then separately changed; genuine signed responses both rejected with fixed invalid_response; no panel access."
+    },
+    {
+      "name": "real_state_negative",
+      "status": "passed",
+      "evidence": "Real authorization state consumed with invalidcode -> invalid_response; replay same state -> invalid_state. Changed state through realIdPlogin -> invalid_state. Unitcases also test wrongbrowser/expired/duplicateparameters."
+    },
+    {
+      "name": "real_subject_denied",
+      "status": "passed",
+      "evidence": "Temporarily replaced only own app allowlist with deny subject; existing p1-marketer realSSO callback denied visibly. Originalallowlist restored and app recreated; no newIdPaccount created."
+    },
+    {
+      "name": "provider_outage_basic_fallback",
+      "status": "passed",
+      "evidence": "Stopped only ownKeycloak; OIDCstart showsproviderunavailable, basiclogin -> realranking -> basiclogout works. ExistingOIDCsession logout withIdPdown revokeslocalaccess, showsSSO mayremain; direct/customers thenredirectslogin. IdPrestored aftertest."
+    },
+    {
+      "name": "proxy_headers",
+      "status": "passed",
+      "evidence": "HTTP through ownproxy8373: OIDCconfig200/callback303 haveCache-Control:no-store,Referrer-Policy:no-referrer; ordinarylogin200 retainsstrict-origin-when-cross-origin."
+    },
+    {
+      "name": "responsive_keyboard",
+      "status": "passed",
+      "evidence": "CUA viewport1440x900/360x900,320x800/768x900: no pagehorizontaloverflow. Finalwide1440/clientscroll1440/main576/area480 and finalnarrow360x900 nativegetAXStateAndScreenshot visuallyinspected readable. InitialfullPagecapturefailed afterreflow; replacedthroughsupportedCUAnativecapture afterfocuspaint. Visiblelogintext16px; Tabfocus2pxsolidoutline. No outsidebrowserautomation ran."
+    },
+    {
+      "name": "full_check_initial",
+      "status": "passed",
+      "evidence": "scripts/check.py with task-owned basetemp and escalatedexec:246 passed in211.10seconds; designintegrity/syntax passed."
+    },
+    {
+      "name": "full_check_final",
+      "status": "passed",
+      "evidence": "Final .venv/Scripts/python.exe scripts/check.py after logout guard/proxy fix:246 passed in229.90s. PYTEST_ADDOPTS=--basetemp=D:/localhost-3000/.state/p1-b13-fullcheck-2; escalatedexec. Designintegrity/syntaxpassed; gitdiff--checkexit0."
+    },
+    {
+      "name": "package_rehearsal",
+      "status": "passed",
+      "evidence": "126explicitmembers extractedto .state/p1-b13-package; everymemberbyte matchedZIP. Actual processhealthrevision b13-extracted-package on8373; basiclogin/rating/customer5explanation; manualweight25->50 secondtabupdated65->90 and chart+summarysettings2; reset25settings3 returns65. RealOIDCSSO/callback/ranking and RPlogoutconfirmation/logoutreturnsuccess fromextractedapp. FinalZIPre-extractionbyte-equality recorded by handoff; noarchivehash embeddedhere."
+    },
+    {
+      "name": "remote_ci_public_deploy",
+      "status": "not_required",
+      "evidence": "Local task authorization only; CI/VPS/HTTPS/publicdeploy not run."
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "artifacts/acceptance/b13-login-wide.png",
+      "sha256": "d2964da9a58171362c430b2b242580197890cda94924f43f4e3c23301ad39e27"
+    },
+    {
+      "path": "artifacts/acceptance/b13-login-narrow.png",
+      "sha256": "2ad5986068d7b21c5dfa1805631194ece7e3bc32a0125c357efd3d70aa2c8eee"
+    },
+    {
+      "path": "artifacts/acceptance/b13-keycloak.png",
+      "sha256": "1c5f131a0ddf16eb035cf7affe136ddef331a49755f02b6b527a4ab0ff489b9e"
+    }
+  ],
+  "limits": [
+    "Localdevelopment IdP only. Pending flows failclosed onprocessrestart. Keycloakconfirmation required at logout. No Safari/screenreader/physicalmobile/fullinternetdisconnect.",
+    "AdditionaltestIdPaccount creation was rejected byautomaticapprovalreview asnewpersistentaccess; safer existinguser+denyallowlist case used, no accountcreated.",
+    "Proprietaryfont/sourcephoto/originalorganizerdata excluded per user distributiondecision; ZIP usesArialfallback.",
+    "ZIP rehearsal browser reused cached permitted localfont/photo from source; ZIP exclusion confirmed byexactallowlist andHTTP404. Screenshots show sourcevisualidentity, not proofassets are distributed. Fresh uncachedfont/photo visualfallback not rerun inB13.",
+    "Automaticapprovalreview rejected shellPlaywrightcapture underCUA-onlypolicy; it didnotrun. CUA-nativecapture fixed finalwide/narrow evidence."
+  ]
+}

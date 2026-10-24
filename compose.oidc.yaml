@@ -1,0 +1,39 @@
+# Optional local development IdP. Include this file only with --profile oidc.
+# PUBLIC_ORIGIN must match the generated browser callback. No public deployment.
+services:
+  app:
+    environment:
+      OIDC_ENABLED: "true"
+      OIDC_ISSUER_URL: ${OIDC_ISSUER_URL:?Run scripts/configure_oidc.py}
+      OIDC_METADATA_URL: http://keycloak:8080/realms/localhost3000-p1/.well-known/openid-configuration
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:?Run scripts/configure_oidc.py}
+      OIDC_CLIENT_SECRET: ${P1_OIDC_CLIENT_SECRET:?Run scripts/configure_oidc.py}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:?Run scripts/configure_oidc.py}
+      OIDC_ALLOWED_SUBJECTS: ${OIDC_ALLOWED_SUBJECTS:?Run scripts/configure_oidc.py}
+  keycloak:
+    profiles: [oidc]
+    image: quay.io/keycloak/keycloak:26.8.1@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname=${OIDC_PROVIDER_ORIGIN:-http://127.0.0.1:8390}
+      - --hostname-backchannel-dynamic=true
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:?Run scripts/configure_oidc.py}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:?Run scripts/configure_oidc.py}
+      P1_OIDC_CLIENT_SECRET: ${P1_OIDC_CLIENT_SECRET:?Run scripts/configure_oidc.py}
+      P1_OIDC_PASSWORD: ${P1_OIDC_PASSWORD:?Run scripts/configure_oidc.py}
+    ports: ["127.0.0.1:${OIDC_PROVIDER_PORT:-8390}:8080"]
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ${OIDC_REALM_FILE:?Run scripts/configure_oidc.py}:/opt/keycloak/data/import/localhost3000-p1-realm.json:ro
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: '2'}
+volumes:
+  keycloak_data:

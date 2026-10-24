@@ -1,5 +1,6 @@
 // Same-origin API. CSRF stays in memory and is bound to the server session.
 let csrf = null;
+let endingSession = false;
 export class ApiError extends Error {
   constructor(status, payload) { super(payload?.error?.message || 'Запрос не выполнен'); this.status = status; this.payload = payload; }
 }
@@ -13,22 +14,26 @@ export function loginDestination() {
   return /^\/customers(?:\/[1-9][0-9]*)?$/.test(next) || next === '/settings' ? next : '/customers';
 }
 export async function api(path, options = {}) {
+  if (path === '/auth/logout') endingSession = true;
   const headers = new Headers(options.headers);
   if (options.body !== undefined) headers.set('Content-Type', 'application/json');
   if (csrf && options.method && options.method !== 'GET') headers.set('X-CSRF-Token', csrf);
   let response;
   try { response = await fetch('/api/v1' + path, { ...options, headers, credentials: 'same-origin', cache: 'no-store' }); }
-  catch { throw new ApiError(0, { error: { message: 'Нет связи с сервером. Проверьте соединение и повторите.' } }); }
+  catch { if (path === '/auth/logout') endingSession = false; throw new ApiError(0, { error: { message: 'Нет связи с сервером. Проверьте соединение и повторите.' } }); }
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
-    if (response.status === 401 && path !== '/auth/login') {
+    if (path === '/auth/logout') endingSession = false;
+    if (response.status === 401 && path !== '/auth/login' && !endingSession) {
       clearSession();
       location.replace('/login?next=' + encodeURIComponent(location.pathname));
     }
     throw new ApiError(response.status, payload);
   }
   if (payload?.csrf_token) csrf = payload.csrf_token;
-  return { data: payload, etag: response.headers.get('ETag') };
+  const logoutTarget = response.headers.get('X-OIDC-Logout-URL');
+  const logoutUrl = /^\/api\/v1\/auth\/oidc\/logout\?ticket=[A-Za-z0-9_-]{43}$/.test(logoutTarget || '') || logoutTarget === '/login?oidc_error=logout_incomplete' ? logoutTarget : null;
+  return { data: payload, etag: response.headers.get('ETag'), logoutUrl };
 }
 export async function authenticate() { return (await api('/auth/me')).data; }
 export function errorText(error) {
