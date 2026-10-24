@@ -17,7 +17,7 @@ powershell -File scripts/dev.ps1 start
 
 Linux/macOS: `python3 -m venv .venv`, затем `.venv/bin/python -m pip install --require-hashes -r requirements-dev.txt`,
 `.venv/bin/python scripts/configure_local.py` и `bash scripts/dev.sh start`.
-Открыть [локальную панель](http://127.0.0.1:8080); ввести заданные при настройке логин/пароль.
+Открыть [продуктовый вход](http://127.0.0.1:8080/login); ввести заданные при настройке логин/пароль. `/` оставлен отдельной дизайн-оболочкой; защищённый сценарий начинается на `/login`.
 Скрипт запрашивает пароль без отображения, хранит только Argon2 hash и случайный collector token;
 готовых публичных credentials нет. На Windows helper создаёт защищённую DACL только для SID текущего пользователя,
 проверяет отсутствие наследуемых/широких разрешений до записи секретов и завершает работу с ошибкой, если ограничить доступ нельзя.
@@ -43,7 +43,9 @@ powershell -File scripts/dev.ps1 start -EnvFile .state/my-demo/compose.env
 Образ содержит разрешённую отдельную seed-копию `data/seed.json`, локальные web/design assets и locked dependencies.
 Оригиналы данных, root-фотографии, PDF, `.env`, `.state` и `.git` не передаются в build context.
 
-## Проверки
+## Проверки полного checkout
+
+Этот раздел относится к полному checkout исходного репозитория. В ZIP-кандидате B11 намеренно нет `tests/`, `scripts/check.py` и `scripts/check_design.py`; архив не содержит автоматизированного набора тестов. Не запускайте команды ниже из распакованного B11 ZIP.
 
 ```powershell
 .venv/Scripts/python.exe scripts/check.py
@@ -92,3 +94,7 @@ CI подготовлен для locked install, product pytest, Docker/proxy sm
 
 Дизайн Digital Ruins / Lost Signal: [правила](docs/design/README.md). `design/` содержит изолированные прототипы;
 рабочие страницы продукта находятся в `web/`. Прежний `infra/probe` сохранён как исторический стенд и не запускается образом продукта.
+
+## Пакет B11
+
+В исходном checkout локальный ZIP-кандидат находится в `artifacts/acceptance/b11-submission.zip`; инструкция и as-built сводка — в [b11-submission-README](artifacts/acceptance/b11-submission-README.md), фактическая репетиция — в [b11-results](artifacts/acceptance/b11-results.json). Этот раздел также входит в архив; вложенной копии ZIP внутри себя нет. Архив содержит приложение и разрешённый синтетический `data/seed.json`; оригинальный набор, пользовательские фотографии, секреты и локальное состояние исключены. Proprietary WOFF2 намеренно отсутствует: интерфейс использует CSS fallback; фон входа, основанный на исключённой фотографии, в архиве не поставляется. Кандидат остаётся локальным и не загружен организаторам или в публичный репозиторий; Q-005 о распространении шрифта не закрыт.
