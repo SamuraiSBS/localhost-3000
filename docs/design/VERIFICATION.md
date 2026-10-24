@@ -1,5 +1,53 @@
 # Проверка визуальной основы
 
+## 2026-10-24 — Живой сайт и рабочие экраны
+
+Проверена рабочая копия `feat/living-digital-ruins` на базе `a42d1a6`, с
+незакоммиченными изменениями этой задачи. Прежние dirty `docs/START_HERE.md`,
+`docs/feature-backlog.md`, корневые фото и материалы сохранены.
+Среда: in-app Chromium browser, отдельный loopback runtime `127.0.0.1:8387`,
+синтетический `data/seed.json`, task-owned SQLite в `.state/living-design/data`.
+Это локальная проверка, не новый CI/Docker/VPS/HTTPS или публичная приёмка.
+
+- Passed: главная с колоннами и временной Bayer-маской; после появления Canvas
+  удалён. Главная 1728×1080 и 300×667 CSS px не имеет внешней прокрутки.
+- Passed: настоящий password login, загрузка сводки/таблицы/графиков одной ревизии;
+  поиск без результата, сброс, переход к клиенту, раскрытие расчёта.
+- Passed: настройки 25 → 28 → 25 через реальный UI/API, подтверждённые версии
+  настроек 2/3 и analysis revision. Менялась только тестовая база.
+- Passed: выбор seed.json не отправляет файл и не подтверждает замену;
+  после отдельного подтверждения повторный импорт отвечает «Этот снимок уже активен».
+  Drag/drop реализован; именно перенос файла мышью в этом проходе не воспроизводился.
+- Passed: мобильное меню на 360×800, Escape закрывает его и возвращает фокус;
+  выход доступен внутри раскрытого меню. На 300×667 графики перестраиваются в 2×2,
+  области столбцов около 49.9×159 CSS px. Подсказки доступны по focus/click и Escape;
+  открытая подсказка не вызывает общей горизонтальной прокрутки.
+- Passed: карточка клиента на 360×800; видимый основной текст/labels/кнопки 16 CSS px.
+  Регистрация как дизайн-образец и статическая 404 на 300×667 без общего overflow.
+- Passed: `tests/ui/motion-harness.html` в отдельном static QA runtime `8388`:
+  7 проверок reduced-motion JS branch, отмены при смене настройки/скрытии вкладки,
+  видимости после отмены и главной в sandbox iframe без scripts. Это контролируемая
+  подмена matchMedia, не включение системной настройки браузера.
+- Passed: в просмотренных рабочих страницах нет console error/warn.
+- Passed: заключительный `.venv/Scripts/python.exe scripts/check.py` — **246 passed**,
+  170.28 s; syntax, local links, provenance, token/font/mobile budgets.
+  `git diff --check` и Node syntax checks изменённых модулей — passed.
+  Для Windows pytest использован отдельный basetemp и обычный пользовательский
+  токен вне sandbox: sandbox DACL запрещал tmpdir; промежуточный teardown SQLite
+  повторён отдельно успешно, затем полный контрольный прогон прошёл.
+- Passed: required runtime assets присутствуют в точном allowlist упаковщика.
+  Прежний ZIP не перезаписывался. 21st CLI review не выполнен: CLI отсутствует
+  в offline npm cache; использованы MCP-каталоги и проверки проекта.
+
+Снимки: `artifacts/design/living-20261024/` — home-wide/home-mobile, login-wide,
+customers-wide, charts-wide, charts-mobile, chart-tooltip-mobile, settings-mobile,
+registration-mobile, error-mobile. Лог полного прогона:
+`.state/living-design/check-confirmation.log`.
+
+Not run: Firefox/Safari, физический слабый GPU, screen reader, 200% toolbar zoom,
+настоящие OS reduced motion/transparency/forced colors, 768 CSS px. Их не заменяют
+проверки JS веток. Исторические свидетельства ниже относятся к прежним версиям.
+
 Дата: 2026-10-23. Проверяется изолированная сцена `design/`, не конкурсное приложение. ТЗ, продуктовый стек и допуск подготовленного кода ещё неизвестны. Последняя версия использует PP Neue Machina Inktrap и утверждённый пользователем вариант Б. Ранний отчёт JetBrains Mono оставлен ниже как история, не как свидетельство текущего шрифта.
 
 ## PNG: белый камень на чёрном фоне — 2026-10-22

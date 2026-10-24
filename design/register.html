@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="scene.css?v=20261022-8">
     <link rel="stylesheet" href="auth-page.css?v=20261022-3">
     <script src="auth-page.js" type="module"></script>
-  </head>
+    <link rel="stylesheet" href="motion.css">
+  <script type="module" src="motion.js"></script>
+</head>
   <body class="ds-root">
     <a class="ds-skip ds-button" href="#auth-title">К форме регистрации</a>
     <main class="scene-shell auth-shell">
@@ -27,7 +29,9 @@
       <p class="auth__sr-only" id="dither-status" role="status" aria-live="polite" hidden></p>
       <div class="auth__content">
         <section class="auth__form-area" aria-labelledby="auth-title">
+          <a class="auth__brand" href="index.html">localhost3000</a>
           <h1 class="auth__title" id="auth-title" tabindex="-1">Регистрация</h1>
+          <p class="ds-hint">Дизайн формы регистрации. Создание аккаунтов в рабочей панели пока не подключено.</p>
           <form class="auth-form" method="post" data-auth-mode="register">
             <div class="auth-form__fields">
               <div class="ds-field">

@@ -1,5 +1,6 @@
 import { startShell, api, el, eur, score, metadata, errorText } from './shell.js';
 import { showChart, chartUnavailable } from './churn-chart.js';
+import { play } from '/design/motion.js';
 const summary = document.querySelector('#summary');
 const region = document.querySelector('#rating-region');
 const body = document.querySelector('#customers-table tbody');
@@ -51,15 +52,18 @@ function urlState() {
   history.replaceState(null, '', '/customers?' + params);
 }
 function showSummary(data) {
+  const openDetails=new Set([...summary.querySelectorAll('details[open]')].map(node=>node.dataset.calcMeta));
   summary.replaceChildren();
   const line = el('div', undefined, 'summary-line');
   const high = el('p', 'Высокий риск');
   const highLink = el('a', data.risk_counts.high); highLink.href = '/customers?risk_level=high'; highLink.setAttribute('aria-label', `${data.risk_counts.high} клиентов высокого риска`); high.append(el('br'), highLink);
   const money = el('p', 'Стоимость продлений под риском'); money.append(el('strong', data.customers_evaluated === 0 ? 'Нет денежной оценки' : eur(data.monetary_risk_cents)));
   const unknown = el('p', 'Без оценки'); unknown.append(el('strong', data.risk_counts.unknown)); line.append(high,money,unknown);
-  summary.append(line, el('p', `Одно ближайшее продление каждой услуги в горизонте ${data.horizon_days} дней; взвешено индексом риска. Сценарная оценка в EUR, не подтверждённый прогноз потерь.`), el('p', `Всего клиентов: ${data.customers_total}. Средний риск: ${data.risk_counts.medium}; низкий: ${data.risk_counts.low}. Цена ближайших продлений: ${eur(data.due_services_price_cents)}. Нехватка средств: ${eur(data.funding_gap_cents)}.`), metadata(data));
+  const composition=el('details',undefined,'metadata');composition.dataset.calcMeta='composition';composition.append(el('summary',`В снимке ${data.customers_total} клиентов · состав и денежный расчёт`),el('p',`Средний риск: ${data.risk_counts.medium}; низкий: ${data.risk_counts.low}. Цена ближайших продлений: ${eur(data.due_services_price_cents)}. Нехватка средств: ${eur(data.funding_gap_cents)}.`));
+  summary.append(line, el('p', `Одно ближайшее продление каждой услуги в горизонте ${data.horizon_days} дней; взвешено индексом риска. Сценарная оценка в EUR, не подтверждённый прогноз потерь.`), composition, metadata(data));
   if (data.customers_total === 0) summary.append(el('p', 'Данные ещё не загружены. Активный снимок пуст. Нужен полный JSON-снимок источника.'));
   if (data.data_quality_warnings) summary.append(el('p', `Предупреждений о качестве данных: ${data.data_quality_warnings}. Подробности в карточках клиентов.`));
+  for(const node of summary.querySelectorAll('details'))node.open=openDetails.has(node.dataset.calcMeta);
   summary.setAttribute('aria-busy', 'false');
 }
 async function readCustomers(background=false, signal) {
@@ -97,8 +101,9 @@ async function readCustomers(background=false, signal) {
     const focused=document.activeElement, scrollY=window.scrollY, scrollX=region.scrollLeft;
     const rowFocused=body.contains(focused);
     const summaryFocused=summary.contains(focused);
+    const summaryFocusKey=summaryFocused?focused?.closest('details')?.dataset.calcMeta:null;
     showSummary(totals.data);
-    if(summaryFocused)summary.querySelector('a')?.focus({preventScroll:true});
+    if(summaryFocused)(summaryFocusKey?summary.querySelector(`[data-calc-meta="${summaryFocusKey}"] > summary`):summary.querySelector('a'))?.focus({preventScroll:true});
     const existing=new Map([...body.children].map(row=>[row.dataset.id,row]));
     let index=0;
     for (const row of rows.data.items) {
@@ -106,10 +111,13 @@ async function readCustomers(background=false, signal) {
       tr.dataset.id=row.id;
       for (const value of [row.id, row.email]) { const td=el('td'); const link=el('a',value); link.href='/customers/'+encodeURIComponent(row.id); td.append(link); tr.append(td); }
       for (const value of [eur(row.balance_cents), eur(row.total_replenished_cents), score(row), row.top_reasons.join(' · ') || (row.risk_score === null ? 'Нет возобновляемых услуг' : 'Нет активных признаков риска'), eur(row.monetary_risk_cents)]) tr.append(el('td',value));
+      const risk=el('span',tr.cells[4].textContent,'risk-mark');risk.dataset.level=row.risk_level;tr.cells[4].replaceChildren(risk);
       const old=existing.get(row.id);
       if(old){existing.delete(row.id);[...old.cells].forEach((td,i)=>{const target=td.firstElementChild||td;const value=tr.cells[i].textContent;if(target.textContent!==value)target.textContent=value;});}
       const node=old||tr;
+      if(old?.cells[4].firstElementChild)old.cells[4].firstElementChild.dataset.level=row.risk_level;
       if(body.children[index]!==node)body.insertBefore(node,body.children[index]||null);
+      if(!background)play(node,[{opacity:.2},{opacity:1}],{duration:320,delay:Math.min(index,5)*25,fill:'backwards'});
       index++;
     }
     for(const row of existing.values())row.remove();
@@ -117,6 +125,7 @@ async function readCustomers(background=false, signal) {
     if(rowFocused&&!focused.isConnected)(body.querySelector('a')||sortBy).focus({preventScroll:true});
     region.scrollLeft=scrollX;window.scrollTo(window.scrollX,scrollY);
     shownRevision=rows.data.analysis_revision;
+    if(background)play(summary,[{opacity:.65},{opacity:1}],{duration:320});
     }
     const resultStatus = rows.data.total === 0 ? (totals.data.customers_total === 0 ? 'Данные ещё не загружены.' : 'Нет клиентов по выбранным условиям. Сбросьте фильтр.') : `Показано ${requested.offset+1}–${requested.offset+rows.data.items.length} из ${rows.data.total} клиентов. Расчёт: ${rows.data.analysis_revision}. Связь с сервером установлена.`;
     announce(resultStatus);

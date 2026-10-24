@@ -80,6 +80,17 @@ const importStatus=document.querySelector('#import-status');
 const importErrors=document.querySelector('#import-errors');
 const importWarnings=document.querySelector('#import-warnings');
 fileInput.addEventListener('change',()=>{confirmation.checked=false;importErrors.replaceChildren();importStatus.textContent=fileInput.files[0]?`Выбран файл: ${fileInput.files[0].name}, ${fileInput.files[0].size} байт. Проверьте его и отдельно подтвердите полную замену.`:'';});
+let dragDepth=0;
+function hasFiles(event){return [...(event.dataTransfer?.types||[])].includes('Files');}
+importForm.addEventListener('dragenter',event=>{if(!hasFiles(event)||fileInput.disabled)return;event.preventDefault();dragDepth++;importForm.classList.add('is-dragging');});
+importForm.addEventListener('dragover',event=>{if(hasFiles(event)&&!fileInput.disabled){event.preventDefault();event.dataTransfer.dropEffect='copy';}});
+importForm.addEventListener('dragleave',event=>{if(!hasFiles(event))return;dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)importForm.classList.remove('is-dragging');});
+importForm.addEventListener('drop',event=>{
+  if(!hasFiles(event))return;event.preventDefault();dragDepth=0;importForm.classList.remove('is-dragging');
+  if(fileInput.disabled)return;
+  if(event.dataTransfer.files.length!==1){importStatus.textContent='Перетащите один JSON-файл. Текущий выбор сохранён.';return;}
+  fileInput.files=event.dataTransfer.files;fileInput.dispatchEvent(new Event('change',{bubbles:true}));fileInput.focus();
+});
 importForm.addEventListener('submit',async event=>{
   event.preventDefault();if(importing||saving||running){importStatus.textContent='Дождитесь завершения текущего запроса и повторите импорт. Выбранный файл сохранён.';return;}
   const file=fileInput.files[0];

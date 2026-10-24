@@ -81,6 +81,11 @@
   --motion-fast: 140ms;
   --motion-panel: 150ms;
   --motion-enter: 800ms;
+  --motion-reveal: 560ms;
+  --motion-chart: 680ms;
+  --motion-route: 240ms;
+  --motion-stagger: 45ms;
+  --motion-blur: 8px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Aceternity Bayer/duotone. User-approved 1 CSS px and threshold 0.5. */

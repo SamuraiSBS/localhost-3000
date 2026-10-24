@@ -24,7 +24,7 @@ def test_product_pages_require_session_and_serve_local_assets():
             assert home.status_code==200 and '<base href="/design/">' in home.text
             assert 'href="/login"' in home.text
             assert client.get('/login').status_code==200
-            for path in ['/assets/api.js','/assets/app.css','/design/tokens.css','/design/foundation.css','/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2']:
+            for path in ['/assets/api.js','/assets/app.css','/assets/living.css','/design/tokens.css','/design/foundation.css','/design/motion.css','/design/motion.js','/design/landing.css','/design/landing.js','/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2']:
                 assert client.get(path).status_code==200
             login=client.post('/api/v1/auth/login',json={'login':'b06-test','password':'local-test-only'},headers={'Origin':'http://testserver'})
             assert login.status_code==200

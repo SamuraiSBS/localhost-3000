@@ -1,2 +1,68 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark"><title>Вход — localhost3000</title><link rel="icon" href="data:,"><link rel="preload" href="/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/design/fonts.css"><link rel="stylesheet" href="/design/tokens.css"><link rel="stylesheet" href="/design/foundation.css"><link rel="stylesheet" href="/assets/app.css?v=b06-2"><script type="module" src="/assets/login.js?v=b06-2"></script></head><body class="ds-root"><a class="ds-skip ds-button" href="#main">К содержанию</a><div class="login-backdrop" id="scene-backdrop" data-renderer="fallback" aria-hidden="true"><img src="/design/assets/photo_8_2026-10-22_21-11-47.png" width="1280" height="853" alt=""><canvas></canvas><div class="login-scrim"></div></div><p id="dither-status" class="sr-only" hidden></p><main class="ds-container main" id="main"><h1>Вход</h1><noscript><p>Для защищённой панели включите JavaScript: данные загружаются через API.</p></noscript><section class="login-area" aria-label="Вход в панель"><p>Войдите, чтобы увидеть клиентов и модель риска.</p><p id="oidc-message" role="status" hidden></p><div id="oidc-area" hidden><p><a class="ds-button ds-button--secondary" id="oidc-login" href="/api/v1/auth/oidc/start">Войти через Keycloak</a></p><p>Локальный провайдер. Обычный вход по логину и паролю доступен ниже.</p></div><form id="login-form"><div class="ds-field"><label for="login">Логин</label><input class="ds-input" id="login" name="login" autocomplete="username" required aria-describedby="login-error"></div><div class="ds-field"><label for="password">Пароль</label><input class="ds-input" id="password" name="password" type="password" autocomplete="current-password" required aria-describedby="login-error"><button class="ds-button ds-button--secondary" id="show-password" type="button" aria-pressed="false" aria-controls="password">Показать пароль</button></div><p id="login-error" class="ds-error" role="alert" hidden></p><button class="ds-button" id="login-submit">Войти</button></form><p><a href="/">На главную</a></p></section></main></body></html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Вход — localhost3000</title>
+<link rel="icon" href="data:,">
+<link rel="preload" href="/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/design/fonts.css">
+<link rel="stylesheet" href="/design/tokens.css">
+<link rel="stylesheet" href="/design/foundation.css">
+<link rel="stylesheet" href="/assets/app.css?v=living-1">
+<script type="module" src="/assets/login.js?v=b06-2">
+</script>
+<link rel="stylesheet" href="/design/motion.css">
+<script type="module" src="/design/motion.js">
+</script>
+<link rel="stylesheet" href="/assets/living.css">
+</head>
+<body class="ds-root">
+<a class="ds-skip ds-button" href="#main">К содержанию</a>
+<div class="login-backdrop" id="scene-backdrop" data-renderer="fallback" aria-hidden="true">
+<img src="/design/assets/photo_8_2026-10-22_21-11-47.png" width="1280" height="853" alt="">
+<canvas>
+</canvas>
+<div class="login-scrim">
+</div>
+</div>
+<p id="dither-status" class="sr-only" hidden>
+</p>
+<main class="ds-container main" id="main">
+<a class="login-wordmark" href="/">localhost3000</a>
+<h1>Вход</h1>
+<noscript>
+<p>Для защищённой панели включите JavaScript: данные загружаются через API.</p>
+</noscript>
+<section class="login-area" aria-label="Вход в панель">
+<p class="login-intro">Клиенты, причины риска и ближайшие продления — в одном пространстве.</p>
+<p id="oidc-message" role="status" hidden>
+</p>
+<div id="oidc-area" hidden>
+<p>
+<a class="ds-button ds-button--secondary" id="oidc-login" href="/api/v1/auth/oidc/start">Войти через Keycloak</a>
+</p>
+<p>Локальный провайдер. Обычный вход по логину и паролю доступен ниже.</p>
+</div>
+<form id="login-form">
+<div class="ds-field">
+<label for="login">Логин</label>
+<input class="ds-input" id="login" name="login" autocomplete="username" required aria-describedby="login-error">
+</div>
+<div class="ds-field">
+<label for="password">Пароль</label>
+<input class="ds-input" id="password" name="password" type="password" autocomplete="current-password" required aria-describedby="login-error">
+<button class="ds-button ds-button--secondary" id="show-password" type="button" aria-pressed="false" aria-controls="password">Показать пароль</button>
+</div>
+<p id="login-error" class="ds-error" role="alert" hidden>
+</p>
+<button class="ds-button" id="login-submit">Войти</button>
+</form>
+<p class="login-back">
+<a href="/">← На главную</a>
+</p>
+</section>
+</main>
+</body>
+</html>

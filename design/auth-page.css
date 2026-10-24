@@ -41,9 +41,22 @@ body { margin: 0; }
   padding: var(--space-8) var(--page-gutter);
 }
 
+/* Match the product login composition while retaining this visual-only form. */
+@media (min-width: 44.001rem) {
+  .auth-shell .scene-backdrop { right: 48%; }
+  .auth-shell .scene-backdrop img, .auth-shell .scene-backdrop canvas { object-fit: contain; }
+  .auth-shell .scene-backdrop__scrim { background: var(--color-bg); opacity: .12; }
+  .auth__content { width: 48%; margin-left: 52%; }
+  .auth__title { text-align: left; }
+}
+@media (max-width: 44rem) {
+  .auth__form-area { background: var(--color-bg); padding: var(--space-6); }
+}
+
 .auth__form-area {
   width: min(100%, 28rem);
 }
+.auth__brand { display: block; font-weight: 600; text-decoration: none; margin-bottom: var(--space-12); }
 
 .auth__title {
   margin: 0 0 var(--space-8);

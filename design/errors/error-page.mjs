@@ -37,9 +37,11 @@ export function renderErrorPage({ code, title, message, retry = false }) {
     <link rel="stylesheet" href="../tokens.css">
     <link rel="stylesheet" href="../foundation.css">
     <link rel="stylesheet" href="./error-page.css">
+    <link rel="stylesheet" href="../motion.css">
+    <script type="module" src="../motion.js"></script>
   </head>
   <body class="ds-root error-document">
-    <main class="error-page" aria-labelledby="error-title">
+    <main class="error-page error-page__content" aria-labelledby="error-title">
 ${status}        <h1 id="error-title">${safeTitle}</h1>
         <p class="error-page__message">${safeMessage}</p>
         <div class="error-page__actions">
