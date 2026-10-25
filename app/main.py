@@ -14,8 +14,13 @@ from starlette.staticfiles import StaticFiles
 from app.api.analytics import router as analytics_router
 from app.api.auth import router as auth_router
 from app.api.customers import router as customers_router
+from app.api.exports import router as exports_router
+from app.api.lab import router as lab_router
 from app.api.settings import router as settings_router
 from app.api.source import router as source_router
+from app.api.workflow import router as workflow_router
+from app.api.data_quality import router as data_quality_router
+from app.api.observations import router as observations_router
 from app.auth import (
     SESSION_DATABASE_NAME,
     AuthError,
@@ -29,6 +34,7 @@ from app.config import RuntimeConfig
 from app.contracts import load_source
 from app.evaluation import EvaluationCoordinator
 from app.storage import SQLiteRepository
+from app.workflow_storage import WorkflowStore
 from app.metrics import render_metrics, require_metrics_token
 from app.oidc import OIDCService, PUBLIC_ROUTES
 
@@ -113,6 +119,9 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
             coordinator.replace_snapshot(load_source(source_path))
         application.state.coordinator = coordinator
         application.state.repository = repository
+        workflow_store = WorkflowStore(database_path)
+        workflow_store.initialize()
+        application.state.workflow_store = workflow_store
         session_store = SessionStore(database_path, ttl_seconds=config.session_ttl_seconds)
         session_store.initialize()
         application.state.session_store = session_store
@@ -126,6 +135,11 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
     application.include_router(analytics_router, prefix="/api/v1")
     application.include_router(settings_router, prefix="/api/v1")
     application.include_router(source_router, prefix="/api/v1")
+    application.include_router(lab_router, prefix="/api/v1")
+    application.include_router(exports_router, prefix="/api/v1")
+    application.include_router(workflow_router, prefix="/api/v1")
+    application.include_router(data_quality_router, prefix="/api/v1")
+    application.include_router(observations_router, prefix="/api/v1")
     application.add_exception_handler(
         AuthError,
         lambda request, error: JSONResponse(
@@ -205,6 +219,10 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
         except AuthError:
             # Only fixed internal destinations are accepted by the login page.
             destination = request.url.path
+            if destination == "/lab":
+                customer_id = request.query_params.get("customer_id", "")
+                if customer_id.isascii() and customer_id.isdecimal() and not customer_id.startswith("0"):
+                    destination += "?customer_id=" + customer_id
             return RedirectResponse("/login?next=" + destination, status_code=303,
                                     headers={"Cache-Control": "no-store"})
         return page(name)
@@ -220,6 +238,10 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
     @application.get("/settings", include_in_schema=False)
     def settings_page(request: Request):
         return protected_page(request, "settings.html")
+
+    @application.get("/lab", include_in_schema=False)
+    def lab_page(request: Request):
+        return protected_page(request, "lab.html")
 
     @application.get("/healthz", include_in_schema=False)
     def health() -> dict[str, str]:
@@ -298,7 +320,10 @@ def _document_contract(schema: dict) -> None:
             ("accounts", "services", "transactions")}), "warnings": array({"type": "object"})})
     models["APIError"] = obj({"error": {"type": "object", "required": ["code", "message"],
         "properties": {"code": string, "message": string, "details": array({"type": "object"}),
-                       "current_revision": integer}}})
+                       "current_revision": {"anyOf": [integer, {"type": "object",
+                           "required": ["analysis_revision", "data_revision", "settings_revision"],
+                           "properties": {"analysis_revision": string, "data_revision": integer,
+                                          "settings_revision": integer}}]}}}})
     models["CustomerDetail"]["properties"]["top_reasons"] = array({"type": "object"})
     nullable_string = {"anyOf": [string, {"type": "null"}]}
     number = {"type": "number"}
@@ -367,7 +392,10 @@ def _document_contract(schema: dict) -> None:
             if response_name:
                 operation["responses"]["200"] = {"description": "Current evaluation/configuration",
                     "content": {"application/json": {"schema": ref(response_name)}}}
-            for status in (400, 401, 403, 404, 409, 413, 422, 429, 500, 503):
+            error_statuses = (400, 401, 403, 404, 409, 413, 422, 429, 500, 503)
+            if path.startswith("/api/v1/lab/"):
+                error_statuses = (*error_statuses, 415)
+            for status in error_statuses:
                 operation["responses"][str(status)] = {"description": "Structured API error",
                     "content": {"application/json": {"schema": ref("APIError"),
                         "example": {"error": {"code": "request_failed", "message": "Request failed."}}}}}

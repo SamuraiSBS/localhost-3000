@@ -130,6 +130,154 @@ def _reverse_object_keys(value: object) -> object:
     return value
 
 
+def _source_revision(app):
+    current = app.state.coordinator.current
+    return {key: getattr(current, key) for key in
+            ("analysis_revision", "data_revision", "settings_revision")}
+
+
+def _source_preview(client, app, csrf, candidate=None):
+    expected = _source_revision(app)
+    response = client.post("/api/v1/source/snapshot/preview", json={
+        "expected_revision": expected,
+        "candidate_snapshot": candidate if candidate is not None else api_snapshot(),
+    }, headers=_unsafe_headers(csrf))
+    assert response.status_code == 200, response.text
+    data = response.json()
+    etag = f'"lab-{expected["analysis_revision"]}-d-{expected["data_revision"]}-s-{expected["settings_revision"]}"'
+    return data, {"expected_revision": expected, "candidate_checksum": data["candidate_checksum"]}, etag
+
+
+def _confirm_source(client, csrf, data, body, etag):
+    return client.post(f'/api/v1/source/snapshot/preview/{data["preview_id"]}/confirm',
+                       json=body, headers=_unsafe_headers(csrf, etag=etag))
+
+
+def test_b24_preview_no_write_confirm_and_reuse(api_environment):
+    from app.metrics import render_metrics
+    start_app, *_ = api_environment
+    client, app, csrf = start_app()
+    baseline = app.state.coordinator.current
+    state = app.state.repository.load_state()
+    metrics = render_metrics(baseline)
+    data, body, etag = _source_preview(client, app, csrf)
+    assert app.state.coordinator.current is baseline
+    assert app.state.repository.load_state() == state
+    assert render_metrics(baseline) == metrics
+    assert data["diff"]["as_of"] == data["as_of"]
+    assert data["diff"]["record_changes"]
+    response = _confirm_source(client, csrf, data, body, etag)
+    assert response.status_code == 200, response.text
+    assert response.json()["changed"] is True
+    assert response.json()["data_revision"] == state.data_revision + 1
+    assert response.json()["settings_revision"] == state.settings_revision
+    assert response.json()["preview_as_of"] == data["as_of"]
+    activated = app.state.repository.load_state()
+    assert _confirm_source(client, csrf, data, body, etag).status_code == 409
+    assert app.state.repository.load_state() == activated
+    noop, noop_body, noop_etag = _source_preview(client, app, csrf)
+    assert _confirm_source(client, csrf, noop, noop_body, noop_etag).json()["changed"] is False
+    assert app.state.repository.load_state() == activated
+
+
+@pytest.mark.parametrize("failure", ["checksum", "etag", "expiry", "stale", "bytes", "missing_etag"])
+def test_b24_confirmation_rejections_do_not_write(api_environment, monkeypatch, failure):
+    from app.api import source
+    start_app, *_ = api_environment
+    client, app, csrf = start_app()
+    data, body, etag = _source_preview(client, app, csrf)
+    if failure == "checksum":
+        body["candidate_checksum"] = "0" * 64
+    elif failure == "etag":
+        etag = '"wrong"'
+    elif failure == "expiry":
+        monkeypatch.setattr(source, "monotonic", lambda: float("inf"))
+    elif failure == "stale":
+        app.state.coordinator.refresh()
+    elif failure == "bytes":
+        from dataclasses import replace
+        entry = app.state.source_previews[data["preview_id"]]
+        app.state.source_previews[data["preview_id"]] = replace(entry, document=b"{}")
+    elif failure == "missing_etag":
+        etag = None
+    state = app.state.repository.load_state()
+    published = app.state.coordinator.current
+    response = _confirm_source(client, csrf, data, body, etag)
+    assert response.status_code == (400 if failure == "missing_etag" else 409), response.text
+    assert app.state.repository.load_state() == state
+    assert app.state.coordinator.current is published
+
+
+def test_b24_preview_stream_limit_before_decode(api_environment):
+    start_app, *_ = api_environment
+    client, app, csrf = start_app(max_snapshot_bytes=100_000)
+    state = app.state.repository.load_state()
+    headers = {**_unsafe_headers(csrf), "Content-Type": "application/json", "Content-Length": "1"}
+    response = client.post("/api/v1/source/snapshot/preview", content=iter([b"{" * 100_001]), headers=headers)
+    assert response.status_code == 413
+    headers["Content-Length"] = "100001"
+    assert client.post("/api/v1/source/snapshot/preview", content=b"{}", headers=headers).status_code == 413
+    assert app.state.repository.load_state() == state
+
+
+@pytest.mark.parametrize("no_op", [False, True])
+def test_b24_confirm_compare_and_swap_race_is_atomic(api_environment, monkeypatch, no_op):
+    from app.contracts import SourceSnapshot
+    start_app, *_ = api_environment
+    client, app, csrf = start_app()
+    candidate = app.state.coordinator.current.snapshot.model_dump(mode="json") if no_op else None
+    data, body, etag = _source_preview(client, app, csrf, candidate)
+    repository = app.state.repository
+    original = repository.commit_snapshot
+    race_state = []
+    def raced(document, checksum, *, expected, received_at):
+        # Simulate another process winning after coordinator's loaded-state
+        # check and calculation, immediately before the SQLite CAS transaction.
+        other = SourceSnapshot(accounts=[], services=[], transactions=[])
+        from app.storage import snapshot_checksum
+        original(other.canonical_json(), snapshot_checksum(other.canonical_json()),
+                 expected=expected, received_at=received_at)
+        race_state.append(repository.load_state())
+        return original(document, checksum, expected=expected, received_at=received_at)
+    monkeypatch.setattr(repository, "commit_snapshot", raced)
+    baseline = app.state.coordinator.current
+    response = _confirm_source(client, csrf, data, body, etag)
+    assert response.status_code == 409, response.text
+    assert repository.load_state() == race_state[0]
+    assert response.json()["error"]["current_revision"]["data_revision"] == race_state[0].data_revision
+    assert app.state.coordinator.current is baseline
+
+
+def test_b24_source_preview_auth_csrf_and_validation(api_environment):
+    start_app, *_ = api_environment
+    client, app, csrf = start_app()
+    path = "/api/v1/source/snapshot/preview"
+    state = app.state.repository.load_state()
+    payload = {"expected_revision": _source_revision(app), "candidate_snapshot": api_snapshot()}
+    assert client.post(path, json=payload).status_code == 403
+    headers = _unsafe_headers(csrf)
+    assert client.post(path, json=payload, headers={**headers, "Origin": "https://other.invalid"}).status_code == 403
+    assert client.post(path, json={}, headers=headers).status_code == 400
+    assert client.post(path, content="{", headers={**headers, "Content-Type": "application/json"}).status_code == 400
+    assert client.post(path, content="{}", headers=headers).status_code == 415
+    payload["candidate_snapshot"]["services"][0]["ownerId"] = 999999
+    assert client.post(path, json=payload, headers=headers).status_code == 422
+    client.cookies.clear()
+    assert client.post(path, json=payload, headers=headers).status_code == 401
+    assert app.state.repository.load_state() == state
+
+
+def test_b24_simultaneous_confirms_apply_once(api_environment):
+    start_app, *_ = api_environment
+    client, app, csrf = start_app()
+    data, body, etag = _source_preview(client, app, csrf)
+    before = app.state.repository.load_state()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(lambda _: _confirm_source(client, csrf, data, body, etag).status_code, range(2)))
+    assert sorted(outcomes) == [200, 409]
+    assert app.state.repository.load_state().data_revision == before.data_revision + 1
+
+
 @pytest.fixture
 def api_environment():
     SCRATCH_ROOT.mkdir(parents=True, exist_ok=True)

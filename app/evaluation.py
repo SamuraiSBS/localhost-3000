@@ -167,6 +167,16 @@ class SettingsRevisionConflict(RuntimeError):
         self.current_revision = current_revision
 
 
+class SourceRevisionConflict(RuntimeError):
+    def __init__(self, state: PersistedState):
+        super().__init__("stale_evaluation")
+        self.current_revision = {
+            "analysis_revision": f"a-{state.analysis_revision}",
+            "data_revision": state.data_revision,
+            "settings_revision": state.settings_revision,
+        }
+
+
 Calculator = Callable[..., Evaluation]
 Clock = Callable[[], datetime]
 
@@ -240,7 +250,10 @@ class EvaluationCoordinator:
             self._started = True
             return candidate
 
-    def replace_snapshot(self, snapshot: SourceSnapshot) -> UpdateResult:
+    def replace_snapshot(
+        self, snapshot: SourceSnapshot, *,
+        expected_revision: tuple[str, int, int] | None = None,
+    ) -> UpdateResult:
         """Validate, compute, commit and publish a full active-snapshot replace."""
         self._require_started()
         if not isinstance(snapshot, SourceSnapshot):
@@ -252,7 +265,19 @@ class EvaluationCoordinator:
         checksum = snapshot_checksum(document)
         with self._lock:
             state = self.repository.load_state()
+            if expected_revision is not None and expected_revision != (
+                f"a-{state.analysis_revision}", state.data_revision, state.settings_revision,
+            ):
+                raise SourceRevisionConflict(state)
             if state.checksum == checksum:
+                if expected_revision is not None:
+                    # A confirmed no-op still checks revisions in SQLite's write
+                    # transaction, including writes from a separate process.
+                    updated, changed = self.repository.commit_snapshot(
+                        document, checksum, expected=state,
+                        received_at=state.received_at or normalize_as_of(self._clock()),
+                    )
+                    return self._result(updated, changed=changed)
                 return self._result(state, changed=False)
             received_at = normalize_as_of(self._clock())
             candidate = self._calculate(
@@ -263,12 +288,44 @@ class EvaluationCoordinator:
                 settings_revision=state.settings_revision,
                 as_of=received_at,
             )
-            updated, changed = self.repository.commit_snapshot(
-                document,
-                checksum,
-                expected=state,
-                received_at=received_at,
-            )
+            # Compare the old source under the SAME settings and clock used for
+            # the new candidate. The published old evaluation may have a stale
+            # clock, so comparing against it would mix time and source effects.
+            before = None
+            if state.snapshot_json is not None:
+                before = self._calculate(
+                    state.snapshot_json, state.settings_json,
+                    analysis_revision=state.analysis_revision + 1,
+                    data_revision=state.data_revision, settings_revision=state.settings_revision,
+                    as_of=received_at,
+                )
+
+            def observe_workflow(connection):
+                if before is None:
+                    return
+                from app.workflow_storage import WorkflowStore
+                workflow = WorkflowStore(self.repository.database_path)
+                shared_customers = set(before.customers_by_id) & set(candidate.customers_by_id)
+                for customer_id in sorted(shared_customers):
+                    previous_customer = before.customers_by_id[customer_id]
+                    customer = candidate.customers_by_id[customer_id]
+                    workflow.observe_published_source(
+                        connection, customer_id=customer_id,
+                        previous_data_revision=state.data_revision, data_revision=state.data_revision + 1,
+                        before_risk=previous_customer.risk_level, after_risk=customer.risk_level,
+                        before_gap_cents=previous_customer.funding_gap_cents,
+                        after_gap_cents=customer.funding_gap_cents,
+                        received_at=received_at, comparison_settings_revision=state.settings_revision,
+                        comparison_model_version=candidate.model_version, comparison_as_of=received_at,
+                    )
+
+            with self.repository.observe_source_publication(checksum, observe_workflow):
+                updated, changed = self.repository.commit_snapshot(
+                    document,
+                    checksum,
+                    expected=state,
+                    received_at=received_at,
+                )
             if changed:
                 self._publish(candidate)
             return self._result(updated, changed=changed)
