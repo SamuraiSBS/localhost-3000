@@ -156,3 +156,42 @@
     --dialog-backdrop: var(--color-bg);
   }
 }
+
+/* Approved interaction system, shared by the specimen and product routes. */
+[data-design-lab], [data-product] {
+  --lab-bg: #0a0a0a;
+  --lab-fg: #fafafa;
+  --lab-panel: #171717;
+  --lab-raised: #262626;
+  --lab-muted: #a3a3a3;
+  --lab-line: #404040;
+  --lab-control-line: #737373;
+  --lab-accent: #ab47ff;
+  --lab-signal: #a7ef9e;
+  --lab-danger: #ffb2ad;
+  --lab-focus: #d6c2ff;
+  --lab-radius: 8px;
+  --lab-height: 48px;
+  --lab-motion: 240ms;
+  --lab-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --lab-font: 'Geist Variable', Arial, sans-serif;
+  --lab-mono: 'Geist Mono Variable', monospace;
+}
+
+[data-product] {
+  --font-content: var(--lab-font);
+  --color-bg: var(--lab-bg);
+  --color-text: var(--lab-fg);
+  --color-text-secondary: var(--lab-muted);
+  --color-surface: var(--lab-panel);
+  --color-surface-raised: var(--lab-raised);
+  --color-border: var(--lab-line);
+  --color-border-control: var(--lab-control-line);
+  --color-action-bg: var(--lab-fg);
+  --color-action-text: var(--lab-bg);
+  --color-action-hover: var(--lab-signal);
+  --color-focus: var(--lab-focus);
+  --radius-control: var(--lab-radius);
+  --button-min-height: var(--lab-height);
+  --button-hover-duration: var(--lab-motion);
+}

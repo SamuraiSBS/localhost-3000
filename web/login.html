@@ -6,12 +6,10 @@
 <meta name="color-scheme" content="dark">
 <title>Вход — localhost3000</title>
 <link rel="icon" href="data:,">
-<link rel="preload" href="/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/design/fonts.css">
 <link rel="stylesheet" href="/design/tokens.css">
 <link rel="stylesheet" href="/design/foundation.css">
 <link rel="stylesheet" href="/design/terminal-field.css?v=20261024-2">
-<script type="module" src="/design/terminal-field.js?v=20261024-2"></script>
+
 <link rel="stylesheet" href="/assets/app.css?v=living-1">
 <script type="module" src="/assets/login.js?v=b06-2">
 </script>
@@ -19,17 +17,19 @@
 <script type="module" src="/design/motion.js">
 </script>
 <link rel="stylesheet" href="/assets/living.css">
+<link rel="stylesheet" href="/assets/interface/product.css">
+<script type="module" src="/assets/interface/product.js"></script>
 </head>
-<body class="ds-root">
-<canvas class="terminal-field" aria-hidden="true"></canvas>
+<body class="ds-root dark" data-product>
+<div id="interface-background" aria-hidden="false"></div>
 <a class="ds-skip ds-button" href="#main">К содержанию</a>
 <main class="ds-container main" id="main">
-<a class="login-wordmark" href="/">localhost3000</a>
-<h1>Вход</h1>
+<div class="auth-layout"><div class="auth-copy"><a class="login-wordmark" href="/">← localhost3000</a><h1 data-blur-heading>Вернуться к важным связям.</h1><p>Увидеть, кому нужно внимание. Разобраться в причинах риска. Проверить решение до действия.</p></div>
 <noscript>
 <p>Для защищённой панели включите JavaScript: данные загружаются через API.</p>
 </noscript>
 <section class="login-area" aria-label="Вход в панель">
+<h2>Вход в рабочую область</h2>
 <p class="login-intro">Клиенты, причины риска и ближайшие продления — в одном пространстве.</p>
 <p id="oidc-message" role="status" hidden>
 </p>
@@ -57,7 +57,7 @@
 <p class="login-back">
 <a href="/">← На главную</a>
 </p>
-</section>
+</section></div>
 </main>
 </body>
 </html>

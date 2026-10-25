@@ -1,5 +1,4 @@
 """Anonymous demo sessions have real API access, origin/CSRF guards and isolated data."""
-from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -35,18 +34,33 @@ def test_demo_accounts_are_isolated_from_operator_and_each_other():
             assert client.patch('/api/v1/model/settings', json={'horizon_days': updated}, headers=headers).status_code == 200
             assert client.get('/api/v1/model/settings').json()['horizon_days'] == updated
             assert client.get('/api/v1/customers').json()['total'] > 0
+            client.cookies.clear()  # A second browser, not a session rotation.
             second = client.post('/api/v1/auth/demo', headers=origin)
             assert second.status_code == 200
+            second_cookie = client.cookies.get('session')
             assert client.get('/api/v1/model/settings').json()['horizon_days'] == original
             assert client.get('/api/v1/analytics/summary').status_code == 200
-            assert client.get('/api/v1/observations').status_code != 500
+            assert client.get('/api/v1/observations').status_code == 200
+            assert client.put('/api/v1/source/snapshot', json={'accounts': [], 'services': [], 'transactions': []},
+                headers={**origin, 'X-CSRF-Token': second.json()['csrf_token']}).status_code == 200
+            assert client.get('/api/v1/customers').json()['total'] == 0
+            client.cookies.clear(); client.cookies.set('session', first_cookie, domain='testserver.local', path='/')
+            assert client.get('/api/v1/model/settings').json()['horizon_days'] == updated
+            assert client.get('/api/v1/customers').json()['total'] > 0
+            client.cookies.clear(); client.cookies.set('session', second_cookie, domain='testserver.local', path='/')
             logged = client.post('/api/v1/auth/login', json={'login': config.login, 'password': 'test-password'}, headers=origin)
             assert logged.status_code == 200
             assert client.get('/api/v1/model/settings').json()['horizon_days'] == original
             assert client.get('/api/v1/auth/me').json()['user']['id'] == 'operator'
-            # Rotation revokes the old demo credential.
+            operator_cookie = client.cookies.get('session')
+            # Logging out browser A revokes its demo, leaving the operator untouched.
+            client.cookies.clear(); client.cookies.set('session', first_cookie, domain='testserver.local', path='/')
+            assert client.post('/api/v1/auth/logout', headers={**origin, 'X-CSRF-Token': csrf}).status_code == 204
             client.cookies.set('session', first_cookie, domain='testserver.local', path='/')
             assert client.get('/api/v1/auth/me').status_code == 401
+            client.cookies.clear(); client.cookies.set('session', operator_cookie, domain='testserver.local', path='/')
+            assert client.get('/api/v1/auth/me').json()['user']['id'] == 'operator'
+            assert client.get('/api/v1/customers').json()['total'] > 0
 
 
 def test_demo_can_be_disabled():

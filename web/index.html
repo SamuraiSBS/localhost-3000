@@ -5,30 +5,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="localhost3000 — Digital Ruins / Lost Signal. Объяснимый риск непродления.">
-  <title>localhost3000</title>
+  <meta name="description" content="localhost3000 — объяснимый риск непродления. Клиенты, причины риска и решения в одной рабочей области.">
+  <title>localhost3000 — сохранить связь</title>
   <link rel="icon" href="data:,">
-  <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="fonts.css">
-  <link rel="stylesheet" href="tokens.css">
-  <link rel="stylesheet" href="foundation.css">
-  <link rel="stylesheet" href="terminal-field.css?v=20261024-2">
-  <script type="module" src="terminal-field.js?v=20261024-2"></script>
-  <link rel="stylesheet" href="motion.css">
-  <link rel="stylesheet" href="landing.css">
-  <script type="module" src="landing.js"></script>
+  <link rel="stylesheet" href="/design/tokens.css">
+  <link rel="stylesheet" href="/design/foundation.css">
+  <link rel="stylesheet" href="/assets/app.css">
+  <link rel="stylesheet" href="/assets/interface/product.css">
+  <script type="module" src="/assets/interface/product.js"></script>
 </head>
-<body class="ds-root">
-  <canvas class="terminal-field" aria-hidden="true"></canvas>
-  <a class="ds-skip ds-button" href="/login">К форме входа</a>
-  <main class="ruins" id="entry">
-    <div class="ruins__composition">
-      <figure class="ruins__art" aria-hidden="true">
-        <img src="assets/columns.webp" srcset="assets/columns-768.webp 768w, assets/columns.webp 1536w" sizes="(max-width: 640px) 145vw, 928px" width="1536" height="1024" alt="" fetchpriority="high">
-      </figure>
-      <h1 class="ruins__title" id="entry-title">localhost3000</h1>
-      <a class="ds-button ruins__enter" href="/login">ENTER SYSTEM</a>
+<body class="ds-root dark" data-product>
+<div id="interface-background"></div>
+<a class="ds-skip ds-button" href="/#main">К содержанию</a>
+<header class="landing-header ds-container">
+  <a class="landing-brand" href="/">localhost3000</a>
+  <nav aria-label="Навигация по главной"><a class="about-link" href="/#how-it-works">Как это работает</a><a href="/login">Войти ↗</a></nav>
+</header>
+<main id="main">
+  <section class="landing-hero ds-container" aria-labelledby="entry-title">
+    <div class="landing-copy">
+      <h1 id="entry-title">Увидеть риск.<br/><span>Сохранить связь.</span></h1>
+      <p>За цифрами — клиенты. Узнайте, кто может не продлить услугу, почему и какое действие стоит проверить.</p>
+      <div class="landing-actions"><div id="enter-action"><a class="ds-button" href="/login">Открыть рабочую область</a></div><a href="/login#demo-login">Посмотреть демо ↗</a></div>
     </div>
-  </main>
+    <div class="landing-art"><img src="/design/assets/columns.webp" srcset="/design/assets/columns-768.webp 768w, /design/assets/columns.webp 1536w" sizes="(max-width: 704px) 100vw, 650px" width="1536" height="1024" alt="Три повреждённые колонны — Digital Ruins" fetchpriority="high"><div id="hero-note"></div></div>
+  </section>
+  <section class="landing-story" id="how-it-works" aria-labelledby="story-heading"><div class="ds-container story-grid"><h2 id="story-heading">От сигнала —<br/>к понятному решению.</h2><div><p>Рабочая область собирает клиентов, услуги и пополнения в объяснимый рейтинг. Вместо одного тревожного числа — факторы риска, ближайшие продления и стоимость под риском.</p><p>В лаборатории можно сравнить сценарии. Расчёт помогает выбрать, что проверить; индекс риска не является вероятностью ухода.</p></div></div></section>
+  <section class="landing-steps ds-container" aria-label="Возможности рабочей области">
+    <article class="journey-step"><h3>Найти тех, кому нужно внимание</h3><p>Фильтруйте рейтинг по риску, ищите клиента и читайте причины оценки.</p><a href="/customers">Клиенты ↗</a></article>
+    <article class="journey-step"><h3>Проверить идею до действия</h3><p>Откройте клиента в лаборатории, сравните сценарий с рабочим расчётом и изучите ограничения.</p><a href="/lab">Лаборатория ↗</a></article>
+    <article class="journey-step"><h3>Настроить модель под задачу</h3><p>Измените веса признаков, горизонт продлений и границы уровней риска.</p><a href="/settings">Модель ↗</a></article>
+  </section>
+</main>
+<footer class="landing-footer"><div class="ds-container"><p>localhost3000 · Digital Ruins / Lost Signal</p><a href="/login#demo-login">Проверяющему: открыть демо-аккаунт</a></div></footer>
 </body>
 </html>

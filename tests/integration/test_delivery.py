@@ -130,7 +130,12 @@ def test_decision_lab_exact_package_boundary():
     for name in members:
         parts = Path(name).parts
         assert not set(parts) & {".state", ".agent-state", ".git", "tests", "scratch", "materials", "материалы"}
-        assert not name.endswith((".woff2", ".jpg", ".jpeg", ".sqlite", ".db", ".zip"))
+        assert not name.endswith((".jpg", ".jpeg", ".sqlite", ".db", ".zip"))
+        if name.endswith('.woff2'):
+            # Only the approved OFL Geist build outputs; proprietary source fonts stay excluded.
+            assert name.startswith('web/assets/interface/geist-')
+            assert 'web/assets/interface/licenses/fontsource-variable-geist.txt' in members
+            assert 'web/assets/interface/licenses/fontsource-variable-geist-mono.txt' in members
         assert name != ".env" and "credentials" not in name
     assert package.OUTPUT.as_posix() == "artifacts/acceptance/decision-lab/submission.zip"
     assert package.MANIFEST.as_posix() == "artifacts/acceptance/decision-lab/package-results.json"

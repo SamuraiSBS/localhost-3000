@@ -6,12 +6,10 @@
 <meta name="color-scheme" content="dark">
 <title>Модель — localhost3000</title>
 <link rel="icon" href="data:,">
-<link rel="preload" href="/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/design/fonts.css">
 <link rel="stylesheet" href="/design/tokens.css">
 <link rel="stylesheet" href="/design/foundation.css">
 <link rel="stylesheet" href="/design/terminal-field.css?v=20261024-2">
-<script type="module" src="/design/terminal-field.js?v=20261024-2"></script>
+
 <link rel="stylesheet" href="/assets/app.css?v=living-1">
 <script type="module" src="/assets/settings.js?v=b07-1">
 </script>
@@ -19,9 +17,11 @@
 <script type="module" src="/design/motion.js">
 </script>
 <link rel="stylesheet" href="/assets/living.css">
+<link rel="stylesheet" href="/assets/interface/product.css">
+<script type="module" src="/assets/interface/product.js"></script>
 </head>
-<body class="ds-root">
-<canvas class="terminal-field" aria-hidden="true"></canvas>
+<body class="ds-root dark" data-product>
+<div id="interface-background" aria-hidden="false"></div>
 <a class="ds-skip ds-button" href="#main">К содержанию</a>
 <header class="ds-terminal">
   <div class="ds-container ds-terminal__inner">
@@ -82,6 +82,7 @@
 <h2 id="import-heading">Импорт полного снимка</h2>
 <p id="import-hint">JSON полностью заменит активный аналитический снимок: клиенты, услуги и транзакции, отсутствующие в файле, исчезнут из анализа. Настройки модели сохранятся. Исходный файл не изменяется.</p>
 <form id="snapshot-form" class="snapshot-form">
+<div id="upload-preview"></div>
 <div class="ds-field">
 <label for="snapshot-file">Полный JSON-снимок источника</label>
 <input class="ds-input snapshot-file" id="snapshot-file" type="file" accept=".json,application/json" required aria-describedby="import-hint">
