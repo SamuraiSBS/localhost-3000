@@ -1,0 +1,16 @@
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: view-out var(--motion-route) ease-out both; }
+::view-transition-new(root) { animation: view-in var(--motion-route) var(--ease-out) both; }
+@keyframes view-out { to { opacity: 0; } }
+@keyframes view-in { from { opacity: 0; transform: translateY(6px); } }
+[role="alert"]:not([hidden]) { animation: notice-in var(--motion-panel) var(--ease-out); }
+@keyframes notice-in { from { opacity: 0; transform: translateY(4px); } }
+details > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: '+'; flex-shrink: 0; font-size: var(--type-lead); text-decoration: none; }
+details[open] > summary::after { content: '−'; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; }
+  [role="alert"] { animation: none !important; }
+}

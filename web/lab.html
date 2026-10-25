@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
+<title>Лаборатория — localhost3000</title><link rel="icon" href="data:,">
+<link rel="stylesheet" href="/design/tokens.css"><link rel="stylesheet" href="/design/foundation.css">
+<link rel="stylesheet" href="/design/terminal-field.css?v=20261024-2">
+<link rel="stylesheet" href="/assets/app.css?v=living-1"><link rel="stylesheet" href="/assets/living.css"><link rel="stylesheet" href="/assets/lab.css">
+<script type="module" src="/assets/lab.js"></script>
+<link rel="stylesheet" href="/assets/interface/product.css">
+<script type="module" src="/assets/interface/product.js"></script>
+</head>
+<body class="ds-root dark" data-product><div id="interface-background" aria-hidden="false"></div>
+<a class="ds-skip ds-button" href="#main">К содержанию</a>
+<header class="ds-terminal"><div class="ds-container ds-terminal__inner">
+<a class="wordmark" href="/" aria-label="localhost3000 — на главную">localhost3000</a>
+<nav aria-label="Основная навигация" id="product-navigation"><a href="/customers" data-nav="customers">Клиенты</a><a href="/settings" data-nav="settings">Модель</a></nav>
+<div class="session"><span id="user-login"></span><button class="ds-button ds-button--secondary" id="logout" type="button">Выйти</button></div>
+</div></header>
+<main class="ds-container main lab" id="main">
+<h1>Лаборатория решений</h1>
+<p>Сравните рабочий расчёт с изменением модели или предполагаемым действием. Сценарии не меняют данные клиента и рабочие настройки. Индекс риска не является вероятностью ухода.</p>
+<noscript><p>Для загрузки защищённых данных и расчёта сценариев включите JavaScript.</p></noscript>
+<section class="section" aria-labelledby="csv-title">
+<h2 id="csv-title">Экспорт клиентов</h2>
+<p>CSV содержит всю выборку фильтра, включая строки за пределами страницы рейтинга. Индекс риска не является вероятностью ухода. Неизвестные значения обозначены unknown.</p>
+<form id="csv-filter" class="filters">
+<div class="ds-field"><label for="csv-query">Email или точный ID</label><input class="ds-input" id="csv-query" type="search" maxlength="1000"></div>
+<div class="ds-field"><label for="csv-risk">Категория риска</label><select class="ds-input" id="csv-risk"><option value="">Все категории</option value="high">Высокий</option><option value="medium">Средний</option><option value="low">Низкий</option><option value="unknown">Без оценки</option></select></div>
+<button class="ds-button ds-button--secondary" type="submit">Скачать всю выборку CSV</button>
+</form>
+<p id="csv-status" role="status" aria-live="polite">Область экспорта: все клиенты. Порядок: индекс риска по убыванию, неизвестные в конце.</p>
+<p id="csv-error" role="alert" hidden></p>
+</section>
+<section class="section" id="quality-section" aria-labelledby="quality-title">
+<h2 id="quality-title">Качество данных</h2>
+<p>Покрытие относится к клиентам опубликованного снимка. Полнота и достоверность источника не установлены; точность модели этим отчётом не измеряется. Время получения не устанавливает возраст исходных наблюдений.</p>
+<button class="ds-button ds-button--secondary" id="quality-refresh" type="button">Проверить качество данных</button>
+<p id="quality-status" role="status" aria-live="polite">Проверка ещё не запущена.</p>
+<p id="quality-error" role="alert" hidden></p><div id="quality-result"></div>
+</section>
+<section class="section" aria-labelledby="worklist-title">
+<h2 id="worklist-title">Очередь контактов</h2>
+<p>Клиенты со средним или высоким рабочим индексом и нехваткой средств либо ручным продлением. Предлагаемые действия требуют проверки и не гарантируют удержание.</p>
+<form id="worklist-form" class="filters"><div class="ds-field"><label for="worklist-limit">Не больше клиентов, от 1 до 50</label><input class="ds-input" id="worklist-limit" type="number" min="1" max="50" step="1" value="10" required aria-describedby="worklist-status"></div><button class="ds-button" type="submit">Обновить очередь</button></form>
+<p id="worklist-status" role="status" aria-live="polite">Обновите очередь для выбора клиента.</p>
+<p id="worklist-error" role="alert" hidden></p>
+<div id="worklist-summary"></div><fieldset id="worklist-selection" hidden><legend>Выберите клиента для разбора</legend><div id="worklist-rows"></div></fieldset>
+<button class="ds-button ds-button--secondary" id="worklist-open" type="button" disabled>Открыть выбранного в симуляторе</button>
+<button class="ds-button ds-button--secondary" id="worklist-csv" type="button" disabled>Скачать отмеченные строки CSV</button>
+<p id="worklist-csv-count">Для CSV отмечено: 0 строк.</p>
+</section>
+<form id="customer-form" class="filters"><div class="ds-field"><label for="customer-id">ID клиента</label><input class="ds-input" id="customer-id" type="number" min="1" step="1" required aria-describedby="customer-hint"><p id="customer-hint">ID доступен в <a href="/customers">рейтинге клиентов</a>.</p></div><button class="ds-button" type="submit">Открыть клиента</button></form>
+<p id="lab-status" role="status" aria-live="polite">Выберите клиента для разбора.</p>
+<p id="lab-error" role="alert" hidden></p>
+<button id="refresh-baseline" class="ds-button ds-button--secondary" type="button" hidden>Обновить базу, сохранив черновик</button>
+<div id="lab-content" hidden>
+<section class="section" aria-labelledby="baseline-title"><h2 id="baseline-title">Рабочий расчёт</h2><div id="lab-revision"></div><div id="baseline"></div></section>
+<section class="section" id="observations-section" aria-labelledby="observations-title">
+<h2 id="observations-title">История наблюдений</h2>
+<p>Изменения источника, ручная работа и глобальные изменения модели показаны отдельно. История начинается с включения наблюдений: более ранние события неизвестны. Исчезновение записи означает её отсутствие в полном снимке, а не подтверждённый уход клиента.</p>
+<p>Ручные исходы — сообщения оператора. События модели описывают настройки и не устанавливают поведение клиента или эффективность контакта. Глобальные события модели видны для каждого клиента.</p>
+<button class="ds-button ds-button--secondary" id="observations-refresh" type="button">Загрузить историю клиента</button>
+<p id="observations-status" role="status" aria-live="polite">История ещё не загружена.</p><p id="observations-error" role="alert" hidden></p>
+<div id="observations-metadata"></div><div id="observations-result"></div>
+<button class="ds-button ds-button--secondary" id="observations-more" type="button" hidden>Загрузить ещё 50 событий</button>
+<p>События идут от старых к новым. Каждая страница читается отдельно; новые публикации между запросами могут изменить последующие страницы. Показано не более 500 событий за загрузку — обновление начинает просмотр заново.</p>
+</section>
+<section class="section" id="sensitivity-section" aria-labelledby="sensitivity-title">
+<h2 id="sensitivity-title">Чувствительность рабочего расчёта</h2>
+<p>Проверка отдельно меняет каждый рабочий вес на ±10% и каждый порог на ±5 баллов. Черновики модели и действий не применяются. Варианты показывают устойчивость модельного индекса, а не вероятность ухода.</p>
+<button class="ds-button" id="sensitivity-run" type="button">Проверить чувствительность</button><p id="sensitivity-status" role="status" aria-live="polite">Проверка ещё не запущена.</p><p id="sensitivity-error" role="alert" hidden></p><div id="sensitivity-result" class="lab-result"></div>
+</section>
+<section class="section" id="calendar-section" aria-labelledby="calendar-title">
+<h2 id="calendar-title">Сценарий повторных продлений</h2>
+<p>Отдельный гипотетический календарь с неизменной ценой каждой услуги. Рабочий расчёт ближайших продлений и его горизонт сохраняются. Календарь не предсказывает платежи, движение денег или дату удаления услуги.</p>
+<p>Основной баланс и доступные бонусы расходуются один раз по порядку дат, затем ID услуг. Реферальные средства исключены. Доходы, изменение цен и разблокировка бонусов не предполагаются. Ручные продления также повторяются; просроченная дата считается первым событием. Месяцы отсчитываются от исходной даты с ограничением последним днём месяца.</p>
+<form id="calendar-form">
+<div class="lab-fields"><div class="ds-field"><label for="calendar-horizon">Горизонт сценария, дней (1–90)</label><input class="ds-input" id="calendar-horizon" type="number" min="1" max="90" step="1" value="30" required></div><div class="ds-field"><label for="calendar-max-events">Максимум событий (1–1000)</label><input class="ds-input" id="calendar-max-events" type="number" min="1" max="1000" step="1" value="100" required></div></div>
+<fieldset><legend>Периоды услуг</legend><p>По умолчанию используется paymentTerm источника. Выбор другого периода — явное допущение только для сценария; цена не определяет период.</p><div id="calendar-periods"></div></fieldset>
+<button class="ds-button" type="submit">Рассчитать календарь продлений</button>
+</form><p id="calendar-status" role="status" aria-live="polite">Выберите горизонт и допущения.</p><p id="calendar-error" role="alert" hidden></p><div id="calendar-result" class="lab-result"></div>
+</section>
+<section class="section" aria-labelledby="model-title"><h2 id="model-title">Изменение модели</h2><p>Веса и пороги применяются только к этому сравнению.</p>
+<form id="model-form"><fieldset id="model-fields"><legend>Веса признаков, баллов</legend><div id="lab-weights" class="lab-fields"></div><div class="lab-fields"><div class="ds-field"><label for="lab-medium">Средний риск от, баллов</label><input class="ds-input" id="lab-medium" type="number" min="0" max="100" step="any" required></div><div class="ds-field"><label for="lab-high">Высокий риск от, баллов</label><input class="ds-input" id="lab-high" type="number" min="0" max="100" step="any" required></div></div></fieldset>
+<div class="actions"><button class="ds-button" type="submit">Сравнить модель</button><button class="ds-button ds-button--secondary" id="reset-model" type="button">Сбросить к рабочей модели</button></div></form><div id="model-result" class="lab-result" aria-live="polite"></div></section>
+<section class="section" aria-labelledby="action-title"><h2 id="action-title">Предполагаемое действие</h2><p>Гипотетическое пополнение и включение автопродления. Фактический баланс и услуги остаются прежними.</p>
+<form id="action-form"><div class="ds-field"><label for="top-up">Добавить к основному балансу, евроценты</label><input class="ds-input" id="top-up" type="number" min="0" step="1" value="0" required aria-describedby="top-up-hint"><p id="top-up-hint">Целое число: 100 евроцентов = 1 EUR.</p></div><fieldset><legend>Включить автопродление</legend><p>Доступны активные услуги в горизонте с отключённым автопродлением.</p><div id="action-services"></div></fieldset><div class="actions"><button class="ds-button" type="submit">Сравнить действие</button><button class="ds-button ds-button--secondary" id="reset-action" type="button">Сбросить действие</button></div></form><div id="action-result" class="lab-result" aria-live="polite"></div></section>
+</div>
+<section class="section" id="solver-section" aria-labelledby="solver-title" hidden>
+<h2 id="solver-title">Минимальное предполагаемое действие</h2>
+<p>Найдите минимальное пополнение и допустимое включение автопродления по рабочей модели. Это гипотеза: поиск не меняет баланс, услуги и настройки и не обещает удержание клиента.</p>
+<form id="solver-form">
+<div class="lab-fields"><div class="ds-field"><label for="solver-goal">Цель поиска</label><select class="ds-input" id="solver-goal"><option value="cover_selected">Полностью покрыть выбранные услуги</option><option value="score_below">Индекс клиента строго ниже порога</option></select></div><div class="ds-field" id="solver-threshold-field" hidden><label for="solver-threshold">Индекс строго меньше, баллов</label><input class="ds-input" id="solver-threshold" type="number" min="0" max="100" step="any" value="35" disabled></div></div>
+<fieldset id="solver-coverage"><legend>Услуги для полного покрытия</legend><p>Ранние услуги из всей корзины получают общие средства прежде выбранных.</p><div id="solver-services"></div></fieldset>
+<div class="lab-fields"><div class="ds-field"><label for="solver-max-cents">Максимальное пополнение, евроценты</label><input class="ds-input" id="solver-max-cents" type="number" min="0" max="10000000" step="1" value="1000" required aria-describedby="solver-bounds"></div><div class="ds-field"><label for="solver-max-switches">Максимум включений автопродления</label><input class="ds-input" id="solver-max-switches" type="number" min="0" max="8" step="1" value="0" required aria-describedby="solver-bounds"></div></div>
+<fieldset><legend>Разрешить включение автопродления</legend><p>Выберите не больше восьми активных услуг в горизонте с отключённым автопродлением. Поиск может использовать часть выбранных услуг.</p><div id="solver-switches"></div></fieldset>
+<p id="solver-bounds">100 евроцентов = 1 EUR. Пополнение: от 0 до 10 000 000 евроцентов; включений — не больше числа выбранных разрешений. Поиск ограничен 100 услугами в горизонте и 6 144 проверками кандидатов.</p>
+<div class="actions"><button class="ds-button" type="submit">Найти минимальное действие</button><button class="ds-button ds-button--secondary" id="solver-reset" type="button">Сбросить поиск</button></div>
+</form><p id="solver-status" role="status" aria-live="polite">Выберите цель и ограничения.</p><div id="solver-result" class="lab-result" aria-live="polite"></div>
+</section>
+<section class="section" id="source-section" aria-labelledby="source-title">
+<h2 id="source-title">Предпросмотр полного снимка источника</h2>
+<p>Сначала сравните новый файл с рабочим снимком при неизменных модели и дате. Отсутствие записи в файле означает различие входных данных, а не подтверждённый уход клиента. Только отдельное подтверждение заменяет весь рабочий снимок.</p>
+<form id="source-preview-form"><div class="ds-field"><label for="source-file">Полный снимок JSON</label><input class="ds-input" id="source-file" type="file" accept="application/json,.json" required aria-describedby="source-file-info source-size-hint"><p id="source-file-info">Файл не выбран.</p><p id="source-size-hint">Лимит сервера по умолчанию — 10 MiB на весь запрос вместе с обёрткой. Сервер может использовать меньший лимит.</p></div><div class="actions"><button class="ds-button" type="submit">Предпросмотр снимка</button><button class="ds-button ds-button--secondary" id="source-reject" type="button">Отклонить и очистить предпросмотр</button></div></form>
+<p id="source-status" role="status" aria-live="polite">Рабочие данные не изменены.</p><p id="source-error" role="alert" hidden></p><div id="source-result" class="lab-result"></div>
+<form id="source-confirm-form" hidden><label class="lab-check"><input id="source-confirm-ack" type="checkbox" required><span>Подтверждаю полную замену рабочего снимка именно этим предпросмотром. Модель остаётся прежней.</span></label><button class="ds-button" id="source-confirm" type="submit" disabled>Подтвердить полную замену</button></form>
+</section>
+<section class="section lab-case" id="case-section" aria-labelledby="case-title">
+<h2 id="case-title">Паспорт решения: песочница</h2>
+<p>Сохраните паспорт кнопкой под успешно рассчитанным сценарием. Он содержит одного клиента со всеми его услугами, точные суммы, настройки и дату расчёта. Имена, email и ID заменяются синтетическими; история операций и другие клиенты исключаются.</p>
+<p>Повтор в песочнице использует настройки из файла и не меняет рабочие данные. Паспорт одного клиента не восстанавливает место в полном рейтинге. Контрольная сумма проверяет содержимое, а не авторство. Совпадение расчёта подтверждает воспроизводимость модели, не точность прогноза ухода.</p>
+<form id="case-form"><div class="ds-field"><label for="case-file">Файл паспорта JSON, до 64 KiB</label><input class="ds-input" id="case-file" type="file" accept="application/json,.json" required aria-describedby="case-hint"><p id="case-hint">Файл отправляется только в песочницу этого приложения. Общий запрос с JSON-обёрткой также ограничен 64 KiB; файл у самой границы может не поместиться.</p></div><div class="actions"><button class="ds-button" type="submit">Повторить расчёт из паспорта</button><button class="ds-button ds-button--secondary" id="case-clear" type="button">Очистить песочницу</button></div></form>
+<p id="case-status" role="status" aria-live="polite">Паспорт не загружен.</p><p id="case-error" role="alert" hidden></p><div id="case-result" class="lab-result" aria-live="polite"></div>
+</section>
+</main></body></html>

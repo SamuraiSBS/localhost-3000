@@ -1,0 +1,47 @@
+{
+  "resetPasswordAllowed": false,
+  "registrationAllowed": false,
+  "enabled": true,
+  "realm": "localhost3000-p1",
+  "clients": [
+    {
+      "implicitFlowEnabled": false,
+      "enabled": true,
+      "attributes": {
+        "post.logout.redirect.uris": "http://127.0.0.1:8373/api/v1/auth/oidc/logout-return",
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": [
+        "http://127.0.0.1:8373/api/v1/auth/oidc/callback"
+      ],
+      "standardFlowEnabled": true,
+      "publicClient": false,
+      "secret": "${P1_OIDC_CLIENT_SECRET}",
+      "webOrigins": [
+        "http://127.0.0.1:8373"
+      ],
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "clientId": "localhost3000-panel"
+    }
+  ],
+  "users": [
+    {
+      "email": "p1-marketer@example.test",
+      "firstName": "Local",
+      "username": "p1-marketer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${P1_OIDC_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "id": "409921e4-c410-4c5e-86f3-e3a3816dc183",
+      "emailVerified": true,
+      "lastName": "Marketer",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Жидкое стекло — localhost3000</title>
+    <link rel="icon" href="data:,">
+    <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="fonts.css">
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="foundation.css">
+    <link rel="stylesheet" href="liquid-glass.css">
+    <script src="liquid-glass-preview.js" type="module"></script>
+  </head>
+  <body class="ds-root">
+    <a class="ds-skip ds-button" href="#main">К образцу стекла</a>
+    <header class="ds-terminal"><div class="ds-container ds-terminal__inner">
+      <a href="index.html">localhost3000</a>
+      <nav aria-label="Просмотр дизайна"><a href="preview.html">Основа интерфейса</a><a href="dither.html">Дизеринг</a></nav>
+    </div></header>
+    <main class="ds-container" id="main" tabindex="-1">
+      <div class="glass-intro"><h1>Жидкое стекло</h1><p>Стекло на отдельных элементах поверх графики — по принципу Hero Section Aceternity. Ниже можно отдельно рассмотреть материал и изменить его настройки.</p></div>
+      <section class="glass-hero" aria-labelledby="hero-title">
+        <img class="glass-hero__art" src="assets/columns-768.webp" width="768" height="512" alt="">
+        <div class="hero-glass hero-glass--bar" data-renderer="frosted">
+          <span class="liquid-filter" aria-hidden="true"></span>
+          <div class="hero-glass__content">
+            <span>localhost3000</span>
+            <nav aria-label="Материалы образца"><a href="#glass-stage">Материал</a><a href="#glass-preset">Настройки</a></nav>
+          </div>
+        </div>
+        <div class="glass-hero__body">
+          <a class="hero-glass hero-glass--badge" data-renderer="frosted" href="#glass-preset">
+            <span class="liquid-filter" aria-hidden="true"></span>
+            <span class="hero-glass__content">Пресет стекла <span class="ds-icon ds-icon--arrow-right" aria-hidden="true"></span></span>
+          </a>
+          <h2 id="hero-title">Свет на границе формы</h2>
+          <p>Монохромная архитектура, пиксельные иконки и стекло, сквозь которое остаётся видна графика.</p>
+          <div class="glass-hero__actions">
+            <a class="ds-button" href="preview.html">Основа интерфейса</a>
+            <a class="ds-button ds-button--secondary hero-glass hero-glass--action" data-renderer="frosted" href="#glass-stage">
+              <span class="liquid-filter" aria-hidden="true"></span>
+              <span class="hero-glass__content">Сравнить материал <span class="ds-icon ds-icon--arrow-right" aria-hidden="true"></span></span>
+            </a>
+          </div>
+        </div>
+      </section>
+      <p class="ds-hint glass-note" id="hero-fallback">Стеклянные элементы поддерживают матовую и непрозрачную версии.</p>
+      <h2>Материал отдельно</h2>
+      <div class="glass-stage" id="glass-stage">
+        <img src="assets/columns-768.webp" width="768" height="512" alt="Три повреждённые колонны под круглой стеклянной линзой">
+        <div class="liquid-lens" id="liquid-lens" data-shape="circle" data-renderer="frosted" aria-hidden="true"><span class="liquid-filter"></span></div>
+      </div>
+      <p class="ds-hint glass-note" id="glass-fallback">Пока показано матовое стекло. Преломление включится, если браузер его поддерживает.</p>
+      <form class="glass-controls" id="glass-controls" hidden>
+        <div class="ds-field"><label class="ds-label" for="glass-shape">Форма</label><select class="ds-select" id="glass-shape" name="shape"><option value="circle">Круг</option><option value="pill">Капсула</option></select></div>
+        <div class="ds-field"><label class="ds-label" for="glass-scale">Преломление: <output for="glass-scale"></output></label><input id="glass-scale" name="scale" type="range" min="0" max="100" step="1"></div>
+        <div class="ds-field"><label class="ds-label" for="glass-aberration">Разделение цветов: <output for="glass-aberration"></output></label><input id="glass-aberration" name="aberration" type="range" min="0" max="30" step="1"></div>
+        <div class="ds-field"><label class="ds-label" for="glass-bevel">Ширина края: <output for="glass-bevel"></output></label><input id="glass-bevel" name="bevelDepth" type="range" min="0" max="100" step="1"></div>
+        <div class="ds-field"><label class="ds-label" for="glass-frost">Матовость: <output for="glass-frost"></output></label><input id="glass-frost" name="frost" type="range" min="0" max="10" step="0.1"></div>
+        <div class="ds-field"><label class="ds-label" for="glass-tint">Белый оттенок: <output for="glass-tint"></output></label><input id="glass-tint" name="tint" type="range" min="0" max="1" step="0.01"></div>
+      </form>
+      <div class="glass-actions" id="glass-actions" hidden><button class="ds-button ds-button--secondary" type="button" id="glass-reset">Вернуть выбранные настройки</button></div>
+      <p class="ds-hint glass-note" id="glass-preset">Пресет: круг, преломление 50, разделение цветов 20, ширина края 60, матовость 4.8, белый оттенок 0.05. В Firefox и Safari предусмотрено матовое стекло; при сниженной прозрачности — непрозрачная поверхность.</p>
+      <p class="ds-hint glass-note">Пиксельные иконки: HackerNoon Pixel Icon Library. <a href="icon-credits.html">Источник и лицензия</a>.</p>
+    </main>
+  </body>
+</html>

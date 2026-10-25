@@ -1,5 +1,12 @@
 **
-!infra/
-!infra/probe/
-!infra/probe/server.py
-!infra/probe/page.html
+!requirements.txt
+!app/
+!app/**
+!web/
+!web/**
+!design/
+!design/**
+!data/
+!data/seed.json
+**/__pycache__/
+**/*.pyc

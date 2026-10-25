@@ -2,5 +2,12 @@
 *.sh text eol=lf
 *.py text eol=lf
 *.yaml text eol=lf
+*.yml text eol=lf
 Dockerfile text eol=lf
 Caddyfile text eol=lf
+
+# Preserve official upstream hashes on Windows checkout.
+web/vendor/swagger/swagger-ui-bundle.js -text
+web/vendor/swagger/swagger-ui.css -text
+web/vendor/swagger/LICENSE -text
+data/seed.json -text

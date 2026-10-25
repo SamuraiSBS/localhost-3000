@@ -1,44 +1,50 @@
 # localhost-3000
 
-Репозиторий: [SamuraiSBS/localhost-3000](https://github.com/SamuraiSBS/localhost-3000). Локальная папка: `D:\localhost-3000`.
+Объяснимая аналитика риска непродления подписок и лаборатория для проверки решений до их применения.
 
-Подготовка к хакатону до публикации ТЗ. Продукт и его стек пока не выбраны. `infra/probe` — временное приложение для проверки инфраструктуры.
+**Стек:** FastAPI, SQLite, HTML/CSS и ES-модули без React и сборки основного интерфейса.
 
-## Быстрый старт
+## Демо для проверяющего
 
-Требуются Python 3.13+ и Docker с Compose >= 2.24.4 (для production override). Приложение не требует pip/npm пакетов.
+1. Запустите приложение по инструкции ниже.
+2. Откройте [http://127.0.0.1:8080/login](http://127.0.0.1:8080/login).
+3. Нажмите **«Зайти на демо»** — логин и пароль для демо не нужны.
+4. Пройдите [сценарий демонстрации](docs/demo.md).
+
+Демо создаёт временную изолированную песочницу с учебными данными. Она не использует базу и настройки основного аккаунта.
+
+## Быстрый запуск
+
+Нужны Python 3.13, Docker Engine и Docker Compose. Выполняйте команды из корня репозитория.
+
+### Windows / PowerShell
 
 ```powershell
-python scripts/check.py
-python infra/probe/server.py
-# http://127.0.0.1:3000 — Ctrl+C для остановки
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install --require-hashes -r requirements-dev.txt
+.venv/Scripts/python.exe scripts/configure_local.py
+powershell -File scripts/dev.ps1 start
 ```
 
-Контейнеры на Windows:
+### Linux / macOS
 
-```powershell
-if (!(Test-Path .env)) { Copy-Item .env.example .env }
-./scripts/dev.ps1 start
-python scripts/smoke.py http://127.0.0.1:8080
-./scripts/dev.ps1 logs
-./scripts/dev.ps1 stop
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install --require-hashes -r requirements-dev.txt
+.venv/bin/python scripts/configure_local.py
+bash scripts/dev.sh start
 ```
 
-Linux/macOS: `bash scripts/dev.sh start|stop|logs|status|update|check`.
-Страница: `http://127.0.0.1:8080`; health: `/healthz` (статус + revision). Локальные порты доступны только с этого компьютера.
+`configure_local.py` попросит задать локальные учётные данные администратора. Для демо они не используются. Настройки запуска сохраняются в `.state/local/`; не добавляйте этот каталог в Git.
 
-На подготовленном компьютере порт задан в локальном `.env`: `http://127.0.0.1:3080` (8080 занят). Локальный `compose.override.yaml` также решает исчерпание Docker address pools, сохраняя сети других проектов; детали в `docs/infrastructure.md`.
+## Что можно посмотреть
 
-## Работа команды
+- Рейтинг клиентов, причины риска и ближайшие продления.
+- Настройки модели и объяснение денежной оценки.
+- Decision Lab: сценарии, чувствительность, очередь действий, календарь, preview импорта и replay экспортированного кейса.
 
-Короткая ветка от `main` → осмысленные коммиты → PR → зелёный `verify` → squash merge. Не коммитить `.env`, ключи, логи и состояние деплоя. Правила Codex: [AGENTS.md](AGENTS.md); навыки: `.agents/skills`.
+Индекс риска помогает расставить приоритеты и не является статистической вероятностью оттока. Денежные оценки сценарные; API возвращает суммы в евроцентах.
 
-## CI и деплой
+## Дизайн и контракт
 
-CI проверяет Python/HTTP, shell-синтаксис, сборку Docker, Compose, проксирование, успешное обновление и автоматический/ручной откат. После успешного CI push в `main` публикует приватный GHCR-образ. CD использует digest образа и работает только при `DEPLOY_ENABLED=true` и настроенном окружении `production`.
-
-Инструкции VPS, DNS, GitHub Secrets и отката: [docs/deployment.md](docs/deployment.md). Проверенное состояние и оставшиеся ограничения: [docs/infrastructure.md](docs/infrastructure.md).
-
-## После публикации ТЗ
-
-Сохранить ТЗ в `docs/challenge.md`, правила в `docs/rules.md`, критерии в `docs/evaluation.md`. Проверить разрешение на подготовленный код и AI, выбрать MVP/стек и заполнить архитектуру/план. Заменить probe вместе с контрактами Docker, smoke и CI. Предметных требований сейчас нет.
+Визуальная идентичность и локальные правила интерфейса описаны в [дизайн-системе](docs/design/README.md). Контракт API доступен в [OpenAPI](openapi.json).

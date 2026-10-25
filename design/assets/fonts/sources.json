@@ -1,0 +1,36 @@
+{
+  "family": "PP Neue Machina Inktrap",
+  "product_url": "https://pangrampangram.com/products/neue-machina",
+  "usage": {
+    "scope": "Local personal design development; no commercial license acquired",
+    "terms_url": "https://pangrampangram.com/pages/faq#free-fonts-and-personal-use",
+    "source_kind": "Unmodified variable WOFF2 served by the official product specimen at a .woff URL"
+  },
+  "sources": {
+    "PPNeueMachina-InktrapVariable.woff": {
+      "url": "https://pangrampangram.com/cdn/shop/files/PPNeueMachina-InktrapVariable.woff?v=8096146005379375228",
+      "sha256": "f83a8fdd5345d351f80bee8cdbc25e9521e081ec51fd0e5131f1813ab8eebdbd"
+    }
+  },
+  "outputs": {
+    "pp-neue-machina-inktrap-variable.woff2": {
+      "source": "PPNeueMachina-InktrapVariable.woff",
+      "bytes": 146188,
+      "sha256": "f83a8fdd5345d351f80bee8cdbc25e9521e081ec51fd0e5131f1813ab8eebdbd"
+    }
+  },
+  "wordmarks": {
+    "wordmark.svg": {
+      "font_source": "PPNeueMachina-InktrapVariable.woff",
+      "weight": 600,
+      "bytes": 8353,
+      "sha256": "f1e18e356d37cd471e29cf04e20f3b59c0626ac34a872292c550f0d5ce7f6e15"
+    },
+    "wordmark-compact.svg": {
+      "font_source": "PPNeueMachina-InktrapVariable.woff",
+      "weight": 600,
+      "bytes": 7953,
+      "sha256": "64f2b7320667c3885b9cf36b28dd32e3a3cd5c6e7803dfd413c34bfb87852538"
+    }
+  }
+}

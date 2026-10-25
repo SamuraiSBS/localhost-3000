@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Модель — localhost3000</title>
+<link rel="icon" href="data:,">
+<link rel="preload" href="/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/design/fonts.css">
+<link rel="stylesheet" href="/design/tokens.css">
+<link rel="stylesheet" href="/design/foundation.css">
+<link rel="stylesheet" href="/design/terminal-field.css?v=20261024-2">
+<script type="module" src="/design/terminal-field.js?v=20261024-2"></script>
+<link rel="stylesheet" href="/assets/app.css?v=living-1">
+<script type="module" src="/assets/settings.js?v=b07-1">
+</script>
+<link rel="stylesheet" href="/design/motion.css">
+<script type="module" src="/design/motion.js">
+</script>
+<link rel="stylesheet" href="/assets/living.css">
+</head>
+<body class="ds-root">
+<canvas class="terminal-field" aria-hidden="true"></canvas>
+<a class="ds-skip ds-button" href="#main">К содержанию</a>
+<header class="ds-terminal">
+  <div class="ds-container ds-terminal__inner">
+    <a class="wordmark" href="/" aria-label="localhost3000 — на главную">localhost3000</a>
+    <nav aria-label="Основная навигация" id="product-navigation">
+<a href="/customers" data-nav="customers">Клиенты</a>
+<a href="/settings" data-nav="settings">Модель</a>
+</nav>
+    <div class="session">
+<span id="user-login">
+</span>
+<button class="ds-button ds-button--secondary" id="logout" type="button">Выйти</button>
+</div>
+  </div>
+</header>
+<main class="ds-container main" id="main">
+<h1>Модель</h1>
+<noscript>
+<p>Для защищённой панели включите JavaScript: данные загружаются через API.</p>
+</noscript>
+<p class="intro">Веса задают вклад признаков в индекс риска. Изменения действуют после сохранения и пересчёта.</p>
+<p id="settings-status" role="status">Загружаем настройки…</p>
+<button class="ds-button ds-button--secondary" id="reload-settings" type="button" hidden>Загрузить свежие настройки</button>
+<form id="settings-form" novalidate hidden>
+<div id="feature-fields">
+</div>
+<section class="section">
+<h2>Горизонт и уровни риска</h2>
+<div class="ds-field">
+<label for="horizon">Горизонт, дней</label>
+<p class="ds-hint" id="horizon-hint">Ближайшие продления в течение 1–90 дней участвуют в денежной оценке.</p>
+<input class="ds-input" type="number" id="horizon" min="1" max="90" step="1" required aria-describedby="horizon-hint horizon-error">
+<p class="ds-error" id="horizon-error" hidden>
+</p>
+</div>
+<div class="ds-field">
+<label for="medium">Средний риск от, баллов</label>
+<input class="ds-input" type="number" id="medium" min="0" max="100" step="0.01" required aria-describedby="threshold-hint medium-error">
+<p class="ds-error" id="medium-error" hidden>
+</p>
+</div>
+<div class="ds-field">
+<label for="high">Высокий риск от, баллов</label>
+<input class="ds-input" type="number" id="high" min="0" max="100" step="0.01" required aria-describedby="threshold-hint high-error">
+<p class="ds-error" id="high-error" hidden>
+</p>
+</div>
+<p class="ds-hint" id="threshold-hint">Средний порог должен быть ниже высокого. Ниже среднего порога — низкий риск; отсутствие оценки выделяется отдельно.</p>
+</section>
+<p class="ds-error" id="settings-error" role="alert" hidden>
+</p>
+<div class="actions">
+<button class="ds-button" id="save-settings" type="submit">Сохранить и пересчитать</button>
+<button class="ds-button ds-button--secondary" id="cancel-settings" type="button">Отменить изменения</button>
+</div>
+</form>
+<section class="section" aria-labelledby="import-heading">
+<h2 id="import-heading">Импорт полного снимка</h2>
+<p id="import-hint">JSON полностью заменит активный аналитический снимок: клиенты, услуги и транзакции, отсутствующие в файле, исчезнут из анализа. Настройки модели сохранятся. Исходный файл не изменяется.</p>
+<form id="snapshot-form" class="snapshot-form">
+<div class="ds-field">
+<label for="snapshot-file">Полный JSON-снимок источника</label>
+<input class="ds-input snapshot-file" id="snapshot-file" type="file" accept=".json,application/json" required aria-describedby="import-hint">
+</div>
+<div class="ds-field">
+<label class="ds-check" for="snapshot-confirm">
+<input class="ds-checkbox" id="snapshot-confirm" type="checkbox" required> Подтверждаю полную замену активного аналитического снимка выбранным файлом</label>
+</div>
+<div class="actions">
+<button class="ds-button" id="import-snapshot" type="submit">Заменить снимок и пересчитать</button>
+</div>
+</form>
+<p id="import-status" role="status">
+</p>
+<div id="import-errors" role="alert" hidden>
+</div>
+<ul id="import-warnings" aria-label="Предупреждения качества данных">
+</ul>
+</section>
+<section class="section">
+<h2>О модели</h2>
+<p>Индекс 0–100 — сценарная оценка риска непродления, а не подтверждённая вероятность ухода. Стоимость под риском взвешивает одно ближайшее продление каждой услуги этим индексом.</p>
+<p>
+<a href="/customers">Посмотреть рассчитанный рейтинг</a> · <a href="/api/v1/docs">Документация API</a>
+</p>
+</section>
+</main>
+</body>
+</html>

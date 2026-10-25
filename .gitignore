@@ -12,6 +12,7 @@ coverage/
 .coverage
 .pytest_cache/
 .state/
+.agent-state/
 compose.override.yaml
 artifacts/
 *.log

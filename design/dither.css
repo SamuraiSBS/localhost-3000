@@ -1,0 +1,21 @@
+body { margin: 0; }
+main { padding-block: var(--space-12); }
+.dither-intro { max-width: var(--measure-prose); margin-bottom: var(--space-8); }
+.dither-intro h1 { margin-top: 0; }
+.dither-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
+.dither-comparison figure { margin: 0; min-width: 0; }
+.dither-comparison figcaption { margin-block: var(--space-4); }
+.dither-stage { position: relative; background: var(--color-bg); }
+.dither-stage img { display: block; width: 100%; height: auto; }
+.dither-stage canvas { display: none; position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+.dither-stage[data-renderer="canvas"] canvas { display: block; }
+.dither-controls { display: flex; flex-wrap: wrap; gap: var(--space-6); align-items: end; margin-block: var(--space-8); }
+.dither-controls .ds-field { flex: 1 1 15rem; min-width: 0; }
+.dither-controls input[type="range"] { width: 100%; min-height: var(--control-min); margin: 0; accent-color: var(--color-text); }
+.dither-note { max-width: var(--measure-prose); }
+@media (max-width: 40rem) {
+  .dither-comparison { grid-template-columns: 1fr; }
+}
+@media (forced-colors: active) {
+  .dither-stage { forced-color-adjust: none; }
+}

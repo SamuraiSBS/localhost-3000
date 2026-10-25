@@ -1,0 +1,25 @@
+{
+  "origin": "OpenAI built-in ImageGen; generated for this project on 2026-10-22; no reference images",
+  "prompt": "columns.prompt.txt",
+  "source": {
+    "bytes": 2302283,
+    "width": 1536,
+    "height": 1024,
+    "sha256": "a70bd741f2fe6d8d3d22128e32309f693b4d8ac2333a203ac2315e84d5f0c65f"
+  },
+  "export": "Sharp 0.35.5; full image is pixel-identical lossless WebP; 768px variant uses Lanczos3 resize and lossless WebP",
+  "artifacts": {
+    "columns.webp": {
+      "bytes": 1227938,
+      "width": 1536,
+      "height": 1024,
+      "sha256": "6cd38f67fee208d339f0993ab43a3245817ebaadbf01b4397b1fdb1d1c0d7644"
+    },
+    "columns-768.webp": {
+      "bytes": 303086,
+      "width": 768,
+      "height": 512,
+      "sha256": "b52af4fd42a41ac974555f38979ff8eef51d7f6b84921fca9e566e362b8bf4f4"
+    }
+  }
+}

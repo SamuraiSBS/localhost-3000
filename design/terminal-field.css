@@ -1,0 +1,32 @@
+/* Shared FaultyTerminal layer for the product HTML pages. */
+.ds-root {
+  position: relative;
+  isolation: isolate;
+}
+
+.ds-root > .terminal-field {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-base);
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  pointer-events: none;
+}
+
+.ds-root > :not(.terminal-field) {
+  position: relative;
+  z-index: 1;
+}
+
+.ds-root > .ds-skip {
+  position: fixed;
+  z-index: var(--layer-tooltip);
+}
+
+@media (forced-colors: active) {
+  .ds-root > .terminal-field {
+    display: none;
+  }
+}

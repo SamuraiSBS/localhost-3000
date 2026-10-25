@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Основа дизайн-системы — localhost3000</title>
+    <link rel="icon" href="data:,">
+    <link rel="preload" href="assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="fonts.css">
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="foundation.css">
+    <link rel="stylesheet" href="preview.css">
+    <script src="preview.js" defer></script>
+  </head>
+  <body class="ds-root">
+    <a class="ds-skip ds-button" href="#main">К содержимому</a>
+    <header class="ds-terminal">
+      <div class="ds-container ds-terminal__inner">
+        <a href="#main" class="wordmark" aria-label="localhost3000 — к началу образца">localhost3000</a>
+        <nav aria-label="Разделы образца">
+          <a href="#foundation">Основа</a>
+          <a href="#elements">Элементы</a>
+          <a href="dither.html">Дизеринг</a>
+          <a href="liquid-glass.html">Жидкое стекло</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="ds-container" tabindex="-1">
+      <section id="foundation" class="intro" aria-labelledby="title">
+        <h1 id="title">Digital Ruins<br>Lost Signal</h1>
+        <p class="lead">Тишина пространства.<br>Ясность взаимодействия.</p>
+        <p class="ds-hint">Изолированный образец основы: монохром, читаемый текст и простые элементы управления. Функциональность будущего приложения определит ТЗ.</p>
+      </section>
+      <section class="specimen" aria-labelledby="palette-title">
+        <h2 id="palette-title">Монохромная основа</h2>
+        <div class="surface-example">
+          <div class="tone tone--bg"><span>Фон</span></div>
+          <div class="tone tone--surface"><span>Поверхность</span></div>
+          <div class="tone tone--raised"><span>Второй уровень</span></div>
+        </div>
+        <p class="ds-hint">Спектр предназначен для редкого оптического края Prism Glass. В базовых элементах используется монохром.</p>
+      </section>
+      <section id="elements" class="specimen" aria-labelledby="elements-title">
+        <h2 id="elements-title">Элементы и состояния</h2>
+        <p class="section-copy">Фокус, подписи и ошибки остаются заметными. Попробуйте изменить текст образца или открыть диалог.</p>
+        <div class="control-layout">
+          <form id="specimen-form" novalidate>
+            <div class="ds-field">
+              <label class="ds-label" for="specimen-name">Текст образца</label>
+              <input class="ds-input" id="specimen-name" name="specimen-name" required maxlength="120" placeholder="Например, Цифровая архитектура" aria-describedby="name-hint name-error">
+              <p class="ds-hint" id="name-hint">Обязательное поле, до 120 символов. Меняет только текст в панели образца.</p>
+              <p class="ds-error ds-error--icon" id="name-error" hidden><span class="ds-icon ds-icon--info" aria-hidden="true"></span><span>Введите текст образца.</span></p>
+            </div>
+            <div class="ds-field">
+              <label class="ds-label" for="text-size">Размер текста образца</label>
+              <select class="ds-select" id="text-size" name="text-size">
+                <option value="body">Обычный</option>
+                <option value="lead">Увеличенный</option>
+              </select>
+            </div>
+            <button class="ds-button" id="apply-button" type="submit" hidden>Применить к образцу</button>
+          </form>
+          <div class="sample-area">
+            <div class="ds-panel">
+              <h3>Образец текста</h3>
+              <p id="sample-text" aria-live="polite">Архитектура сохраняет свой силуэт.</p>
+            </div>
+            <p class="ds-hint">PP Neue Machina Inktrap: единый шрифт, кириллица, локальная загрузка.</p>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="ds-button ds-button--secondary" id="open-dialog" type="button" hidden>Открыть диалог</button>
+          <button class="ds-button ds-button--secondary" type="button" disabled>Недоступное действие</button>
+        </div>
+        <noscript><p>Для изменения образца и открытия диалога включите JavaScript. Основа и элементы доступны для просмотра без него.</p></noscript>
+      </section>
+      <section class="specimen" id="states" aria-labelledby="states-title">
+        <h2 id="states-title">Выбор и обратная связь</h2>
+        <p class="section-copy">Квадратные чекбоксы, пиксельные иконки и текстовые состояния. Все переключатели ниже управляют только этим образцом.</p>
+        <div class="selection-samples">
+          <label class="ds-check"><input class="ds-checkbox" type="checkbox" id="sample-checkbox"><span>Обычный чекбокс</span></label>
+          <label class="ds-check"><input class="ds-checkbox" type="checkbox" checked><span>Выбранный чекбокс</span></label>
+          <label class="ds-check"><input class="ds-checkbox" type="checkbox" disabled><span>Недоступный чекбокс</span></label>
+        </div>
+        <div class="button-row" id="interactive-samples" hidden>
+          <span class="ds-tooltip-wrap">
+            <button class="ds-button ds-button--secondary" type="button" id="tooltip-trigger" aria-describedby="sample-tooltip">Показать подсказку</button>
+            <span class="ds-tooltip" role="tooltip" id="sample-tooltip" hidden>Непрозрачная подсказка доступна при наведении, фокусе и нажатии. Escape закрывает её.</span>
+          </span>
+          <button class="ds-button ds-button--secondary" type="button" id="icon-toggle" aria-pressed="false"><span class="ds-icon ds-icon--info" aria-hidden="true"></span>Выбрать иконку</button>
+        </div>
+        <hr class="ds-divider">
+        <h3>Кнопка во время загрузки</h3>
+        <p class="section-copy">Сравните состояния вручную: надпись меняется без изменения размера. Сетевой запрос не выполняется.</p>
+        <div class="loading-sample" id="loading-sample" hidden>
+          <label class="ds-check"><input class="ds-checkbox" type="checkbox" id="busy-toggle"><span>Показать загрузку</span></label>
+          <button class="ds-button ds-button--busy-sample" type="button" id="busy-button" aria-busy="false">
+            <span class="busy-label">Применить к образцу</span><span class="busy-label" hidden>Применение…</span>
+            <span class="busy-measure" aria-hidden="true">Применить к образцу</span><span class="busy-measure" aria-hidden="true">Применение…</span>
+          </button>
+        </div>
+      </section>
+      <section class="specimen" aria-labelledby="image-title">
+        <h2 id="image-title">Изображение и текст</h2>
+        <figure class="image-sample">
+          <img src="assets/columns-768.webp" width="768" height="512" loading="lazy" alt="Три повреждённые колонны с мелкоточечной фактурой">
+          <figcaption>Изображение целиком, с исходными пропорциями и прямыми углами.</figcaption>
+        </figure>
+        <p class="section-copy">Длинный текст читается слева направо внутри блока, который расположен по центру страницы. Структура остаётся плоской: разделители обозначают границы разделов, а карточки используются только там, где нужна самостоятельная поверхность.</p>
+        <p class="section-copy">Колонны уже содержат художественный дизеринг. Проверка пресета на чистом фотографическом исходнике остаётся отдельной задачей. <a href="dither.html">Сравнить дизеринг</a>.</p>
+      </section>
+      <footer class="specimen">
+        <p class="ds-hint">Это образцы независимой дизайн-системы. <a href="index.html">Главная сцена</a> · <a href="liquid-glass.html">Жидкое стекло</a> · <a href="icon-credits.html">Иконки HackerNoon и лицензия</a>.</p>
+      </footer>
+    </main>
+    <dialog class="ds-dialog" id="sample-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+      <h2 id="dialog-title">Плоский fallback</h2>
+      <p id="dialog-description">Непрозрачная поверхность сохраняет читаемость и действия без оптического эффекта. Этот образец не реализует Prism Glass.</p>
+      <p>Диалог закрывается кнопкой или Escape. После закрытия фокус возвращается к кнопке открытия.</p>
+      <form method="dialog">
+        <button class="ds-button" autofocus>Закрыть диалог</button>
+      </form>
+    </dialog>
+  </body>
+</html>
