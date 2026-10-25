@@ -7,7 +7,9 @@ in addition to SQLite transactions.
 
 from __future__ import annotations
 
-from contextlib import closing
+from contextlib import closing, contextmanager
+from collections.abc import Callable
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -92,6 +94,22 @@ class SQLiteRepository:
             raise ValueError("busy_timeout_ms_must_be_positive")
         self.database_path = Path(database_path).expanduser().resolve()
         self.busy_timeout_ms = busy_timeout_ms
+        self._source_observer: ContextVar[tuple[str, Callable] | None] = ContextVar(
+            "source_publication_observer", default=None)
+
+    @contextmanager
+    def observe_source_publication(self, checksum: str, observer: Callable[[sqlite3.Connection], None]):
+        """Bind an internal coordinator callback to one exact source publication.
+
+        The context is local to the calling thread/task and cannot affect another
+        writer. A different winning snapshot in a CAS race cannot run this hook.
+        commit_snapshot's existing public call signature remains unchanged.
+        """
+        token = self._source_observer.set((checksum, observer))
+        try:
+            yield
+        finally:
+            self._source_observer.reset(token)
 
     def _connect(self) -> sqlite3.Connection:
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
@@ -152,6 +170,11 @@ class SQLiteRepository:
                     "VALUES (1, 0, ?)",
                     (now,),
                 )
+                from app.observation_storage import initialize_observation_schema, ensure_observation_baseline
+                from app.workflow_storage import WorkflowStore
+                initialize_observation_schema(connection)
+                WorkflowStore.initialize_schema(connection)
+                ensure_observation_baseline(connection)
                 connection.commit()
             except BaseException:
                 connection.rollback()
@@ -252,6 +275,16 @@ class SQLiteRepository:
                     "UPDATE evaluation_state SET analysis_revision = ?, updated_at = ? WHERE singleton = 1",
                     (analysis_revision, timestamp),
                 )
+                from app.observation_storage import record_source_observations
+                record_source_observations(
+                    connection, current.snapshot, SourceSnapshot.model_validate_json(document),
+                    previous_data_revision=current.data_revision, data_revision=data_revision,
+                    received_at=received_at, comparison_settings_revision=current.settings_revision,
+                    comparison_model_version=current.settings.model_version, comparison_as_of=received_at,
+                )
+                observer = self._source_observer.get()
+                if observer is not None and observer[0] == checksum:
+                    observer[1](connection)
                 updated = PersistedState(
                     data_revision=data_revision,
                     settings_revision=current.settings_revision,
@@ -295,6 +328,12 @@ class SQLiteRepository:
                 connection.execute(
                     "UPDATE evaluation_state SET analysis_revision = ?, updated_at = ? WHERE singleton = 1",
                     (analysis_revision, timestamp),
+                )
+                from app.observation_storage import record_model_event
+                record_model_event(
+                    connection, current.settings, ModelSettings.model_validate_json(document),
+                    previous_settings_revision=current.settings_revision, settings_revision=settings_revision,
+                    received_at=updated_at, comparison_as_of=updated_at,
                 )
                 updated = PersistedState(
                     data_revision=current.data_revision,
