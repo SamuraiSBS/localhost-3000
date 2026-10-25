@@ -1,0 +1,72 @@
+name: localhost-3000
+services:
+  app:
+    image: ${APP_IMAGE:-localhost-3000:local}
+    build:
+      context: .
+      args:
+        VCS_REF: ${VCS_REF:-local}
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 100
+    mem_limit: 512m
+    environment:
+      APP_LOGIN: ${APP_LOGIN:?Run scripts/configure_local.py first}
+      APP_PASSWORD_HASH: ${APP_PASSWORD_HASH:?Set an Argon2 hash locally}
+      METRICS_TOKEN: ${METRICS_TOKEN:?Set a private collector token}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the exact browser origin}
+    volumes:
+      - app_data:/data
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+  proxy:
+    image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - ${BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8080}:80
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+  prometheus:
+    profiles: [monitoring]
+    image: prom/prometheus:v3.15.1@sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.path=/prometheus, --storage.tsdb.retention.time=1d]
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    secrets: [metrics_token]
+    tmpfs: ['/prometheus:uid=65534,gid=65534,mode=0700']
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    depends_on:
+      app:
+        condition: service_healthy
+secrets:
+  metrics_token:
+    file: ${METRICS_TOKEN_FILE:-./.state/local/metrics-token}
+volumes:
+  app_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${COMPOSE_SUBNET:-}

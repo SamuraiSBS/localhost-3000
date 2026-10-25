@@ -1,0 +1,12 @@
+**
+!requirements.txt
+!app/
+!app/**
+!web/
+!web/**
+!design/
+!design/**
+!data/
+!data/seed.json
+**/__pycache__/
+**/*.pyc

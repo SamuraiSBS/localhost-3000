@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Проверка доступности анимации</title>
+  <link rel="stylesheet" href="/design/fonts.css"><link rel="stylesheet" href="/design/tokens.css"><link rel="stylesheet" href="/design/foundation.css">
+</head>
+<body class="ds-root">
+  <main class="ds-container">
+    <h1>Проверка доступности анимации</h1>
+    <p>Тестовая подмена matchMedia проверяет ветки JS, а не системную настройку браузера.</p>
+    <button class="ds-button" id="run" type="button">Проверить анимацию</button>
+    <p id="result" role="status">Проверка не запущена.</p>
+    <p id="target">Текст остаётся доступен после отмены.</p>
+    <h2>Главная без JavaScript</h2>
+    <iframe title="Главная без JavaScript" src="/" sandbox="allow-same-origin" width="360" height="640"></iframe>
+  </main>
+  <script type="module">
+    const original = window.matchMedia.bind(window);
+    const media = new EventTarget(); media.matches = false;
+    window.matchMedia = query => query === '(prefers-reduced-motion: reduce)' ? media : original(query);
+    const { play } = await import('/design/motion.js');
+    const target = document.querySelector('#target');
+    document.querySelector('#run').addEventListener('click', async () => {
+      const checks = [];
+      const frames = [{opacity: 0}, {opacity: 1}];
+      function change(value) { media.matches=value; const event=new Event('change');event.matches=value;media.dispatchEvent(event); }
+      change(true);
+      checks.push(['reduced motion не создаёт анимацию', play(target,frames) === undefined]);
+      change(false);
+      const animation=play(target,frames,{duration:10000});
+      checks.push(['обычный режим создаёт анимацию', Boolean(animation)]);
+      change(true);
+      checks.push(['смена настройки отменяет анимацию', animation?.playState === 'idle']);
+      change(false);
+      const hiddenAnimation=play(target,frames,{duration:10000});
+      Object.defineProperty(document,'hidden',{configurable:true,value:true});
+      document.dispatchEvent(new Event('visibilitychange'));
+      checks.push(['скрытие вкладки отменяет анимацию', hiddenAnimation?.playState === 'idle']);
+      checks.push(['скрытая вкладка не создаёт анимацию', play(target,frames) === undefined]);
+      delete document.hidden;
+      checks.push(['после отмены текст виден', getComputedStyle(target).opacity === '1']);
+      const frame=document.querySelector('iframe');
+      const image=frame.contentDocument.querySelector('.ruins__art img');
+      checks.push(['без JS изображение и переход доступны', Boolean(image?.complete && image.naturalWidth && frame.contentDocument.querySelector('a[href="/login"]'))]);
+      document.querySelector('#result').textContent=checks.map(([title,passed])=>`${passed?'PASS':'FAIL'}: ${title}`).join('\n');
+      document.querySelector('#result').style.whiteSpace='pre-line';
+    });
+  </script>
+</body>
+</html>

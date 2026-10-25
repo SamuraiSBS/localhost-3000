@@ -1,0 +1,18 @@
+{
+  "component": "Aceternity UI Dither Shader",
+  "url": "https://ui.aceternity.com/components/dither-shader",
+  "source_access": "Public Manual installation source code",
+  "retrieved": "2026-10-22",
+  "source_snapshot_sha256": "c0a695a81d49697b3d0199bbcff0b46d6326573703bd5e23be959e6b1436960a",
+  "source_snapshot_bytes": 14892,
+  "terms_url": "https://ui.aceternity.com/licence",
+  "adapted_subset": [
+    "4x4 Bayer matrix",
+    "luminance formula",
+    "brightness and contrast",
+    "threshold remapping",
+    "duotone output"
+  ],
+  "adaptation": "Native Canvas 2D specimen; no React/Tailwind/Motion dependencies; static render on load, resize and controls; fallback image; CSS token palette; DPR cap 2",
+  "scope": "Independent design preparation, not a product stack selection"
+}

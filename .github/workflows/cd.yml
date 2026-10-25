@@ -1,0 +1,89 @@
+name: CD
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+  packages: read
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      packages: read
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_URL }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Connect to the private deployment network
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4.2.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:localhost3000-ci
+          ping: ${{ vars.DEPLOY_HOST }}
+      - name: Fetch trusted CI image and reject outdated builds
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REVISION: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          latest=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          test "$latest" = "$REVISION" || { echo 'A newer main revision exists; refusing stale deployment'; exit 1; }
+          gh run download "$RUN_ID" --repo "$REPOSITORY" --name deployment-image --dir .state/artifact
+          image=$(cat .state/artifact/image.txt)
+          prefix="ghcr.io/${REPOSITORY,,}@sha256:"
+          test "${image:0:${#prefix}}" = "$prefix"
+          digest=${image#"$prefix"}
+          [[ "$digest" =~ ^[a-f0-9]{64}$ ]]
+      - name: Upload and deploy with automatic rollback
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          REVISION: ${{ github.event.workflow_run.head_sha }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9.-]+\.ts\.net$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$PUBLIC_URL" =~ ^https?://[a-zA-Z0-9.:-]+/?$ ]]
+          image=$(cat .state/artifact/image.txt)
+          release="/opt/localhost-3000/releases/${REVISION}-${RUN_ID}"
+          ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
+          # Keep registry credentials in a temporary server-side Docker config only.
+          printf '%s' "$REGISTRY_TOKEN" | ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "umask 077; mkdir -p '$release'; cfg=\$(mktemp -d); trap 'rm -rf -- \"\$cfg\"' EXIT; DOCKER_CONFIG=\$cfg docker login ghcr.io -u '$REGISTRY_USER' --password-stdin && DOCKER_CONFIG=\$cfg docker pull '$image'"
+          tar -czf .state/release.tar.gz compose.yaml compose.production.yaml infra/Caddyfile scripts/deploy.sh scripts/rollback.sh scripts/smoke.py
+          scp -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            .state/release.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$release/release.tar.gz"
+          ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "tar -xzf '$release/release.tar.gz' -C '$release'; bash '$release/scripts/deploy.sh' /opt/localhost-3000 '$image' '$REVISION' '$PUBLIC_URL'"
+          if ! python scripts/smoke.py "$PUBLIC_URL" --revision "$REVISION"; then
+            echo 'External smoke failed; requesting rollback of the same revision' >&2
+            ssh "${ssh_opts[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "test \"\$(cat /opt/localhost-3000/current/revision)\" = '$REVISION' && bash /opt/localhost-3000/current/scripts/rollback.sh /opt/localhost-3000"
+            exit 1
+          fi

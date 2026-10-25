@@ -1,0 +1,46 @@
+body { margin: 0; }
+main { padding-block: var(--space-12); }
+.glass-intro { max-width: var(--measure-prose); margin-bottom: var(--space-8); }
+.glass-intro h1 { margin-top: 0; }
+.glass-stage { min-height: 28rem; position: relative; display: grid; place-items: center; overflow: hidden; }
+.glass-stage > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.liquid-lens { position: relative; width: min(18rem, 76%); aspect-ratio: 1; border-radius: 50%; background: rgb(255 255 255 / var(--liquid-glass-tint)); overflow: hidden; }
+.liquid-lens[data-shape="pill"] { width: min(26rem, 86%); aspect-ratio: 2.1; border-radius: 999px; }
+.liquid-filter { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+.liquid-lens[data-renderer="frosted"] { background: color-mix(in srgb, var(--color-surface) 60%, transparent); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); }
+.liquid-lens[data-renderer="opaque"] { background: var(--glass-fallback); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.glass-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--space-6); margin-block: var(--space-8); }
+.glass-controls input[type="range"] { width: 100%; min-height: var(--control-min); margin: 0; accent-color: var(--color-text); }
+.glass-actions { margin-block: var(--space-6); }
+.glass-note { max-width: var(--measure-prose); }
+.glass-hero { position: relative; isolation: isolate; min-height: 40rem; padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-12); background: var(--color-bg); }
+.glass-hero__art { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; }
+.hero-glass { position: relative; overflow: hidden; border-radius: var(--radius-floating); background: rgb(255 255 255 / var(--liquid-glass-tint)); }
+.hero-glass__content { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-3); }
+.hero-glass--bar { width: 100%; max-width: 56rem; margin-inline: auto; }
+.hero-glass--bar .hero-glass__content { display: flex; flex-wrap: wrap; justify-content: space-between; padding: var(--space-4) var(--space-6); gap: var(--space-4); background: rgb(5 5 5 / 72%); }
+.hero-glass--bar nav { display: flex; flex-wrap: wrap; gap: var(--space-6); }
+.hero-glass--bar a { display: inline-flex; align-items: center; min-height: var(--control-min); }
+.glass-hero__body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-block: var(--space-8); }
+.hero-glass--badge { padding: var(--space-3) var(--space-4); min-height: var(--control-min); }
+.glass-hero__body h2 { font-size: var(--type-title); margin-block: var(--space-6) var(--space-4); padding: var(--space-2); }
+.glass-hero__body > p { max-width: 48ch; margin: 0; padding: var(--space-3); }
+.glass-hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4); margin-top: var(--space-8); }
+.hero-glass--action { border-radius: var(--radius-control); }
+.hero-glass[data-renderer="svg"] { box-shadow: inset 0 1px rgb(241 241 241 / 30%); }
+.hero-glass[data-renderer="frosted"] { background: color-mix(in srgb, var(--color-surface) 80%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.hero-glass[data-renderer="opaque"] { background: var(--glass-fallback); backdrop-filter: none; -webkit-backdrop-filter: none; }
+@media (max-width: 40rem) {
+  .glass-hero { padding: var(--space-4); gap: var(--space-6); }
+  .hero-glass--bar .hero-glass__content { padding: var(--space-4); }
+  .hero-glass--bar nav { gap: var(--space-4); }
+  .glass-hero__actions { width: 100%; }
+  .glass-hero__actions > a { width: 100%; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-lens, .hero-glass { background: var(--glass-fallback) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+}
+@media (forced-colors: active) {
+  .liquid-lens, .hero-glass { border: var(--border-width) solid CanvasText; background: Canvas !important; }
+  .hero-glass__content, .glass-hero__body h2, .glass-hero__body > p { background: Canvas !important; color: CanvasText; }
+}

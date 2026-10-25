@@ -1,0 +1,85 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
+      - name: Install locked product and test dependencies
+        run: python -m pip install --require-hashes -r requirements-dev.txt
+      - name: Offline checks
+        run: |
+          python scripts/check.py
+          git diff --check
+          for file in scripts/*.sh; do bash -n "$file"; done
+      - name: Build and smoke through reverse proxy
+        env:
+          VCS_REF: ${{ github.sha }}
+        run: |
+          python scripts/configure_local.py --ephemeral
+          docker compose --env-file .state/local/compose.env -f compose.yaml config --quiet
+          docker compose --env-file .state/local/compose.env -f compose.yaml -f compose.production.yaml config --quiet
+          docker compose --env-file .state/local/compose.env -f compose.yaml --profile monitoring up -d --build --wait --wait-timeout 180
+          python scripts/smoke.py http://127.0.0.1:8080 --revision "$VCS_REF" --env-file .state/local/compose.env --password-file .state/local/smoke-password
+          python scripts/verify_delivery.py --project localhost-3000 --env-file .state/local/compose.env --password-file .state/local/smoke-password --url http://127.0.0.1:8080 --revision "$VCS_REF" --output .state/local/delivery-result.json
+      - name: Container diagnostics
+        if: failure()
+        run: docker compose --env-file .state/local/compose.env -f compose.yaml logs --tail 100
+      - name: Clean up smoke stack
+        if: always()
+        run: docker compose --env-file .state/local/compose.env -f compose.yaml --profile monitoring down
+      - name: Exercise deployment and rollback
+        env:
+          REVISION: ${{ github.sha }}
+        run: bash scripts/test-deploy.sh
+  publish:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Build and publish immutable image
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${REPOSITORY,,}"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+          docker build --build-arg VCS_REF="$REVISION" -t "$image:$REVISION" .
+          docker push "$image:$REVISION"
+          visibility=$(GH_TOKEN="$REGISTRY_TOKEN" gh api "users/${REPOSITORY%/*}/packages/container/${REPOSITORY#*/}" --jq .visibility)
+          test "$visibility" = private
+          docker inspect --format '{{index .RepoDigests 0}}' "$image:$REVISION" > image.txt
+          # Verify that the published digest can be read with this run-scoped identity.
+          docker pull "$(cat image.txt)"
+          docker logout ghcr.io
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: deployment-image
+          path: image.txt
+          retention-days: 7

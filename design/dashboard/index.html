@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Переиспользуемая основа панели будущего проекта localhost3000.">
+    <title>Обзор — localhost3000</title>
+    <link rel="icon" href="data:,">
+    <link rel="preload" href="../assets/fonts/pp-neue-machina-inktrap-variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../fonts.css">
+    <link rel="stylesheet" href="../tokens.css">
+    <link rel="stylesheet" href="../foundation.css">
+    <link rel="stylesheet" href="./dashboard.css">
+    <script type="module" src="./dashboard.js"></script>
+  </head>
+  <body class="ds-root dashboard-page">
+    <a class="ds-skip ds-button" href="#main-content">К содержимому</a>
+    <div class="dashboard-shell">
+      <aside class="dashboard-sidebar" id="dashboard-sidebar" aria-label="Боковая панель">
+        <div class="dashboard-sidebar__top">
+          <a class="dashboard-brand" href="../index.html" aria-label="localhost3000 — на главную">localhost3000</a>
+        </div>
+        <nav aria-label="Основная навигация">
+          <ul class="dashboard-nav">
+            <li><a href="./" aria-current="page"><span class="ds-icon ds-icon--info-solid" aria-hidden="true"></span><span class="dashboard-nav__label">Обзор</span></a></li>
+          </ul>
+        </nav>
+        <p class="dashboard-sidebar__note" data-sidebar-note>Пункты навигации появятся после получения ТЗ.</p>
+      </aside>
+
+      <main class="dashboard-main" id="main-content" tabindex="-1">
+        <header class="dashboard-header" id="dashboard-header">
+          <div>
+            <h1>Обзор</h1>
+            <p>Универсальная основа для будущего проекта.</p>
+          </div>
+          <p class="dashboard-header__demo">Демонстрационные данные</p>
+        </header>
+
+        <div class="dashboard-content" id="dashboard-content" tabindex="-1" aria-busy="false">
+          <p class="dashboard-feedback" role="status">Загружаем демо-данные…</p>
+          <div class="dashboard-loading-stats" aria-hidden="true">
+            <div class="dashboard-skeleton-stat"><div class="dashboard-skeleton dashboard-skeleton--label"></div><div class="dashboard-skeleton dashboard-skeleton--value"></div></div>
+            <div class="dashboard-skeleton-stat"><div class="dashboard-skeleton dashboard-skeleton--label"></div><div class="dashboard-skeleton dashboard-skeleton--value"></div></div>
+            <div class="dashboard-skeleton-stat"><div class="dashboard-skeleton dashboard-skeleton--label"></div><div class="dashboard-skeleton dashboard-skeleton--value"></div></div>
+            <div class="dashboard-skeleton-stat"><div class="dashboard-skeleton dashboard-skeleton--label"></div><div class="dashboard-skeleton dashboard-skeleton--value"></div></div>
+          </div>
+          <div class="dashboard-loading-panels" aria-hidden="true">
+            <div class="dashboard-skeleton--panel">
+              <div class="dashboard-skeleton dashboard-skeleton--label"></div>
+              <div class="dashboard-skeleton dashboard-skeleton--line"></div>
+              <div class="dashboard-skeleton dashboard-skeleton--line"></div>
+              <div class="dashboard-skeleton dashboard-skeleton--line"></div>
+            </div>
+            <div class="dashboard-skeleton--panel">
+              <div class="dashboard-skeleton dashboard-skeleton--label"></div>
+              <div class="dashboard-skeleton dashboard-skeleton--line"></div>
+              <div class="dashboard-skeleton dashboard-skeleton--line"></div>
+            </div>
+          </div>
+          <p class="dashboard-no-script">Включите JavaScript, чтобы загрузить тестовые данные из локального набора.</p>
+        </div>
+        <p class="dashboard-visually-hidden" id="dashboard-announcer" role="status" aria-live="polite" aria-atomic="true"></p>
+      </main>
+      <nav class="dashboard-mobile-dock" id="dashboard-mobile-dock" aria-label="Мобильная навигация">
+        <button class="ds-button ds-button--secondary dashboard-mobile-dock__toggle" type="button" data-dock-toggle aria-controls="dashboard-mobile-dock-items" aria-expanded="false" aria-label="Открыть навигацию" hidden>
+          <span class="dashboard-mobile-dock__toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <ul class="dashboard-mobile-dock__menu" id="dashboard-mobile-dock-items">
+          <li><a class="dashboard-mobile-dock__item" href="../index.html" aria-label="Главная" title="Главная"><span class="ds-icon ds-icon--arrow-right" aria-hidden="true"></span><span class="dashboard-mobile-dock__label" aria-hidden="true">Главная</span></a></li>
+          <li><a class="dashboard-mobile-dock__item" href="./" aria-label="Обзор" title="Обзор" aria-current="page"><span class="ds-icon ds-icon--info-solid" aria-hidden="true"></span><span class="dashboard-mobile-dock__label" aria-hidden="true">Обзор</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </body>
+</html>
