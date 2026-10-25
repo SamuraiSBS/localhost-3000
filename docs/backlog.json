@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_on": "2026-10-23",
+  "updated_on": "2026-10-25",
   "language": "ru",
   "planning_status": "prepared",
   "product_status": "not_implemented",
@@ -258,17 +258,16 @@
       "status": "planned",
       "title": "Лаборатория: практическая очередь работы на день",
       "depends_on": [
-        "B19"
+        "B19",
+        "B26"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_worklist.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_worklist.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -338,17 +337,16 @@
       "status": "planned",
       "title": "Лаборатория: точный поиск минимального достаточного действия",
       "depends_on": [
-        "B20"
+        "B20",
+        "B27"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_solver.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_solver.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -367,11 +365,11 @@
       "status": "planned",
       "title": "Лаборатория: preview импорта и объяснение изменений до публикации",
       "depends_on": [
-        "B23"
+        "B23",
+        "B28"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_source_diff.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "app/evaluation.py",
@@ -379,7 +377,6 @@
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_source_diff.py",
         "tests/integration/test_lab_api.py",
         "tests/integration/test_api.py",
         "tests/ui/test_lab.mjs",
@@ -399,17 +396,16 @@
       "status": "planned",
       "title": "Лаборатория: безопасный паспорт решения и sandbox replay",
       "depends_on": [
-        "B24"
+        "B24",
+        "B29"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_case.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_case.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -419,6 +415,86 @@
         "L18: экспорт/restart/replay совместимого кейса воспроизводим, повреждённый/несовместимый/слишком большой файл получает явную ошибку",
         "Импорт только sandbox без записи source/settings/metrics, без кода из файла; нет обещания восстановить портфельный рейтинг из кейса одного клиента",
         "L19: browser journey preview импорта -> минимальное действие -> проверка cents -> экспорт/replay; ручной разбор отличается от проверки тем же engine"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B26",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая доменная логика worklist",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_worklist.py",
+        "tests/unit/test_lab_worklist.py"
+      ],
+      "acceptance": [
+        "Чистые правила отбора, приоритета и исключений worklist реализованы по принятому контракту B15 без API, UI, DTO и storage.",
+        "Unit-тесты покрывают границы N=1..50, ties, empty, unknown и стабильный порядок согласно принятому контракту.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не обещает ROI или оптимальность удержания."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B27",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистое ядро solver",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_solver.py",
+        "tests/unit/test_lab_solver.py"
+      ],
+      "acceptance": [
+        "Детерминированный поиск минимального действия реализован по принятому контракту B15; учитываются цель, весь набор услуг и все ограничения.",
+        "Unit-тесты сравнивают малые случаи с независимым перебором и проверяют cents, no-op, недостижимость, unsupported и лимиты.",
+        "Используются типы B16 без изменения app/lab_contracts.py; API, UI, OpenAPI и рабочие записи не затрагиваются."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B28",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика diff источника",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_source_diff.py",
+        "tests/unit/test_lab_source_diff.py"
+      ],
+      "acceptance": [
+        "Детерминированный diff полей и результатов реализован по принятому контракту B15 для одинаковых settings и as_of.",
+        "Unit-тесты отделяют удаление записи от оттока и фиксируют неизменность baseline при расчёте preview.",
+        "Используются типы B16 без изменения app/lab_contracts.py; preview остаётся чистой функцией без source writes."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B29",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика case и replay",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_case.py",
+        "tests/unit/test_lab_case.py"
+      ],
+      "acceptance": [
+        "Валидация, каноническая сериализация и checksum паспорта реализованы по принятому контракту B15 с минимальным набором данных.",
+        "Unit-тесты проверяют совместимый replay, повреждённый, несовместимый и чрезмерно большой case и явные ошибки.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не исполняет код из case и не пишет рабочие данные."
       ],
       "evidence": []
     },

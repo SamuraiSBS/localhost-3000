@@ -5,7 +5,7 @@
   "scope": "decision-lab",
   "scope_plan": "docs/DECISION_LAB_PLAN.md",
   "execution_instructions": "docs/EXECUTE_DECISION_LAB.md",
-  "registration_policy": "With no active attempts, append missing B31 as preflight-support and missing B15-B25 as product tasks; apply only listed exact previous-hash updates to B15/B19/B21. B12 and visual/layout-only QA are deferred by direct user instruction; functional journeys remain in scope. Preserve runtime status/evidence, B00-B14, other definitions and contract_documents. B31 does not change the product execution order or completion task. This file is a plan, not a ledger.",
+  "registration_policy": "With no active attempts, preserve B00-B14 and contract_documents, append missing B31 and B15-B29 only, and update only B15/B19/B20/B21/B23/B24/B25 under registration_updates. For each update, compare the current coordinator task hash with the prepared target task hash: an exact target-hash match is an already-applied no-op; otherwise the current hash must equal that entry's expected_previous_task_hash before applying the prepared target while preserving runtime status/evidence. Any other hash is a conflict. B26-B29 split domain-only modules and unit tests from B20/B23/B24/B25; those integration tasks depend on the corresponding domain task. B12 and visual/layout-only QA remain deferred. This file is a plan, not a ledger.",
   "tasks": [
     {
       "id": "B31",
@@ -79,6 +79,86 @@
         "Caller-owned копии, один as_of, без storage/publication side effects",
         "L01-L06 проходят: shared balance, cents, manual renewal, payment_wait, unknown, locked funds, clamp",
         "Синтетические примеры отделены от источника; raw fields и explanations проверяемы"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B26",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая доменная логика worklist",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_worklist.py",
+        "tests/unit/test_lab_worklist.py"
+      ],
+      "acceptance": [
+        "Чистые правила отбора, приоритета и исключений worklist реализованы по принятому контракту B15 без API, UI, DTO и storage.",
+        "Unit-тесты покрывают границы N=1..50, ties, empty, unknown и стабильный порядок согласно принятому контракту.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не обещает ROI или оптимальность удержания."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B27",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистое ядро solver",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_solver.py",
+        "tests/unit/test_lab_solver.py"
+      ],
+      "acceptance": [
+        "Детерминированный поиск минимального действия реализован по принятому контракту B15; учитываются цель, весь набор услуг и все ограничения.",
+        "Unit-тесты сравнивают малые случаи с независимым перебором и проверяют cents, no-op, недостижимость, unsupported и лимиты.",
+        "Используются типы B16 без изменения app/lab_contracts.py; API, UI, OpenAPI и рабочие записи не затрагиваются."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B28",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика diff источника",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_source_diff.py",
+        "tests/unit/test_lab_source_diff.py"
+      ],
+      "acceptance": [
+        "Детерминированный diff полей и результатов реализован по принятому контракту B15 для одинаковых settings и as_of.",
+        "Unit-тесты отделяют удаление записи от оттока и фиксируют неизменность baseline при расчёте preview.",
+        "Используются типы B16 без изменения app/lab_contracts.py; preview остаётся чистой функцией без source writes."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B29",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика case и replay",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_case.py",
+        "tests/unit/test_lab_case.py"
+      ],
+      "acceptance": [
+        "Валидация, каноническая сериализация и checksum паспорта реализованы по принятому контракту B15 с минимальным набором данных.",
+        "Unit-тесты проверяют совместимый replay, повреждённый, несовместимый и чрезмерно большой case и явные ошибки.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не исполняет код из case и не пишет рабочие данные."
       ],
       "evidence": []
     },
@@ -164,17 +244,16 @@
       "status": "planned",
       "title": "Лаборатория: практическая очередь работы на день",
       "depends_on": [
-        "B19"
+        "B19",
+        "B26"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_worklist.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_worklist.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -193,17 +272,16 @@
       "status": "planned",
       "title": "Лаборатория: точный поиск минимального достаточного действия",
       "depends_on": [
-        "B20"
+        "B20",
+        "B27"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_solver.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_solver.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -222,11 +300,11 @@
       "status": "planned",
       "title": "Лаборатория: preview импорта и объяснение изменений до публикации",
       "depends_on": [
-        "B23"
+        "B23",
+        "B28"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_source_diff.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "app/evaluation.py",
@@ -234,7 +312,6 @@
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_source_diff.py",
         "tests/integration/test_lab_api.py",
         "tests/integration/test_api.py",
         "tests/ui/test_lab.mjs",
@@ -254,17 +331,16 @@
       "status": "planned",
       "title": "Лаборатория: безопасный паспорт решения и sandbox replay",
       "depends_on": [
-        "B24"
+        "B24",
+        "B29"
       ],
       "scope_plan": "docs/DECISION_LAB_PLAN.md",
       "suggested_paths": [
-        "app/domain/lab_case.py",
         "app/lab_contracts.py",
         "app/api/lab.py",
         "web/lab.html",
         "web/assets/lab.js",
         "web/assets/lab.css",
-        "tests/unit/test_lab_case.py",
         "tests/integration/test_lab_api.py",
         "tests/ui/test_lab.mjs",
         "openapi.json"
@@ -329,7 +405,7 @@
       "evidence": []
     }
   ],
-  "plan_revision": 4,
+  "plan_revision": 5,
   "registration_updates": [
     {
       "id": "B15",
@@ -340,8 +416,24 @@
       "expected_previous_task_hash": "6a6c89ddd1973a56ef6d8f2104263c7b32117d573a94cc99f6a021c0ea6d0095"
     },
     {
+      "id": "B20",
+      "expected_previous_task_hash": "a4cf810ad3643a3c405238e2d78e649b4969601812d6f4ba421d4b29abb4c2cb"
+    },
+    {
       "id": "B21",
       "expected_previous_task_hash": "d0adbea92ae961561e231ec0999ec898aac0e8e83b44ca81a971eb1ea4351715"
+    },
+    {
+      "id": "B23",
+      "expected_previous_task_hash": "8dc00e26327cdd5ba67f66ae8e772ecdb9799e32e7edc6729e7adcd3f3544d2b"
+    },
+    {
+      "id": "B24",
+      "expected_previous_task_hash": "046547fa66a876f8dc906265194787c8c29baaa4eac11a715b3c08c9cbbc3143"
+    },
+    {
+      "id": "B25",
+      "expected_previous_task_hash": "e7ec4c45e39ce3344fc67434de072e69fbc099c198c7d20e5cd72562c91e0db2"
     }
   ],
   "execution_order": [
@@ -361,5 +453,5 @@
     "B31"
   ],
   "completion_task": "B22",
-  "command_compatibility": "The existing command referencing docs/EXECUTE_DECISION_LAB.md remains valid; historical B15-B22 means final B22 including all current dependencies B23-B25. B31 is an authorized preflight-support task, not a product completion task."
+  "command_compatibility": "The existing command remains valid and completes at B22 with all dependencies B15-B29. B26-B29 are implementation-only domain splits for existing features, not added user-facing scope. B31 remains preflight-support, not a product completion task."
 }
