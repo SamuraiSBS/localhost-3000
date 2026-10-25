@@ -202,7 +202,7 @@ class SessionStore:
             connection.close()
 
     def create(self, token: str, *, auth_method: str = "local") -> int:
-        if auth_method not in {"local", "oidc"}:
+        if auth_method not in {"local", "oidc", "demo"}:
             raise ValueError("invalid_auth_method")
         now = int(self.clock())
         expires_at = now + self.ttl_seconds
@@ -262,9 +262,17 @@ def issue_session(request: Request, response: Response, *, auth_method: str = "l
     store: SessionStore = request.app.state.session_store
     old = request.cookies.get(SESSION_COOKIE_NAME)
     if _valid_session_token(old):
+        if store.authentication_method(hash_session_token(old)) == "demo":
+            request.app.state.demo_workspaces.release(hash_session_token(old))
         store.revoke_hash(hash_session_token(old))
     token = secrets.token_urlsafe(32)
     store.create(token, auth_method=auth_method)
+    if auth_method == "demo":
+        try:
+            request.app.state.demo_workspaces.create(hash_session_token(token))
+        except BaseException:
+            store.revoke_hash(hash_session_token(token))
+            raise
     config = request.app.state.config
     response.set_cookie(SESSION_COOKIE_NAME, token, max_age=config.session_ttl_seconds, path="/",
         secure=cookie_is_secure(config.public_origin), httponly=True, samesite="lax")
@@ -383,9 +391,12 @@ def require_session(request: Request) -> AuthenticatedUser:
         raise AuthError(401, "authentication_required", "Authentication required.")
 
     csrf_token = csrf_token_for_session(token)
+    is_demo = store.authentication_method(hash_session_token(token)) == "demo"
+    if is_demo and not config.demo_enabled:
+        raise AuthError(401, "authentication_required", "Authentication required.")
     user = AuthenticatedUser(
-        id="operator",
-        login=config.login or "",
+        id="demo" if is_demo else "operator",
+        login="Демо-аккаунт" if is_demo else (config.login or ""),
         csrf_token=csrf_token,
         session_hash=hash_session_token(token),
     )
@@ -405,10 +416,15 @@ async def api_auth_middleware(request: Request, call_next) -> Response:
         return await call_next(request)
 
     from app.oidc import PUBLIC_ROUTES
-    is_public_auth = (request.method.upper() == "POST" and request.url.path == LOGIN_PATH) or (request.method.upper(), request.url.path) in PUBLIC_ROUTES
+    is_public_auth = (request.method.upper() == "POST" and request.url.path in {LOGIN_PATH, "/api/v1/auth/demo"}) or (request.method.upper(), request.url.path) in PUBLIC_ROUTES or (request.method.upper(), request.url.path) == ("GET", "/api/v1/auth/demo/config")
     if not is_public_auth:
         try:
-            require_session(request)
+            user = require_session(request)
+            if user.id == "demo" and not request.url.path.startswith("/api/v1/auth/"):
+                # Request-local application view: never swap global state between users.
+                request.scope["app"] = request.app.state.demo_workspaces.application_for(
+                    request.app, user.session_hash
+                )
         except AuthError as error:
             response = auth_error_response(error)
         else:

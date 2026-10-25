@@ -1,0 +1,43 @@
+.lab > p { max-width: 68ch; margin-inline: auto; }
+.lab form { max-width: 52rem; margin-inline: auto; }
+.lab fieldset { min-width: 0; border: 0; padding: 0; margin-block: var(--space-6); }
+.lab legend { font-weight: var(--weight-label); padding: 0; }
+.lab-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); margin-block: var(--space-6); }
+.lab .ds-input { width: 100%; }
+.lab .ds-field { min-width: 0; }
+.lab-check { display: flex; align-items: center; gap: var(--space-4); min-height: var(--control-min); padding-block: var(--space-3); }
+.lab-check input { flex: 0 0 auto; }
+.lab .lab-result:empty { display: none; }
+.lab-result { margin-top: var(--space-8); }
+.lab dl { margin-inline: auto; }
+.lab .service { text-align: left; }
+.lab .service p, .lab .service ul { max-width: 68ch; }
+.lab :is(p,dd,dt,li,summary,label) { overflow-wrap: anywhere; }
+.lab .actions { margin-top: var(--space-6); }
+.lab-worklist-row { text-align: left; padding-block: var(--space-6); border-bottom: 1px solid var(--color-border); }
+.lab-worklist-row:last-child { border-bottom: 0; }
+.lab-worklist-row dl { margin-inline: 0; }
+.workflow-editor { margin-block: var(--space-6); }
+.workflow-editor summary { cursor: pointer; min-height: var(--control-min); padding-block: var(--space-3); }
+.workflow-editor form { margin-inline: 0; }
+.workflow-editor .ds-field { margin-block: var(--space-6); }
+.workflow-editor textarea { resize: vertical; min-height: 8rem; }
+.quality-group { margin-block: var(--space-6); text-align: left; }
+.quality-group a { display: inline-block; padding-block: var(--space-3); min-height: var(--control-min); }
+.calendar-events { padding-inline-start: var(--space-6); }
+.calendar-events > li { border-bottom: 1px solid var(--color-border); padding-block: var(--space-6); text-align: left; }
+#calendar-periods .ds-field { margin-block: var(--space-6); }
+#calendar-result > details { margin-block: var(--space-6); }
+.observation-event { border-bottom: 1px solid var(--color-border); padding-block: var(--space-6); text-align: left; }
+.observation-event dd { white-space: pre-wrap; }
+.observation-event h4 { font-size: var(--type-body); font-weight: var(--weight-label); }
+#worklist-selection[aria-disabled="true"] { color: var(--color-text-secondary); }
+@media (max-width: 40rem) { .lab-fields { grid-template-columns: minmax(0, 1fr); } }
+
+.lab-case { max-width: 68ch; margin-inline: auto; }
+.case-export { margin-top: var(--space-6); }
+.lab #solver-result > details, .lab #solver-one-cent { margin-block: var(--space-6); }
+.sensitivity-table-wrap { max-width: 100%; overflow-x: auto; margin-block: var(--space-6); }
+.sensitivity-table-wrap table { width: 100%; border-collapse: collapse; }
+.sensitivity-table-wrap :is(th,td) { padding: var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+.sensitivity-table-wrap caption { text-align: left; margin-bottom: var(--space-4); }

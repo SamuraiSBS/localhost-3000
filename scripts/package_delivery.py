@@ -5,7 +5,7 @@ materials, uploads, proprietary font, and unrelated work stay excluded.
 """
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,34 +23,40 @@ MEMBERS = (
     'app/api/analytics.py',
     'app/api/auth.py',
     'app/api/customers.py',
+    'app/api/data_quality.py',
+    'app/api/exports.py',
+    'app/api/lab.py',
+    'app/api/observations.py',
     'app/api/settings.py',
     'app/api/source.py',
+    'app/api/workflow.py',
     'app/auth.py',
     'app/config.py',
     'app/contracts.py',
+    'app/data_quality.py',
+    'app/demo.py',
     'app/domain/__init__.py',
     'app/domain/churn_chart.py',
     'app/domain/context.py',
     'app/domain/features.py',
     'app/domain/money.py',
+    'app/domain/lab.py',
+    'app/domain/lab_case.py',
+    'app/domain/lab_sensitivity.py',
+    'app/domain/lab_solver.py',
+    'app/domain/lab_source_diff.py',
+    'app/domain/lab_worklist.py',
+    'app/domain/renewal_calendar.py',
     'app/domain/scoring.py',
     'app/evaluation.py',
+    'app/export_csv.py',
     'app/main.py',
+    'app/lab_contracts.py',
     'app/oidc.py',
     'app/metrics.py',
+    'app/observation_storage.py',
     'app/storage.py',
-    'artifacts/acceptance/b10-narrow.png',
-    'artifacts/acceptance/b10-results.json',
-    'artifacts/acceptance/b10-wide.png',
-    'artifacts/acceptance/b12-narrow.png',
-    'artifacts/acceptance/b12-results.json',
-    'artifacts/acceptance/b12-submission-README.md',
-    'artifacts/acceptance/b12-wide.png',
-    'artifacts/acceptance/b13-results.json',
-    'artifacts/acceptance/b13-login-wide.png',
-    'artifacts/acceptance/b13-login-narrow.png',
-    'artifacts/acceptance/b13-keycloak.png',
-    'artifacts/acceptance/b13-submission-README.md',
+    'app/workflow_storage.py',
     'compose.production.yaml',
     'compose.yaml',
     'data/seed.json',
@@ -82,6 +88,8 @@ MEMBERS = (
     'design/scene.css',
     'design/scene.js',
     'design/tokens.css',
+    'design/terminal-field.css',
+    'design/terminal-field.js',
     'docs/api-contract.md',
     'docs/architecture.md',
     'docs/challenge.md',
@@ -97,6 +105,7 @@ MEMBERS = (
     'docs/design/README.md',
     'docs/design/VERIFICATION.md',
     'docs/design/VISUAL_IDENTITY.md',
+    'docs/design/THIRD_PARTY_NOTICES.md',
     'docs/evaluation.md',
     'docs/infrastructure.md',
     'docs/model.md',
@@ -131,6 +140,8 @@ MEMBERS = (
     'web/assets/customer.js',
     'web/assets/customers.js',
     'web/assets/login.js',
+    'web/assets/lab.css',
+    'web/assets/lab.js',
     'web/assets/living.css',
     'web/assets/settings.js',
     'web/assets/shell.js',
@@ -138,6 +149,7 @@ MEMBERS = (
     'web/customers.html',
     'web/index.html',
     'web/login.html',
+    'web/lab.html',
     'web/settings.html',
     'web/vendor/swagger/LICENSE',
     'web/vendor/swagger/README.md',
@@ -146,30 +158,71 @@ MEMBERS = (
 )
 
 
+OUTPUT = Path('artifacts/acceptance/decision-lab/submission.zip')
+MANIFEST = Path('artifacts/acceptance/decision-lab/package-results.json')
+ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+
+
+def _member_bytes(name):
+    """Validate explicit portable paths and every ancestor before reading bytes."""
+    relative = PurePosixPath(name)
+    if (not name or relative.is_absolute() or PureWindowsPath(name).drive
+            or "\\" in name or relative.as_posix() != name
+            or any(part in {'.', '..'} for part in name.split('/'))):
+        raise ValueError('unsafe_package_path')
+    path = ROOT
+    for part in relative.parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError(f'missing_or_unsafe_package_member:{name}')
+    if not path.is_file() or not path.resolve().is_relative_to(ROOT.resolve()):
+        raise ValueError(f'missing_or_unsafe_package_member:{name}')
+    return path.read_bytes()
+
+
 def build():
-    output=ROOT/'artifacts/acceptance/b13-submission.zip'
-    entries=[]
-    with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED) as archive:
-        for name in MEMBERS:
-            relative=Path(name)
-            if relative.is_absolute() or '..' in relative.parts:
-                raise ValueError('unsafe_package_path')
-            path=ROOT/relative
-            if path.is_symlink() or not path.is_file():
-                raise ValueError(f'missing_or_unsafe_package_member:{name}')
-            raw=path.read_bytes()
-            archive.writestr(name,raw)
-            entries.append({'path':name,'size_bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()})
+    # Validate every required input before creating/replacing a deliverable.
+    if len(MEMBERS) != len(set(MEMBERS)):
+        raise ValueError('duplicate_package_member')
+    payloads = [(name, _member_bytes(name)) for name in sorted(MEMBERS)]
+    output = ROOT / OUTPUT
+    output.parent.mkdir(parents=True, exist_ok=True)
+    entries = []
+    with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for name, raw in payloads:
+            info = zipfile.ZipInfo(name, ZIP_TIMESTAMP)
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, raw, compresslevel=9)
+            entries.append({'path': name, 'size_bytes': len(raw),
+                            'sha256': hashlib.sha256(raw).hexdigest()})
     with zipfile.ZipFile(output) as archive:
-        if archive.testzip() is not None: raise ValueError('invalid_zip')
-    manifest={'task_id':'B13','archive':output.name,'archive_size_bytes':output.stat().st_size,
-        'archive_sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'member_count':len(entries),'members':entries,
-        'scope':'B11 explicit safe members plus B12 chart and B13 OIDC; no directory expansion',
-        'exclusions':['proprietary font and source photographs','original organizer data and root uploads','.env and credentials','.state and .git','tests and check.py (same B11 distribution boundary)'],
-        'validation':{'zip_integrity':'passed','exact_allowlist':'passed'},
-        'runtime_validation':'See b13-results.json and docs/p1-oidc.md. ZIP integrity does not prove Docker, CI, or public deployment.'}
-    (ROOT/'artifacts/acceptance/b13-package-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({key:manifest[key] for key in ('archive','member_count','archive_sha256')}))
+        if archive.testzip() is not None:
+            raise ValueError('invalid_zip')
+    manifest = {
+        'task_id': 'B22',
+        'archive': OUTPUT.as_posix(),
+        'archive_size_bytes': output.stat().st_size,
+        'archive_sha256': hashlib.sha256(output.read_bytes()).hexdigest(),
+        'member_count': len(entries),
+        'members': entries,
+        'scope': 'Final Decision Lab application/API/domain/UI/docs/OpenAPI; explicit safe members only; no directory expansion',
+        'exclusions': ['proprietary WOFF2 and source photographs',
+                       'original organizer data and root uploads', '.env and credentials',
+                       '.state, .agent-state, .git and scratch',
+                       'internal execution plans, coordination data and unreviewed notes',
+                       'raw local test results, screenshots and candidate notes',
+                       'tests and unrelated acceptance artifacts'],
+        'validation': {'zip_integrity': 'passed', 'exact_allowlist': 'passed'},
+        'runtime_validation': 'not_run by packaging; see docs/demo.md for the local application scenario',
+        'docker': 'not_run', 'ci': 'not_run', 'public_environment': 'not_run',
+    }
+    (ROOT / MANIFEST).write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    print(json.dumps({key: manifest[key] for key in ('archive', 'member_count', 'archive_sha256')}))
+    return manifest
 
 
-if __name__=='__main__': build()
+if __name__ == '__main__':
+    build()

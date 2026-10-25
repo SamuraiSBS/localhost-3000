@@ -126,7 +126,11 @@ def create_app(config: RuntimeConfig | None = None) -> FastAPI:
         session_store.initialize()
         application.state.session_store = session_store
         application.state.login_rate_limiter = LoginRateLimiter()
+        from app.demo import DemoWorkspaces
+        application.state.demo_workspaces = DemoWorkspaces(config)
+        application.state.demo_rate_limiter = LoginRateLimiter()
         yield
+        application.state.demo_workspaces.close()
 
     application = FastAPI(title="localhost3000", version="0.1.0", lifespan=lifespan,
                           docs_url=None, redoc_url=None, openapi_url=None)
@@ -377,7 +381,7 @@ def _document_contract(schema: dict) -> None:
         for method, operation in operations.items():
             if method not in {"get", "post", "patch", "put"}:
                 continue
-            login = path == "/api/v1/auth/login" or (method.upper(), path) in PUBLIC_ROUTES
+            login = path in {"/api/v1/auth/login", "/api/v1/auth/demo", "/api/v1/auth/demo/config"} or (method.upper(), path) in PUBLIC_ROUTES
             operation["security"] = ([] if login else
                 [{"MetricsBearer": []}] if path == "/metrics" else [{"SessionCookie": []}])
             if not login and method in {"post", "patch", "put"}:
@@ -385,7 +389,7 @@ def _document_contract(schema: dict) -> None:
                     {"name": "X-CSRF-Token", "in": "header", "required": True, "schema": string,
                      "description": "Session-bound CSRF token from login or auth/me."},
                     {"name": "Origin", "in": "header", "required": True, "schema": string}])
-            if path == "/api/v1/auth/login":
+            if path in {"/api/v1/auth/login", "/api/v1/auth/demo"}:
                 operation.setdefault("parameters", []).append(
                     {"name": "Origin", "in": "header", "required": True, "schema": string})
             response_name = responses.get((path, method))
