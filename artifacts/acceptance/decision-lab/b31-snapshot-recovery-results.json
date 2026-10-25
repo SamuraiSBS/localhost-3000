@@ -1,0 +1,79 @@
+{
+  "task_id": "B31",
+  "attempt_id": "0ef26c28-4be8-40ab-be3c-999e98793160",
+  "summary": "Implemented exact-snapshot reviewed recovery for B31. The sole initial proposal for snapshot ac1a0c41-a76b-46c6-84f2-aa2008ae2837 is bound to its claimed attempt, source provenance, direct authorization and exact frozen AGENTS.md/components.json manifest. B14 behavior remains covered by focused regression tests; B31 amendments and continuations are rejected, and scope drift blocks Submit and Accept.",
+  "checks": [
+    {
+      "name": "B31 and B14 snapshot recovery regression, including legacy v1",
+      "status": "passed",
+      "evidence": "MVP_COORDINATION_TEST_ROOT=D:/Codex/visualizations/2026/10/24/01a16fbd-db55-7960-a815-35edebb27dd0/b31-regression-fixtures-01; python -m pytest -p no:cacheprovider --basetemp=D:/Codex/visualizations/2026/10/24/01a16fbd-db55-7960-a815-35edebb27dd0/b31-regression-pytest-01 tests/test_mvp_coordination.py -k 'snapshot_recovery or snapshot_reads_legacy_v1' -q: 20 passed, 35 deselected, exit 0, 172.24s. Coverage includes B31 success, unchanged source/B14 history, wrong task/snapshot rejection, cross-task tampering, amendment/continuation refusal, drift refusal at Submit/Accept, B14 recovery regressions and legacy v1 compatibility."
+    },
+    {
+      "name": "Dedicated B31 recovery regression",
+      "status": "passed",
+      "evidence": "Earlier focused B31 selection: 4 passed, 51 deselected, exit 0."
+    },
+    {
+      "name": "Python syntax compilation",
+      "status": "passed",
+      "evidence": "python -m py_compile scripts/mvp_coordination.py tests/test_mvp_coordination.py: exit 0."
+    },
+    {
+      "name": "Scoped diff whitespace validation",
+      "status": "passed",
+      "evidence": "git -c safe.directory=D:/localhost-3000 diff --check over the exact B31 attempt scope: exit 0."
+    },
+    {
+      "name": "Scoped diff check after iteration 1 review repair",
+      "status": "passed",
+      "evidence": "After clarifying the CLI reference's existing B14 flow and retaining the B31 carve-out, git -c safe.directory=D:/localhost-3000 diff --check -- docs/coordination/cli-reference.md passed; a scoped Python check confirmed both changed files are UTF-8, the JSON parses, and neither file has trailing whitespace."
+    },
+    {
+      "name": "Frozen snapshot and exact repair-path verification",
+      "status": "passed",
+      "evidence": "Read-only coordinator inspection confirmed the single initial proposal remains bound to snapshot ac1a0c41-a76b-46c6-84f2-aa2008ae2837 and the unchanged exact AGENTS.md/components.json hashes; source provenance matches, amendments/continuations remain absent, and only docs/coordination/cli-reference.md plus this result artifact differ from iteration 1 candidate manifest."
+    }
+  ],
+  "snapshot_recovery": {
+    "proposal_id": "f4e7d870-9673-47d2-a250-42626c15e9fd",
+    "snapshot_id": "ac1a0c41-a76b-46c6-84f2-aa2008ae2837",
+    "source_snapshot_manifest_sha256": "09d2d8820f395586b4f9110df242d92d6c213b8dfd369b6ab9022595817cdfaa",
+    "proposal_manifest": [
+      {
+        "path": "AGENTS.md",
+        "mode": "100644",
+        "sha256": "4a3c3c6935395ebb97c34b78709e930461a5c4d1488f316cc885508d95f8c420",
+        "size": 22323
+      },
+      {
+        "path": "components.json",
+        "mode": "100644",
+        "sha256": "9e0e62cba5889ded1b76644d2647ccdef9aa91e6938addb91d3a3e9ead9a9980",
+        "size": 258
+      }
+    ],
+    "initial_proposal_only": true,
+    "amendments_supported": false,
+    "continuations_supported": false,
+    "source_snapshot_and_b14_history_mutated": false
+  },
+  "review_history": [
+    {
+      "iteration": 1,
+      "candidate_digest": "2facd69ca3a456370c5864baff0b009245d072c968828f5a4e95e581e6d5ec97",
+      "result": "NO_GO",
+      "finding": "The CLI reference introduced the B31 carve-out but then described propose-snapshot-recovery as available only to B14, contradicting the B31 workflow.",
+      "repair": "Clarified that the remaining proposal, pending-proposal, retry, and amendment guidance describes the existing B14 flow, while preserving the separate exact-snapshot B31 carve-out and its no-amendment/no-continuation rule."
+    }
+  ],
+  "repair_iteration": 2,
+  "repair_scope": [
+    "docs/coordination/cli-reference.md",
+    "artifacts/acceptance/decision-lab/b31-snapshot-recovery-results.json"
+  ],
+  "scope_notes": [
+    "AGENTS.md was restored byte-for-byte from artifacts/acceptance/b12-agents-parallel-commit-source.md and remains frozen.",
+    "components.json remains byte-for-byte unchanged and frozen.",
+    "The full project scripts/check.py and full coordinator test module were not run in this B31 slice; the recovery-focused regression selection above is the applicable focused suite."
+  ]
+}

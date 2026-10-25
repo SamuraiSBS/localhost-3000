@@ -1,0 +1,289 @@
+{
+  "task_id": "B12",
+  "base_head": "0b17f4c3600f1011e2b4fd7ea7de252d25aa0cac",
+  "environment": "task-owned uvicorn 8372, local Chromium",
+  "checks": [
+    {
+      "name": "protected_login_and_rating",
+      "status": "passed",
+      "evidence": "Real local login form accepted; /customers rating and chart loaded."
+    },
+    {
+      "name": "honest_series",
+      "status": "passed",
+      "evidence": "3 high-risk eligible services, 2 gap/no-new-funds scenario services; 1 current deleted excluded; history unavailable."
+    },
+    {
+      "name": "live_settings_chart_rows_summary",
+      "status": "passed",
+      "evidence": {
+        "analysis_revision": "a-8",
+        "high_risk_services": 1,
+        "method": "Saved high threshold 2 to 100 in real settings UI; background chart/list updated without reload."
+      }
+    },
+    {
+      "name": "keyboard_fallback",
+      "status": "passed",
+      "evidence": "Native details toggled with Enter, visible keyboard focus; table contains same counts."
+    },
+    {
+      "name": "responsive_1440_360_320_768",
+      "status": "passed",
+      "evidence": "Real Chromium viewports, no document horizontal overflow, chart text >=16 CSS px; wide/narrow full-page PNG uses Playwright standard mask for task login only."
+    },
+    {
+      "name": "zoom_200_percent",
+      "status": "passed",
+      "evidence": "CSS zoom 2 in Chromium; no document overflow. Browser toolbar zoom not measured."
+    },
+    {
+      "name": "chart_failure_preserves_rating",
+      "status": "passed",
+      "evidence": "Injected chart HTTP503 only; real customer/summary endpoints refreshed successfully, stale chart date retained and explicitly marked."
+    },
+    {
+      "name": "offline_fallback",
+      "status": "passed",
+      "evidence": "Chromium context offline: stale rating and chart retained with honest error/date; retry available."
+    },
+    {
+      "name": "empty_source_live",
+      "status": "passed",
+      "evidence": "Imported actual empty snapshot with UI confirmation; chart and rating refreshed to empty without fake low-risk values."
+    },
+    {
+      "name": "p0_detail_regression",
+      "status": "passed",
+      "evidence": "Actual rating link opened customer detail and rendered source services."
+    },
+    {
+      "name": "logout_clears_chart",
+      "status": "passed",
+      "evidence": "Actual logout redirects to login; chart and customer content absent; guest chart endpoint denied."
+    },
+    {
+      "name": "Docker_CI_public",
+      "status": "not_run",
+      "evidence": "B12 local process/browser scope; existing P0 historical evidence is not current B12 Docker/CI/public proof."
+    },
+    {
+      "name": "final_layout_primary_rating_first",
+      "status": "passed",
+      "evidence": "Final HTML places chart after primary rating/pagination. Keyboard intro anchor focuses chart; disclosure toggles with Enter. Repeated real1440/360/320/768 layouts and regenerated final PNG after reorder; table closed in final screenshots."
+    },
+    {
+      "name": "packaged_application_and_allowlist",
+      "status": "passed",
+      "evidence": {
+        "method": "Fresh UUID task-owned extraction; all116 paths/hash/sizes verified; actual extracted app imported and TestClient lifespan started with packaged synthetic seed. Health, login, chart, static JS, OpenAPI equality passed; omitted proprietary font returns expected404. No ZIP Docker/browser run claimed.",
+        "members": 116
+      }
+    },
+    {
+      "name": "targeted_chart_and_p0_tests",
+      "status": "passed",
+      "evidence": ".venv/Scripts/python.exe -m pytest tests/unit/test_churn_chart.py tests/integration/test_analytics_chart.py tests/integration/test_web.py tests/integration/test_auth.py tests/integration/test_api.py -q -p no:cacheprovider -p no:tmpdir: 43 passed, exit0. No tmp_path tests are in this targeted set."
+    },
+    {
+      "name": "full_check",
+      "status": "passed",
+      "evidence": {
+        "command": "PYTEST_ADDOPTS=--basetemp=D:/localhost-3000/.state/p1-b12/pytest-elevated .venv/Scripts/python.exe scripts/check.py (exec require_escalated)",
+        "exit_code": 0,
+        "result": "213 passed, 1 Starlette deprecation warning; design assets/local links/font headers/tokens/mobile budgets/Python syntax passed. No ACL changes or tmpdir-plugin disabling in this full run.",
+        "initial_sandbox_attempt": {
+          "exit_code": 1,
+          "result": "205 passed +8 setup errors in test_delivery.py: WinError5 while enumerating C:/Temp/pytest-of-Boris. Superseded by complete successful escalated run."
+        }
+      }
+    },
+    {
+      "name": "git_diff_check",
+      "status": "passed",
+      "evidence": "git -c safe.directory=D:/localhost-3000 diff --check exit0; line-ending notice for api.js is not a whitespace error."
+    },
+    {
+      "name": "final_console_and_network",
+      "status": "passed",
+      "evidence": "Actual Playwright pageerror, console.error and requestfailed listeners during final login/rating/chart/responsive/keyboard run: all empty. Intentional prior chart503/offline faults were tested separately."
+    }
+  ],
+  "screens": [
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "document": [
+        1440,
+        1440
+      ],
+      "minimumChartText": 16
+    },
+    {
+      "viewport": [
+        360,
+        900
+      ],
+      "document": [
+        360,
+        360
+      ],
+      "minimumChartText": 16
+    },
+    {
+      "viewport": [
+        320,
+        800
+      ],
+      "document": [
+        320,
+        320
+      ],
+      "minimumChartText": 16
+    },
+    {
+      "viewport": [
+        768,
+        900
+      ],
+      "document": [
+        768,
+        768
+      ],
+      "minimumChartText": 16
+    }
+  ],
+  "console_errors": [],
+  "unexpected_network_failures": [],
+  "final_chart_before_logout": {
+    "analysis_revision": "a-7",
+    "data_revision": 4,
+    "settings_revision": 4,
+    "model_version": "rules-v1",
+    "evaluated_at": "2026-10-24T07:51:44.502159Z",
+    "horizon_days": 30,
+    "currency": "EUR",
+    "source": "active_snapshot_and_rules_v1_service_scores",
+    "as_of": "2026-10-24T07:51:44.502159+00:00",
+    "horizon_end": "2026-11-23T07:51:44.502159+00:00",
+    "risk_counts": {
+      "low": 0,
+      "medium": 0,
+      "high": 3,
+      "unknown": 0
+    },
+    "excluded_current_status_counts": {
+      "deleted": 1,
+      "blocked": 0
+    },
+    "eligible_outside_horizon": 0,
+    "scenario_rule": "high_risk_and_allocated_funding_gap_no_new_funds_v1",
+    "scenario_assumption": "Высокий риск и нехватка распределённых средств; до продления новых средств не поступит. Это условный сценарий, не вероятность и не число фактических отказов.",
+    "history": {
+      "available": false,
+      "reason": "В источнике нет дат событий удаления. Текущий статус deleted не является историей оттока."
+    },
+    "buckets": [
+      {
+        "key": "overdue",
+        "label": "Просрочено к дате расчёта",
+        "start": null,
+        "end": "2026-10-24T07:51:44.502159+00:00",
+        "high_risk_services": 1,
+        "scenario_nonrenewals": 1
+      },
+      {
+        "key": "day-7",
+        "label": "До 7 дней",
+        "start": "2026-10-24T07:51:44.502159+00:00",
+        "end": "2026-10-31T07:51:44.502159+00:00",
+        "high_risk_services": 2,
+        "scenario_nonrenewals": 1
+      },
+      {
+        "key": "day-14",
+        "label": "7–14 дней",
+        "start": "2026-10-31T07:51:44.502159+00:00",
+        "end": "2026-11-07T07:51:44.502159+00:00",
+        "high_risk_services": 0,
+        "scenario_nonrenewals": 0
+      },
+      {
+        "key": "day-30",
+        "label": "14–30 дней",
+        "start": "2026-11-07T07:51:44.502159+00:00",
+        "end": "2026-11-23T07:51:44.502159+00:00",
+        "high_risk_services": 0,
+        "scenario_nonrenewals": 0
+      }
+    ]
+  },
+  "checked_at": "2026-10-24T08:00:17.095961+00:00",
+  "current_chart": {
+    "analysis_revision": "a-11",
+    "data_revision": 6,
+    "settings_revision": 6,
+    "model_version": "rules-v1",
+    "evaluated_at": "2026-10-24T07:51:51.916194Z",
+    "horizon_days": 30,
+    "currency": "EUR",
+    "source": "active_snapshot_and_rules_v1_service_scores",
+    "as_of": "2026-10-24T07:51:51.916194+00:00",
+    "horizon_end": "2026-11-23T07:51:51.916194+00:00",
+    "risk_counts": {
+      "low": 0,
+      "medium": 0,
+      "high": 3,
+      "unknown": 0
+    },
+    "excluded_current_status_counts": {
+      "deleted": 1,
+      "blocked": 0
+    },
+    "eligible_outside_horizon": 0,
+    "scenario_rule": "high_risk_and_allocated_funding_gap_no_new_funds_v1",
+    "scenario_assumption": "Высокий риск и нехватка распределённых средств; до продления новых средств не поступит. Это условный сценарий, не вероятность и не число фактических отказов.",
+    "history": {
+      "available": false,
+      "reason": "В источнике нет дат событий удаления. Текущий статус deleted не является историей оттока."
+    },
+    "buckets": [
+      {
+        "key": "overdue",
+        "label": "Просрочено к дате расчёта",
+        "start": null,
+        "end": "2026-10-24T07:51:51.916194+00:00",
+        "high_risk_services": 1,
+        "scenario_nonrenewals": 1
+      },
+      {
+        "key": "day-7",
+        "label": "До 7 дней",
+        "start": "2026-10-24T07:51:51.916194+00:00",
+        "end": "2026-10-31T07:51:51.916194+00:00",
+        "high_risk_services": 2,
+        "scenario_nonrenewals": 1
+      },
+      {
+        "key": "day-14",
+        "label": "7–14 дней",
+        "start": "2026-10-31T07:51:51.916194+00:00",
+        "end": "2026-11-07T07:51:51.916194+00:00",
+        "high_risk_services": 0,
+        "scenario_nonrenewals": 0
+      },
+      {
+        "key": "day-30",
+        "label": "14–30 дней",
+        "start": "2026-11-07T07:51:51.916194+00:00",
+        "end": "2026-11-23T07:51:51.916194+00:00",
+        "high_risk_services": 0,
+        "scenario_nonrenewals": 0
+      }
+    ]
+  },
+  "final_layout_verified_at": "2026-10-24T07:58:40.549288+00:00",
+  "page_errors": []
+}

@@ -1,0 +1,56 @@
+{
+  "accounts": [
+    {
+      "id": 1002,
+      "email": "m02@example.test",
+      "balance": 1000,
+      "withdrawBalance": 0,
+      "totalReplenished": 1000,
+      "bonusBalance": 0,
+      "bonusState": "locked"
+    },
+    {
+      "id": 1003,
+      "email": "m03@example.test",
+      "balance": 1000,
+      "withdrawBalance": 0,
+      "totalReplenished": 2000,
+      "bonusBalance": 0,
+      "bonusState": "locked"
+    },
+    {
+      "id": 1004,
+      "email": "unknown@example.test",
+      "balance": 500,
+      "withdrawBalance": 0,
+      "totalReplenished": 0,
+      "bonusBalance": 0,
+      "bonusState": "locked"
+    }
+  ],
+  "services": [
+    {
+      "id": 2002,
+      "ownerId": 1002,
+      "name": "M02 synthetic control",
+      "price": 1000,
+      "paymentTerm": "month",
+      "autoProlong": false,
+      "status": "active",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "expiresAt": "2026-10-23T14:00:00Z"
+    },
+    {
+      "id": 2003,
+      "ownerId": 1003,
+      "name": "M03 wait-state control",
+      "price": 1000,
+      "paymentTerm": "month",
+      "autoProlong": false,
+      "status": "prolong_wait",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "expiresAt": "2026-10-23T14:00:00Z"
+    }
+  ],
+  "transactions": []
+}

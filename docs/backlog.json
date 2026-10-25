@@ -1,0 +1,532 @@
+{
+  "schema_version": 1,
+  "updated_on": "2026-10-25",
+  "language": "ru",
+  "planning_status": "prepared",
+  "product_status": "not_implemented",
+  "status_policy": "These are initial planning statuses. Runtime execution, reservations and accepted evidence live only in the coordination ledger; do not rewrite this plan on each transition. Prepared documentation is not product completion.",
+  "execution_state": ".agent-state/mvp-coordination/claims.json",
+  "contract_documents": ["requirements.md", "evaluation.md", "model.md", "api-contract.md", "architecture.md", "ui-plan.md", "test-plan.md"],
+  "tasks": [
+    {
+      "id": "B00", "priority": "P0", "status": "needs_external_answer",
+      "title": "Правила использования заготовок/OSS/AI для конкурсной реализации",
+      "depends_on": [], "questions": ["Q-001", "Q-002", "Q-003"],
+      "parallel_delivery_questions": ["Q-004", "Q-005"],
+      "outputs": ["rules.md", "open-questions.md"],
+      "acceptance": ["Записан ответ и первоисточник; конкурсные предпосылки не выдуманы"],
+      "evidence": []
+    },
+    {
+      "id": "B01", "priority": "P0", "status": "planned",
+      "title": "Каркас runtime, DTO и зафиксированные совместимые зависимости",
+      "depends_on": ["B00"], "requirements": ["R-001", "R-031", "R-034", "R-035"],
+      "suggested_owner": "coordinator", "suggested_paths": ["app/contracts.py", "app/config.py", "app/main.py", "requirements*.txt"],
+      "acceptance": ["Исходный JSON принят без перезаписи", "Нет fixture name/amount ограничений", "Версии и hashes проверены"],
+      "evidence": []
+    },
+    {
+      "id": "B14", "priority": "P0", "status": "planned",
+      "title": "Аудируемый snapshot завершённой отдельной работы в checkout",
+      "depends_on": ["B01"], "requirements": [],
+      "suggested_owner": "coordination", "suggested_paths": ["scripts/mvp_coordination.py", "tests/test_mvp_coordination.py", "docs/coordination/cli-reference.md", "docs/coordination/orchestrator.md", "docs/coordination/validation.md", "docs/EXECUTE_PLAN.md", "docs/backlog.json", "docs/decisions.md"],
+      "acceptance": ["Фиксируются только точные пути, manifest, источник-чата и прямое разрешение пользователя", "Snapshot не считается принятым продуктовым результатом", "Изменение bytes после snapshot снова блокирует вне-scope попытку", "Нельзя snapshot-путём пересечь активный claim", "Reviewed recovery оформляется отдельной append-only записью с неизменным исходным snapshot, прямой авторизацией пользователя, точным текущим manifest и ссылкой на исходную provenance", "Pending recovery доступен только привязанной к proposal claimed B14 попытке; переход в действующую provenance требует свежего независимого GO по точным candidate/iteration и отдельного orchestrator Accept", "Если исходный proposal устарел до первого candidate, допускается ровно одна root-only append-only amendment для той же live claimed B14 attempt, snapshot и исходной iteration; amendment требует отдельной прямой авторизации текущего чата и закрепляет один новый exact manifest, не изменяя исходные proposal и snapshot", "Amendment запрещена после candidate, review, NO_GO, изменения iteration или закрытия попытки; повторная amendment запрещена, а любое новое изменение manifest после amendment снова блокирует Submit/Accept", "Для одной пары B14 attempt/snapshot нельзя создать повторный proposal после NO_GO или смены iteration", "Любое последующее изменение bytes, режима или отсутствие файла снова блокирует Submit/Accept; отказ review, закрытие попытки и неполная либо неверная авторизация не дают обхода", "Старая v1 ledger читается без принудительной миграции нового поля recovery"],
+      "evidence": []
+    },
+    {
+      "id": "B02", "priority": "P0", "status": "planned",
+      "title": "Pure risk engine, registry, unknown и деньги",
+      "depends_on": ["B01"], "requirements": ["R-002", "R-003", "R-008", "R-011", "R-031", "R-032", "R-033", "R-034", "R-035", "R-037", "R-038"],
+      "suggested_owner": "domain", "suggested_paths": ["app/domain/**", "tests/unit/**"],
+      "acceptance": ["M01-M12 и U01-U11 проходят", "Нет ML training или invented history", "Все explanations происходят из модели"],
+      "evidence": []
+    },
+    {
+      "id": "B03", "priority": "P0", "status": "planned",
+      "title": "SQLite persistence и согласованная публикация Evaluation",
+      "depends_on": ["B01", "B02"], "requirements": ["R-007", "R-009", "R-022"],
+      "suggested_owner": "coordinator", "suggested_paths": ["app/storage.py", "app/evaluation.py", "tests/integration/test_storage*"],
+      "acceptance": ["Candidate validated/computed before commit", "Concurrent writes не публикуют старую revision", "Settings/snapshot переживают restart"],
+      "evidence": []
+    },
+    {
+      "id": "B04", "priority": "P0", "status": "planned",
+      "title": "Защита логином/паролем, sessions, CSRF и logout",
+      "depends_on": ["B01", "B03"], "requirements": ["R-013", "R-014", "R-015", "R-016"],
+      "suggested_owner": "backend", "suggested_paths": ["app/auth.py", "app/api/auth*", "tests/integration/test_auth*"],
+      "acceptance": ["A-02 и I01-I03 проходят", "Никаких default public credentials", "Metrics token не открывает customer API"],
+      "evidence": []
+    },
+    {
+      "id": "B05", "priority": "P0", "status": "planned",
+      "title": "Обязательные REST данные, сортировка, фильтр, settings и snapshot",
+      "depends_on": ["B02", "B03", "B04"], "requirements": ["R-005", "R-006", "R-009", "R-017", "R-018", "R-019", "R-020", "R-021", "R-022"],
+      "suggested_owner": "backend", "suggested_paths": ["app/api/**", "tests/integration/test_api*"],
+      "acceptance": ["8 обязательных сортировок и фильтр", "Полная замена atomic/no-op", "Unknown/detail404/409/422 определены"],
+      "evidence": []
+    },
+    {
+      "id": "B06", "priority": "P0", "status": "planned",
+      "title": "Четыре продуктовых экрана на утверждённом дизайне",
+      "depends_on": ["B01", "B05"], "requirements": ["R-002", "R-003", "R-004", "R-005", "R-006", "R-008", "R-013", "R-018", "R-043"],
+      "suggested_owner": "frontend", "suggested_paths": ["web/**"],
+      "acceptance": ["Реальный backend вместо mocks", "Tokens/foundation/typography сохранены", "Клавиатура/empty/error/unknown и mobile читаемы"],
+      "parallel_preparation": "После B01 можно готовить изолированную верстку по контракту; completion требует B05",
+      "evidence": []
+    },
+    {
+      "id": "B07", "priority": "P0", "status": "planned",
+      "title": "Polling revisions и импорт снимка через UI",
+      "depends_on": ["B05", "B06"], "requirements": ["R-001", "R-009", "R-022"],
+      "suggested_owner": "frontend", "suggested_paths": ["web/assets/**", "tests/browser/**"],
+      "acceptance": ["Две вкладки обновляются без reload", "Нет смешанных revisions/потери фокуса/draft", "A-07 проходит"],
+      "evidence": []
+    },
+    {
+      "id": "B08", "priority": "P0", "status": "planned",
+      "title": "Prometheus, локальный Swagger и экспорт OpenAPI",
+      "depends_on": ["B05"], "requirements": ["R-010", "R-023", "R-024", "R-025"],
+      "suggested_owner": "backend", "suggested_paths": ["app/metrics.py", "openapi.json", "web/vendor/swagger/**", "tests/integration/test_contract*"],
+      "acceptance": ["Exact metrics endpoint + authenticated scrape", "Агрегаты совпали", "Swagger offline и 11 операций в актуальном файле"],
+      "evidence": []
+    },
+    {
+      "id": "B09", "priority": "P0", "status": "planned",
+      "title": "Замена probe, Docker/Compose, check/smoke/CI",
+      "depends_on": ["B03", "B04", "B05", "B06", "B07", "B08"], "requirements": ["R-012", "R-026", "R-027"],
+      "suggested_owner": "coordinator", "suggested_paths": ["Dockerfile", "compose*.yaml", "scripts/check.py", "scripts/smoke.py", ".github/workflows/**", "README.md"],
+      "acceptance": ["Чистый app start и restart volume", "Проверки проверяют продукт", "Probe runtime claims не перенесены на MVP"],
+      "evidence": []
+    },
+    {
+      "id": "B10", "priority": "P0", "status": "planned",
+      "title": "Обязательная приёмка и исправления",
+      "depends_on": ["B07", "B08", "B09"], "requirements": ["R-001", "R-030", "R-037", "R-043"],
+      "suggested_owner": "independent-review + coordinator", "suggested_paths": ["tests/**", "docs/evaluation.md", "artifacts/acceptance/**"],
+      "acceptance": ["A-01-A-12 passed на одной версии", "Настоящий browser narrow/wide+keyboard", "Ограничения и not_run отдельно"],
+      "evidence": []
+    },
+    {
+      "id": "B11", "priority": "P0", "status": "planned",
+      "title": "Сдача и полная репетиция",
+      "depends_on": ["B10"], "requirements": ["R-025", "R-026", "R-027", "R-028", "R-029", "R-030"],
+      "additional_gate": "Q-004 ответ о времени/канале; Q-005 права для фактического способа передачи/публикации",
+      "suggested_owner": "coordinator", "suggested_paths": ["README.md", "docs/demo.md", "docs/model.md", "docs/architecture.md", "openapi.json"],
+      "acceptance": ["Пакет воспроизводим без устных подсказок", "Защита: найти/объяснить/изменить/увидеть", "Время/канал соответствуют Q004 ответу"],
+      "evidence": []
+    },
+    {
+      "id": "B12", "priority": "P1", "status": "planned",
+      "title": "График с различимыми фактом и сценарием",
+      "depends_on": ["B11"], "requirements": ["R-036", "R-042"],
+      "additional_gate": "Есть время на повторную QA; происхождение всех рядов известно",
+      "acceptance": ["Нет fabricated historical deletions", "Статусы текущего снимка не выданы за события", "Таблица fallback и подписи"],
+      "evidence": []
+    },
+    {
+      "id": "B13", "priority": "P1", "status": "planned",
+      "title": "Рабочий OIDC после обязательной приёмки",
+      "depends_on": ["B11"], "requirements": ["R-041"],
+      "additional_gate": "Реальный разрешённый IdP/callback/credentials; сохранён резерв QA",
+      "acceptance": ["Login/callback/logout действительно работают", "State/nonce/provider failure проверены", "Базовый вход сохранён"],
+      "evidence": []
+    },
+    {
+      "id": "B15",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: baseline, feature-контракт, fixtures и UX",
+      "depends_on": [
+        "B11",
+        "B13"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "docs/decision-lab-contract.md",
+        "docs/decision-lab-fixtures.md",
+        "docs/decision-lab-implementation.md"
+      ],
+      "acceptance": [
+        "Baseline и ownership проверены по live ledger и коду",
+        "Зафиксирован полный контракт preview/sensitivity/worklist/solve/source-preview+подтверждение/case+replay, revisions/409, auth/CSRF и лимиты",
+        "Контракт различает baseline, изменение модели и предполагаемое действие; фиксирует простой функциональный UI без требований к визуальному дизайну",
+        "Ручные ожидаемые результаты L01-L20, точные paths/resources, пределы точного поиска, контракт replay и атомарного импорта описаны"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B16",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистое ядро сценариев действий и модели",
+      "depends_on": [
+        "B15"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab.py",
+        "app/lab_contracts.py",
+        "tests/unit/test_lab.py"
+      ],
+      "acceptance": [
+        "Переиспользован текущий engine без второй формулы",
+        "Caller-owned копии, один as_of, без storage/publication side effects",
+        "L01-L06 проходят: shared balance, cents, manual renewal, payment_wait, unknown, locked funds, clamp",
+        "Синтетические примеры отделены от источника; raw fields и explanations проверяемы"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B17",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: защищённый preview API и контроль revisions",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/api/lab.py",
+        "app/main.py",
+        "tests/integration/test_lab_api.py",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Preview использует одну согласованную Evaluation и возвращает происхождение",
+        "L08/L09/L11 проверены, включая конкурентное обновление, 409 и неизменность source/settings/metrics",
+        "Общие auth/CSRF и лимиты действуют; обязательные операции OpenAPI сохранены",
+        "Никаких source/settings writes через лабораторию"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B18",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: детерминированная устойчивость приоритетов",
+      "depends_on": [
+        "B17"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_sensitivity.py",
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "tests/unit/test_lab_sensitivity.py",
+        "tests/integration/test_lab_api.py",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Веса ±10% и пороги ±5 отдельно, фиксированные H/as_of, явный список вариантов",
+        "L07: стабильные ties, дедупликация и unknown; top-K считает только варианты весов, категории имеют отдельный набор вариантов порогов и знаменатель",
+        "Максимум 32 уникальных варианта; нет статистических claims",
+        "API сохраняет гарантии auth/revisions/no-write из B17"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B19",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: интерфейс проверки модели и симулятора",
+      "depends_on": [
+        "B18"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "web/assets/shell.js",
+        "web/customer.html",
+        "web/assets/customer.js",
+        "app/main.py",
+        "tests/integration/test_web.py",
+        "tests/ui/test_lab.mjs"
+      ],
+      "acceptance": [
+        "Прозрачный расчёт, песочница весов/порогов, устойчивость, top-up/autoprolong и reset работают с backend",
+        "Нет применения сценария к рабочей модели или реального платежа/сообщения",
+        "Draft/stale/409/empty/error и гонки ответов обработаны",
+        "Простые controls выполняют сценарии; локальный browser walkthrough проверяет функции, keyboard controls и exact evidence без визуальной/верстальной приёмки"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B20",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: практическая очередь работы на день",
+      "depends_on": [
+        "B19",
+        "B26"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/integration/test_lab_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "N=1..50, правила допуска/приоритета и исключения соответствуют плану",
+        "L10: ties, пустой список, unknown и число кандидатов проверены",
+        "Причина/срок/деньги/действие и переход в симулятор согласованы с baseline",
+        "Ручной выбор только в текущей вкладке, смена revision инвалидирует план; нет claims оптимальности/ROI"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B21",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: полная приёмка и регрессии MVP/P1",
+      "depends_on": [
+        "B25"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "tests/ui/test_lab.mjs",
+        "tests/integration/test_lab_api.py",
+        "docs/decision-lab-verification.md",
+        "artifacts/acceptance/decision-lab/results.json",
+        "artifacts/acceptance/decision-lab/wide.png"
+      ],
+      "acceptance": [
+        "L01-L13 и L15-L19 passed на проверяемой версии; solver минимален, preview/apply атомарны, replay воспроизводим, обязательные регрессии сохранены",
+        "Реальный browser: функциональные journeys, keyboard controls, ошибки/409/stale; проверки только дизайна, layout, responsive, zoom и motion пропускаются",
+        "Evidence с версиями и окружением; not_run не выдан за passed",
+        "Найденные дефекты исправлены через точное расширение claim и новый независимый review"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B22",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: безопасный пакет и финальная репетиция",
+      "depends_on": [
+        "B21"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "scripts/package_delivery.py",
+        "tests/integration/test_delivery.py",
+        "README.md",
+        "docs/demo.md",
+        "docs/decision-lab-verification.md",
+        "artifacts/acceptance/decision-lab/submission.zip",
+        "artifacts/acceptance/decision-lab/submission-README.md",
+        "artifacts/acceptance/decision-lab/package-results.json"
+      ],
+      "acceptance": [
+        "Точный package allowlist включает solver, source-preview+подтверждение, case/replay, остальные новые runtime/UI файлы, feature-документы и актуальный OpenAPI",
+        "L14/L20: запуск распакованного ZIP и browser journey всех трёх добавлений в чистом профиле с task-owned runtime",
+        "Сохранены правила исключения secrets/источников/шрифта/фото, прежний candidate не перезаписан",
+        "Checksum, запуск, сброс, 90-120 секунд feature-demo и ограничения документированы; пакет не опубликован"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B23",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: точный поиск минимального достаточного действия",
+      "depends_on": [
+        "B20",
+        "B27"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/integration/test_lab_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Две цели: покрытие выбранных продлений или score ниже порога; ограничения суммы/услуг/числа переключений проверяются",
+        "Оптимизация по сумме, числу переключений и IDs точна; учитывается вся корзина, включая невыбранные услуги",
+        "L15/L16: независимый перебор малых случаев, контроль cents, нулевое действие, недостижимость/unsupported/лимит различимы",
+        "Защищённые API/UI, revisions/409 и no-write соблюдены; результат открывается в симуляторе, нет гарантий удержания"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B24",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: preview импорта и объяснение изменений до публикации",
+      "depends_on": [
+        "B23",
+        "B28"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "app/evaluation.py",
+        "app/api/source.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/integration/test_lab_api.py",
+        "tests/integration/test_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Diff исходных полей и результатов рассчитан при одинаковых settings/as_of; исчезновение записи не выдано за отток",
+        "L17: preview read-only; подтверждение только тех же checksum и baseline с атомарной проверкой/публикацией без TOCTOU",
+        "Единственный действующий coordinator writer, PUT совместим, no-op сохраняется, невалидный/изменённый кандидат и stale preview отклоняются",
+        "UI позволяет отклонить/подтвердить, раскрывает изменения и время результата, auth/CSRF и размер полного snapshot соблюдены"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B25",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: безопасный паспорт решения и sandbox replay",
+      "depends_on": [
+        "B24",
+        "B29"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/lab_contracts.py",
+        "app/api/lab.py",
+        "web/lab.html",
+        "web/assets/lab.js",
+        "web/assets/lab.css",
+        "tests/integration/test_lab_api.py",
+        "tests/ui/test_lab.mjs",
+        "openapi.json"
+      ],
+      "acceptance": [
+        "Паспорт содержит минимальную полную корзину клиента, settings/as_of, модель/схему, сценарий или цель/ограничения, результат/checksum; лишние персональные поля исключены",
+        "L18: экспорт/restart/replay совместимого кейса воспроизводим, повреждённый/несовместимый/слишком большой файл получает явную ошибку",
+        "Импорт только sandbox без записи source/settings/metrics, без кода из файла; нет обещания восстановить портфельный рейтинг из кейса одного клиента",
+        "L19: browser journey preview импорта -> минимальное действие -> проверка cents -> экспорт/replay; ручной разбор отличается от проверки тем же engine"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B26",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая доменная логика worklist",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_worklist.py",
+        "tests/unit/test_lab_worklist.py"
+      ],
+      "acceptance": [
+        "Чистые правила отбора, приоритета и исключений worklist реализованы по принятому контракту B15 без API, UI, DTO и storage.",
+        "Unit-тесты покрывают границы N=1..50, ties, empty, unknown и стабильный порядок согласно принятому контракту.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не обещает ROI или оптимальность удержания."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B27",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистое ядро solver",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_solver.py",
+        "tests/unit/test_lab_solver.py"
+      ],
+      "acceptance": [
+        "Детерминированный поиск минимального действия реализован по принятому контракту B15; учитываются цель, весь набор услуг и все ограничения.",
+        "Unit-тесты сравнивают малые случаи с независимым перебором и проверяют cents, no-op, недостижимость, unsupported и лимиты.",
+        "Используются типы B16 без изменения app/lab_contracts.py; API, UI, OpenAPI и рабочие записи не затрагиваются."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B28",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика diff источника",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_source_diff.py",
+        "tests/unit/test_lab_source_diff.py"
+      ],
+      "acceptance": [
+        "Детерминированный diff полей и результатов реализован по принятому контракту B15 для одинаковых settings и as_of.",
+        "Unit-тесты отделяют удаление записи от оттока и фиксируют неизменность baseline при расчёте preview.",
+        "Используются типы B16 без изменения app/lab_contracts.py; preview остаётся чистой функцией без source writes."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B29",
+      "priority": "P2",
+      "status": "planned",
+      "title": "Лаборатория: чистая логика case и replay",
+      "depends_on": [
+        "B16"
+      ],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_paths": [
+        "app/domain/lab_case.py",
+        "tests/unit/test_lab_case.py"
+      ],
+      "acceptance": [
+        "Валидация, каноническая сериализация и checksum паспорта реализованы по принятому контракту B15 с минимальным набором данных.",
+        "Unit-тесты проверяют совместимый replay, повреждённый, несовместимый и чрезмерно большой case и явные ошибки.",
+        "Используются типы B16 без изменения app/lab_contracts.py; модуль не исполняет код из case и не пишет рабочие данные."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B31",
+      "priority": "P0",
+      "status": "planned",
+      "title": "Reviewed recovery для второго неизменяемого snapshot",
+      "depends_on": [
+        "B14"
+      ],
+      "requirements": [],
+      "scope_plan": "docs/DECISION_LAB_PLAN.md",
+      "suggested_owner": "coordination",
+      "suggested_paths": [
+        "scripts/mvp_coordination.py",
+        "tests/test_mvp_coordination.py",
+        "docs/coordination/cli-reference.md",
+        "docs/coordination/orchestrator.md",
+        "docs/coordination/validation.md",
+        "docs/EXECUTE_PLAN.md",
+        "AGENTS.md",
+        "artifacts/acceptance/decision-lab/b31-snapshot-recovery-results.json"
+      ],
+      "acceptance": [
+        "Snapshot recovery разрешён только для B14 и B31; B31 привязан к точному snapshot ac1a0c41-a76b-46c6-84f2-aa2008ae2837, а исходные snapshot, provenance и B14 histories остаются неизменными",
+        "Положительный путь B31 связывает точные task/attempt/iteration/snapshot/manifest/provenance, прямую авторизацию, candidate, свежий независимый GO и root Accept",
+        "B31 допускает только одно начальное предложение до первого candidate; amendment и continuation отвергаются, последующий drift блокирует Submit/Accept",
+        "Тесты покрывают B31 success, неизменность/регрессию B14, отказ для B12 и произвольной задачи/snapshot, cross-task tampering, amendment/continuation и legacy v1 ledger",
+        "Пользовательские правила коммитов возвращены в AGENTS.md из сохранённого task-owned источника и входят в exact reviewed manifest"
+      ],
+      "evidence": []
+    }
+  ]
+}

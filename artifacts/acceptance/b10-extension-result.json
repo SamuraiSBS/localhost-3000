@@ -1,0 +1,114 @@
+{
+  "task_id": "B10",
+  "attempt_id": "91e97142-e28a-411a-ad9a-22b6d21a7df4",
+  "status": "passed",
+  "base_head": "eaed00108459c4f8f66199676d68e4c689d9518f",
+  "isolated_copy": ".state/r637f-b10/extension/clean",
+  "extension_data_dir": ".state/r637f-b10/extension/browser-data",
+  "patch_path": "artifacts/acceptance/b10-extension.patch",
+  "patch_sha256": "7BE1E4FED8F37306A415143C0011A0AAA8E99ED4AED0DD6A25E9C7701158A1B1",
+  "resulting_revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+  "extension": {
+    "id": "high_renewal_cost",
+    "title": "High renewal cost",
+    "version": "1",
+    "threshold_cents": 800,
+    "default_weight": 10,
+    "required_fields": [
+      "price"
+    ]
+  },
+  "apply_commands": {
+    "working_directory": "D:\\localhost-3000\\.state\\r637f-b10\\extension\\clean",
+    "check": "git apply --check D:\\localhost-3000\\artifacts\\acceptance\\b10-extension.patch",
+    "apply": "git apply D:\\localhost-3000\\artifacts\\acceptance\\b10-extension.patch",
+    "exit_codes": {
+      "check": 0,
+      "apply": 0
+    },
+    "note": "Commands ran against the isolated clean copy. The copy is not treated as a Git repository; git apply applied patch paths relative to its working directory."
+  },
+  "browser_proof": {
+    "url": "http://127.0.0.1:8360",
+    "environment": "B10 Compose endpoint http://127.0.0.1:8360; app revision confirmed by fresh /healthz; image metadata not freshly inspected in iteration 9.",
+    "candidate_revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+    "setting_visible": true,
+    "definition_default_weight": 10,
+    "threshold_cents": 800,
+    "customer_id": 1002,
+    "service_price_cents": 1000,
+    "baseline_before_extension_change": {
+      "settings_revision": 5,
+      "manual_renewal": 50,
+      "extension_weight": 0,
+      "m02_score": 70
+    },
+    "attempted_weight_change": {
+      "from": 0,
+      "to": 20,
+      "valid_positive_value": true
+    },
+    "saved_settings_revision": 6,
+    "score_after_change": 90,
+    "score_delta": 20,
+    "reason": "UI detail showed renewal price 1000 cents; signal enabled at 800 cents.",
+    "second_tab_updated": true,
+    "second_tab_revision": "data6/settings6/analysis a-17",
+    "restart_persistence": {
+      "command": "docker restart mvp-r637f-b10-app-1",
+      "same_named_volume": "mvp-r637f-b10-data-91e97142:/data",
+      "restored_settings_revision": 5,
+      "restored_manual_renewal": 50,
+      "restored_extension_weight": 0,
+      "restored_snapshot": "data6/analysis a-16"
+    },
+    "final_synthetic_fixture_restore": {
+      "settings_revision": 7,
+      "manual_renewal": 25,
+      "extension_weight": 10,
+      "snapshot": "data10/analysis a-24",
+      "customers": 2,
+      "services": 2,
+      "transactions": 0,
+      "restored_via": "UI upload of .state/r637f-b10/fixtures/source-base.json after A03 no-score browser proof"
+    }
+  },
+  "supplemental_unit_evidence": "Focused integration regression tests also passed; the UI setting/save/score/reason proof above is the required actual Compose evidence.",
+  "no_main_checkout_product_source_edits": true,
+  "observed_at": "2026-10-23T22:03:24Z",
+  "runtime_command": {
+    "environment": "Actual final B10 Compose candidate; not the earlier host-process fallback",
+    "project": "mvp-r637f-b10",
+    "image_tag": "mvp-r637f-b10-91e97142-etagfix:local",
+    "app_container": "mvp-r637f-b10-app-1",
+    "app_container_id": "a9c1b1f38eb5fccffebd477f476e204c6470bec873241df1ef41d9ba8a499905",
+    "image_id": "sha256:19f3f497d288112dae05eb66e55d82a5f71ceb0be403c125a43e4ebde9be99a9",
+    "volume": "mvp-r637f-b10-data-91e97142:/data",
+    "browser_url": "http://127.0.0.1:8360",
+    "credential_note": "Task-owned hardened synthetic credential used; secret omitted.",
+    "metadata_note": "Image/container IDs and tag are historical from the earlier scoped replacement; not freshly inspected in iteration 9."
+  },
+  "submission_iteration": 9,
+  "browser_evidence_iteration": 7,
+  "browser_evidence_note": "A11 browser proof remains from iteration 7 on the same reported app revision. Iteration 9 added fresh /healthz revision eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502 and Playwright viewport evidence at 1440x900 and 360x900; Docker image/tag metadata was not freshly inspected.",
+  "viewport_evidence_iteration9": {
+    "health_revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+    "wide": {
+      "path": "artifacts/acceptance/b10-wide.png",
+      "viewport_css_px": "1440x900",
+      "width": 1440,
+      "height": 900,
+      "bytes": 68260,
+      "sha256": "f2e5e0c53a85d72ddcc5b4be29b34c6b18de0b675a6aa192fedb9e60f0201809"
+    },
+    "narrow": {
+      "path": "artifacts/acceptance/b10-narrow.png",
+      "viewport_css_px": "360x900",
+      "width": 360,
+      "height": 900,
+      "bytes": 41183,
+      "sha256": "9dce2bee5d452836ee107f059a2739bb3b5d29aaedc1ac9fc7c9ecb7e14ce94f"
+    },
+    "redaction": "Playwright screenshot mask covered exactly one element whose complete visible text matched the task-local APP_LOGIN. Default magenta mask only; viewport capture otherwise unedited and uncropped; no credential value was logged."
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "task_id": "B10",
+  "attempt_id": "91e97142-e28a-411a-ad9a-22b6d21a7df4",
+  "iteration": 9,
+  "worker": {
+    "target": "/root/r637f_b10_worker",
+    "run_id": "01a169e7-82de-7c40-8ccd-7dd9e9b469cd"
+  },
+  "base_head": "eaed00108459c4f8f66199676d68e4c689d9518f",
+  "observed_at": "2026-10-24T06:01:32Z",
+  "status": "ready_for_iteration9_submit",
+  "candidate": {
+    "project": "mvp-r637f-b10",
+    "app_container": "mvp-r637f-b10-app-1",
+    "revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+    "health": "fresh GET /healthz returned 200 status=ok, stage=product",
+    "port": 8360,
+    "volume": "mvp-r637f-b10-data-91e97142:/data (same-volume persistence proved in earlier A06/A12 evidence; not re-inspected in iteration 9)",
+    "historical_metadata": {
+      "image_tag": "mvp-r637f-b10-91e97142-etagfix:local",
+      "image_id": "sha256:19f3f497d288112dae05eb66e55d82a5f71ceb0be403c125a43e4ebde9be99a9",
+      "app_container_id": "a9c1b1f38eb5fccffebd477f476e204c6470bec873241df1ef41d9ba8a499905",
+      "observation_note": "Values from previous scoped replacement; not freshly inspected in iteration 9."
+    }
+  },
+  "summary": "Iteration 9 adds direct authenticated Playwright/Chromium evidence at 1440x900 and 360x900, two captured viewport PNGs, and a fresh /healthz revision eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502. Document width equals viewport width at both sizes; the table scrolls internally. The screenshot mask covers one exact visible element matching task-local APP_LOGIN; no other edits/cropping. Earlier A01-A12/API/extension/same-volume restart evidence remains on this attempt. Full scripts/check.py remains failed at 194 passed and 8 WinError 5 setup errors; no green claim. Image/container metadata was not freshly inspected.",
+  "settings_fix": {
+    "cause": "Caddy encode zstd gzip changes response ETag to settings-N-zstd or settings-N-gzip, rejected by the old parser.",
+    "implemented": "Accept only settings-N, settings-N-zstd, settings-N-gzip. Unknown encoding suffix remains 400 if_match_invalid; stale supported revision remains 409.",
+    "files": [
+      "app/api/settings.py",
+      "tests/integration/test_api.py"
+    ],
+    "focused_tests": "3 passed, 1 Starlette deprecation warning"
+  },
+  "current_candidate_browser": {
+    "a01": "B10 endpoint at port 8360 completed the authenticated main path and reset in prior same-attempt browser evidence. Fresh iteration-9 /healthz returned status=ok at revision eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502. No fresh Docker image metadata was inspected.",
+    "a02": "Guest /customers redirected to /login?next=/customers; wrong login rejected; valid local login worked; logout made second tab's next reload redirect to login.",
+    "a03": "No-score account 1004 appeared in list and detail with explicit no-service/no-money-evaluation reason; source-base restored at data10/settings7/a-24, with 2 customers/2 services/0 transactions and unknown count 0.",
+    "a04": "Current attempt evidence: sort matrix ID/email/balance/totalReplenished asc/desc, high/email filters, aria-sort, keyboard focus. Iteration-9 Playwright/Chromium measured exact 1440x900 and 360x900: document widths 1440 and 360; table region widths 1118/1180 and 326/1180; 2 rows at both sizes; no page-wide horizontal overflow. Captured PNGs are masked only over one exact APP_LOGIN text element. Other viewport sizes are not included in this iteration evidence.",
+    "a05": "M02 detail displayed score55/Medium and explanation at baseline.",
+    "a06": "manual25->50 with extension weight0 changed M02 45->70/450->700 cents; second tab updated; restarting same app container on same volume retained settings and snapshot.",
+    "a07": "Changed snapshot altered M02; invalid snapshot retained prior result; source-base restored through UI.",
+    "a08": "Manual score and money sums matched the displayed M02/M03 results and aggregate totals.",
+    "a09": "Unauthenticated /metrics returned 401; authenticated metrics and actual Prometheus collector matched summary at a-21/data8/settings7; token remained private.",
+    "a10": "Authenticated /api/v1/docs displayed 11 operations; /api/v1/openapi.json was OpenAPI3.1 with 10 paths/11 operations.",
+    "a11": "Extension weight0->20 changed M02 score/reason and second-tab result on the same candidate.",
+    "a12": "App-only stop/start preserved volume; UI retained last consistent list/date/sort during outage, Retry recovered at a-22."
+  },
+  "final_fixture": {
+    "settings_revision": 7,
+    "manual_renewal": 25,
+    "high_renewal_cost": 10,
+    "data_revision": 10,
+    "analysis_revision": "a-24",
+    "customers": 2,
+    "services": 2,
+    "transactions": 0,
+    "unknown_customers": 0,
+    "restored_via": "UI upload of .state/r637f-b10/fixtures/source-base.json"
+  },
+  "viewport": {
+    "environment": "Task-owned Playwright 1.64.1 / Chromium 156.0.8078.4 against http://127.0.0.1:8360",
+    "health_status": "ok",
+    "health_revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+    "observed_at": "2026-10-24T06:01:32Z",
+    "measurements": [
+      {
+        "requested_css_px": "1440x900",
+        "inner_width": 1440,
+        "inner_height": 900,
+        "document_client_width": 1440,
+        "document_scroll_width": 1440,
+        "body_scroll_width": 1440,
+        "main_width": 1216,
+        "table_region_client_width": 1118,
+        "table_region_scroll_width": 1180,
+        "table_width": 1164,
+        "visible_rows": 2,
+        "screenshot": {
+          "path": "artifacts/acceptance/b10-wide.png",
+          "viewport_css_px": "1440x900",
+          "width": 1440,
+          "height": 900,
+          "bytes": 68260,
+          "sha256": "f2e5e0c53a85d72ddcc5b4be29b34c6b18de0b675a6aa192fedb9e60f0201809"
+        }
+      },
+      {
+        "requested_css_px": "360x900",
+        "inner_width": 360,
+        "inner_height": 900,
+        "document_client_width": 360,
+        "document_scroll_width": 360,
+        "body_scroll_width": 360,
+        "main_width": 360,
+        "table_region_client_width": 326,
+        "table_region_scroll_width": 1180,
+        "table_width": 1164,
+        "visible_rows": 2,
+        "screenshot": {
+          "path": "artifacts/acceptance/b10-narrow.png",
+          "viewport_css_px": "360x900",
+          "width": 360,
+          "height": 900,
+          "bytes": 41183,
+          "sha256": "9dce2bee5d452836ee107f059a2739bb3b5d29aaedc1ac9fc7c9ecb7e14ce94f"
+        }
+      }
+    ],
+    "keyboard_focus": "Prior same-attempt browser evidence: Tab focused skip link; :focus-visible true; 2px solid outline.",
+    "redaction": "Playwright screenshot mask covered exactly one element whose complete visible text matched the task-local APP_LOGIN. Default magenta mask only; viewport capture otherwise unedited and uncropped; no credential value was logged.",
+    "screenshot_integrity": "Direct viewport captures via page.screenshot(full_page=False, animations=disabled); one text-matched element masked, no other image editing/cropping.",
+    "other_viewport_sizes": "Not included in iteration-9 evidence.",
+    "docker_metadata": "No iteration-9 Docker CLI/inspect; image/container metadata is historical only."
+  },
+  "verification": {
+    "targeted_tests": "Iteration 8 bounded run: 3 passed, 1 StarletteDeprecationWarning in 6.34s; exit code 0. PYTHONPATH=. and pytest tmp/cache plugins disabled.",
+    "full_suite": "Failed. Prior complete run: 194 passed and 8 pytest setup errors due PermissionError [WinError 5]. The corrected external forward-slash basetemp attempt again showed eight setup-error markers and then sessionfinish WinError 5; no green claim.",
+    "git_diff_check": {
+      "command": "git -c safe.directory=D:/localhost-3000 diff --check -- app/api/settings.py tests/integration/test_api.py docs/demo.md artifacts/acceptance/b10-results.json artifacts/acceptance/b10-extension-result.json artifacts/acceptance/b10-extension.patch artifacts/acceptance/b10-no-score-snapshot.json artifacts/coordination/b10-worker.json",
+      "status": "pending_final_check",
+      "exit_code": 0,
+      "note": "No whitespace errors. Git emitted only the expected LF-to-CRLF working-copy warning for docs/demo.md; JSON and snapshot files were also independently checked for trailing whitespace."
+    },
+    "json_validation": "Pending final parse/newline/whitespace check for result, extension, worker and no-score JSON files.",
+    "screenshots": {
+      "status": "captured",
+      "files": [
+        {
+          "path": "artifacts/acceptance/b10-wide.png",
+          "viewport_css_px": "1440x900",
+          "width": 1440,
+          "height": 900,
+          "bytes": 68260,
+          "sha256": "f2e5e0c53a85d72ddcc5b4be29b34c6b18de0b675a6aa192fedb9e60f0201809"
+        },
+        {
+          "path": "artifacts/acceptance/b10-narrow.png",
+          "viewport_css_px": "360x900",
+          "width": 360,
+          "height": 900,
+          "bytes": 41183,
+          "sha256": "9dce2bee5d452836ee107f059a2739bb3b5d29aaedc1ac9fc7c9ecb7e14ce94f"
+        }
+      ],
+      "redaction": "Playwright screenshot mask covered exactly one element whose complete visible text matched the task-local APP_LOGIN. Default magenta mask only; viewport capture otherwise unedited and uncropped; no credential value was logged."
+    },
+    "contrast": "passed_for_measured_elements; exact selectors/colors/ratios are in verification.numeric_contrast.",
+    "zoom_200_percent": "not_run per user instruction",
+    "reduced_motion": "not_run per user instruction",
+    "public_ci_deploy_publish": "not_run",
+    "observed_at": "2026-10-24T06:01:32Z",
+    "scripts_check": {
+      "command": "PYTEST_ADDOPTS=--basetemp=D:/Codex/visualizations/2026/10/23/01a1697b-64fb-7272-b0d4-4a69edda637f/b10-pytest-iter6-fresh2 .venv\\Scripts\\python.exe scripts\\check.py",
+      "status": "failed",
+      "exit_code": 1,
+      "evidence": "Correct external basetemp resolved; eight setup-error markers appeared; sessionfinish PermissionError [WinError 5] scanning that exact external basetemp. Design checks passed.",
+      "known_previous_complete_summary": "194 passed; 8 pytest setup errors",
+      "no_green_claim": true
+    },
+    "numeric_contrast": {
+      "status": "passed_for_measured_elements",
+      "method": "Read-only browser DOM evaluation of getComputedStyle on /customers at data=10/settings=7/analysis=a-24; WCAG relative-luminance contrast ratios calculated from the observed RGB colors.",
+      "measurements": [
+        {
+          "selector": "body background; h1, summary, and table text",
+          "foreground": "rgb(241, 241, 241)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "18.04:1"
+        },
+        {
+          "selector": "p.metadata calculation line",
+          "foreground": "rgb(157, 157, 157)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "7.52:1"
+        },
+        {
+          "selector": "#query input text",
+          "foreground": "rgb(241, 241, 241)",
+          "background": "rgb(20, 20, 20)",
+          "ratio": "16.31:1"
+        },
+        {
+          "selector": "#query border against body",
+          "foreground": "rgb(121, 121, 121)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "4.68:1"
+        },
+        {
+          "selector": "#sort-order button text",
+          "foreground": "rgb(241, 241, 241)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "18.04:1"
+        },
+        {
+          "selector": "#sort-order border against body",
+          "foreground": "rgb(121, 121, 121)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "4.68:1"
+        },
+        {
+          "selector": "a.ds-skip after Tab, :focus-visible foreground/fill",
+          "foreground": "rgb(5, 5, 5)",
+          "background": "rgb(241, 241, 241)",
+          "ratio": "18.04:1"
+        },
+        {
+          "selector": "a.ds-skip 2px white focus outline against body",
+          "foreground": "rgb(241, 241, 241)",
+          "background": "rgb(5, 5, 5)",
+          "ratio": "18.04:1"
+        }
+      ],
+      "scope_limit": "These measured elements do not establish contrast for unmeasured page elements or other viewport widths."
+    },
+    "coordination_check": {
+      "command": "scripts/mvp_coordination.py --root D:\\localhost-3000 check --task B10 --file <all 10 exact claim paths>",
+      "status": "advisory_path_conflict_same_attempt",
+      "ledger_revision": 170,
+      "output": "ready=false, reason=path_conflict, detail=Paths reserved by 91e97142-e28a-411a-ad9a-22b6d21a7df4",
+      "interpretation": "The exact paths are already reserved by this same active attempt; no new claim was created."
+    },
+    "screenshot_validation": {
+      "status": "passed",
+      "files": [
+        {
+          "path": "artifacts/acceptance/b10-wide.png",
+          "viewport_css_px": "1440x900",
+          "width": 1440,
+          "height": 900,
+          "bytes": 68260,
+          "sha256": "f2e5e0c53a85d72ddcc5b4be29b34c6b18de0b675a6aa192fedb9e60f0201809"
+        },
+        {
+          "path": "artifacts/acceptance/b10-narrow.png",
+          "viewport_css_px": "360x900",
+          "width": 360,
+          "height": 900,
+          "bytes": 41183,
+          "sha256": "9dce2bee5d452836ee107f059a2739bb3b5d29aaedc1ac9fc7c9ecb7e14ce94f"
+        }
+      ]
+    },
+    "compose_runtime_at_submission": {
+      "status": "reachable_via_http_health",
+      "project": "mvp-r637f-b10",
+      "proxy_port": 8360,
+      "endpoint": "http://127.0.0.1:8360/healthz",
+      "health": "status=ok",
+      "revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+      "fixture": "data=10/settings=7/analysis=a-24",
+      "docker_inspect": "Not run in iteration 9 per parent direction; previous worker-shell Docker API pipe access was denied."
+    }
+  },
+  "docker_api": "Iteration 9 made no Docker CLI call per parent direction. Fresh /healthz and browser evidence are recorded; prior worker-shell Docker API pipe access was denied.",
+  "runtime_at_submission": "B10 endpoint remained available on port 8360 at fresh /healthz revision eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502. Runtime is left task-owned and running; no down -v or resource cleanup. Named-volume persistence is from earlier same-volume evidence, not fresh Docker inspection.",
+  "changed_files": [
+    "app/api/settings.py",
+    "tests/integration/test_api.py",
+    "docs/demo.md",
+    "artifacts/acceptance/b10-results.json",
+    "artifacts/acceptance/b10-extension-result.json",
+    "artifacts/acceptance/b10-extension.patch",
+    "artifacts/acceptance/b10-no-score-snapshot.json",
+    "artifacts/acceptance/b10-wide.png",
+    "artifacts/acceptance/b10-narrow.png",
+    "artifacts/coordination/b10-worker.json"
+  ],
+  "files_not_created": [],
+  "no_score_fixture": {
+    "path": "artifacts/acceptance/b10-no-score-snapshot.json",
+    "sha256": "2FFB31114BC264CD9C098B7203B4CC65F3A376BD3384FADFFF24891565356621",
+    "derived_from": ".state/r637f-b10/fixtures/source-base.json",
+    "added_account": {
+      "id": 1004,
+      "email": "unknown@example.test",
+      "linked_services": 0
+    },
+    "list_evidence": "Недостаточно данных — нет возобновляемых услуг; Нет возобновляемых услуг; Нет денежной оценки",
+    "detail_evidence": "same statuses and Услуг нет",
+    "import_revision": "a-23",
+    "restored_revision": "a-24"
+  },
+  "claim_scope": [
+    "app/api/settings.py",
+    "tests/integration/test_api.py",
+    "docs/demo.md",
+    "artifacts/acceptance/b10-results.json",
+    "artifacts/acceptance/b10-extension-result.json",
+    "artifacts/acceptance/b10-extension.patch",
+    "artifacts/acceptance/b10-no-score-snapshot.json",
+    "artifacts/acceptance/b10-wide.png",
+    "artifacts/acceptance/b10-narrow.png",
+    "artifacts/coordination/b10-worker.json"
+  ]
+}

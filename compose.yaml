@@ -17,6 +17,7 @@ services:
       APP_PASSWORD_HASH: ${APP_PASSWORD_HASH:?Set an Argon2 hash locally}
       METRICS_TOKEN: ${METRICS_TOKEN:?Set a private collector token}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the exact browser origin}
+      DEMO_ENABLED: ${DEMO_ENABLED:-true}
     volumes:
       - app_data:/data
     tmpfs:

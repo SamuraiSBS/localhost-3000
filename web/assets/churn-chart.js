@@ -63,6 +63,8 @@ export function showChart(data) {
     group.append(columns,el('p',bucket.label));timeline.append(group);
   }
   due.append(timeline);
+  const enhanced=el('div'); enhanced.dataset.riskChart=''; enhanced.chartData=data;
+  due.append(enhanced);
   const legend=el('div',undefined,'chart-legend');for(const text of ['Высокий риск','Условные непродления']){const item=el('span');const key=el('i');key.setAttribute('aria-hidden','true');item.append(key,el('span',text));legend.append(item);}due.append(legend);
   due.append(el('p','Сплошная полоса — текущие услуги высокого риска. Контур — условные непродления среди них при нехватке средств. Шкала: количество услуг; каждая учитывается один раз.'));
   layout.append(distribution,due);figure.append(layout);
@@ -79,6 +81,7 @@ export function showChart(data) {
   for(const bucket of data.buckets){const tr=el('tr');tr.append(el('td',`${bucket.label} — высокий риск`),el('td',bucket.high_risk_services),el('td',bucket.scenario_nonrenewals));tbody.append(tr);}
   table.append(tbody);const region=el('div',undefined,'table-region');region.tabIndex=0;region.setAttribute('role','region');region.setAttribute('aria-label','Значения графика, таблица с горизонтальной прокруткой');region.append(table);disclosure.append(region);content.append(disclosure);
   root.replaceChildren(content);root.setAttribute('aria-busy','false');shown=true;shownRevision=data.analysis_revision;
+  document.dispatchEvent(new CustomEvent('risk-chart-ready',{detail:enhanced}));
   chartObserver?.disconnect();
   function animateChart(){
     for(const [node,from] of transitions)play(node,[{transform:`scaleY(${from})`},{transform:'scaleY(1)'}],{duration:milliseconds('--motion-chart',680)});

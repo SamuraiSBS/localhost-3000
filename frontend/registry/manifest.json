@@ -1,0 +1,104 @@
+[
+  {
+    "name": "faulty",
+    "url": "https://reactbits.dev/r/FaultyTerminal-JS-CSS.json",
+    "sha256": "aff483ec31fd42dac24c09e4fed8ccd24e686661c7c101c80cb913490546a6f5",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "FaultyTerminal.css",
+      "FaultyTerminal.jsx"
+    ]
+  },
+  {
+    "name": "blur",
+    "url": "https://reactbits.dev/r/BlurText-JS-CSS.json",
+    "sha256": "dec0bc2b0c085e689df41d565dd3e144d7a65afb99c591603f3a9eb61153bba4",
+    "dependencies": [
+      "motion@^12.23.12"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "BlurText/BlurText.jsx"
+    ]
+  },
+  {
+    "name": "animated",
+    "url": "https://reactbits.dev/r/AnimatedContent-JS-CSS.json",
+    "sha256": "2f07597b8ba28e90251607176d7eabd5fbb508c3876ddfda4bd9606cf70372e9",
+    "dependencies": [
+      "gsap@^3.13.0"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "AnimatedContent/AnimatedContent.jsx"
+    ]
+  },
+  {
+    "name": "glass",
+    "url": "https://ui.aceternity.com/registry/liquid-glass.json",
+    "sha256": "8469c921999806e69a15b7d60c965d4bbc4db0bbb9e83c7d6e800d4d3455abb3",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "components/ui/liquid-glass.tsx"
+    ]
+  },
+  {
+    "name": "button",
+    "url": "https://magicui.design/r/interactive-hover-button.json",
+    "sha256": "97cae7d013db9d179f2d3b6f47c4785be913d42368a995ae2e0573335fc11260",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "registry/magicui/interactive-hover-button.tsx"
+    ]
+  },
+  {
+    "name": "upload",
+    "url": "https://ui.aceternity.com/registry/file-upload.json",
+    "sha256": "12fac552ba06e9afb6ca566feae6dfd81f24957ebeb8a46ccfb0941a52d053e9",
+    "dependencies": [
+      "@tabler/icons-react",
+      "react-dropzone",
+      "motion"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "components/ui/file-upload.tsx"
+    ]
+  },
+  {
+    "name": "login",
+    "url": "https://www.scrollxui.dev/registry/login-sections/login-minimal.json",
+    "sha256": "ed21ec4cf9fd4e10801fc39408e346dcfac2ce0e0a19854eb3ead1071c250881",
+    "dependencies": [],
+    "registryDependencies": [
+      "@scrollxui/button",
+      "@scrollxui/label",
+      "@scrollxui/motion-grid"
+    ],
+    "files": [
+      "registry/blocks/login-sections/login-minimal/components/login-form.tsx",
+      "registry/blocks/login-sections/login-minimal/page.tsx"
+    ]
+  },
+  {
+    "name": "chart",
+    "url": "https://reui.io/r/c-chart-11.json",
+    "sha256": "0ddc76d9560d409aa41ec60bd10a2edd528bd5307c51ad48e1114bb857616ff1",
+    "dependencies": [
+      "cn",
+      "motion",
+      "recharts"
+    ],
+    "registryDependencies": [
+      "@reui/badge",
+      "card",
+      "chart"
+    ],
+    "files": [
+      "c-chart-11.tsx"
+    ]
+  }
+]

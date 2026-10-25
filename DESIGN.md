@@ -1,12 +1,14 @@
 # Digital Ruins / Lost Signal
 
-Индекс дизайн-системы для приложения localhost3000. Основные правила и исполняемые токены находятся в документах ниже.
+Индекс утверждённой визуальной системы для инструментов, которые ищут корневой `DESIGN.md`. Полные правила хранятся в документах ниже; этот файл не является второй темой или копией токенов.
 
-- [Дизайн-система](docs/design/DESIGN_SYSTEM.md)
-- [Визуальная идентичность](docs/design/VISUAL_IDENTITY.md)
-- [Компоненты интерфейса](docs/design/COMPONENTS.md)
-- [Эффекты](docs/design/EFFECTS.md)
-- [Руководство реализации](docs/design/IMPLEMENTATION_GUIDE.md)
-- [Чеклист интерфейса](docs/design/DESIGN_QA_CHECKLIST.md)
-- [Уведомления о сторонних материалах](docs/design/THIRD_PARTY_NOTICES.md)
-- [Токены](design/tokens.css)
+- [Дизайн-система](docs/design/DESIGN_SYSTEM.md): палитра, шрифты, размеры, сетка, состояния.
+- [Карта дизайна](docs/design/DESIGN_MAP.md): решения, утверждённые в диалоге по отдельным элементам.
+- [Визуальная идентичность](docs/design/VISUAL_IDENTITY.md): три колонны, wordmark, пустота.
+- [Компоненты](docs/design/COMPONENTS.md): Terminal Bar и контракты базовых элементов.
+- [Эффекты](docs/design/EFFECTS.md): дизеринг, Prism Glass, движение и fallback.
+- [Реализация и инструменты](docs/design/IMPLEMENTATION_GUIDE.md): аудит, совместимость и перенос в будущий стек.
+- [Дизайн-проверка](docs/design/DESIGN_QA_CHECKLIST.md): обязательная приёмка интерфейса.
+- [Токены](design/tokens.css): единственный исполняемый источник значений.
+
+Декоративные микроподписи запрещены. Обычный текст и полезные подписи — от 16 CSS px. Подготовка не выбирает продукт и не заменяет инфраструктурный probe.

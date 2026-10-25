@@ -1,0 +1,158 @@
+{
+  "task_id": "B11",
+  "attempt_id": "7c53ee8a-a044-47e8-9abc-689799d3e64a",
+  "worker": {
+    "target": "/root/b11_worker",
+    "run_id": "01a16c95-941d-7d60-903f-0580a84f007c"
+  },
+  "base_head": "f06f1656d386525a1b82cbb670ca1e649b631388",
+  "observed_at": "2026-10-24T07:01:12Z",
+  "overall_status": "partial_evidence_submitted",
+  "summary": "B11 completed the fresh built-in-browser customer explanation, money calculation, coefficient change, second-tab refresh, and UI restore on the task-owned product endpoint. The curated ZIP excludes all product tests and test runners because the private WOFF2 is intentionally omitted; no full test suite was run. Archive integrity and a bounded extracted-package TestClient/ASGI route smoke were checked. Outage fallback and fresh viewport/console/network inspection were not run. Nothing was uploaded or submitted to organizers.",
+  "endpoint": "http://127.0.0.1:8360",
+  "live_revision": "eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502",
+  "journey": {
+    "tool": "built-in browser",
+    "entrypoint": "/login",
+    "initial": {
+      "data_revision": 10,
+      "settings_revision": 7,
+      "analysis_revision": "a-24",
+      "customer": "M02",
+      "score": 55,
+      "risk_level": "Medium",
+      "money_eur": 5.5,
+      "nearest_renewal_price_eur": 10,
+      "balance_eur": 10,
+      "funding_gap_eur": 0,
+      "explanation": "1×20 + 1×25 + 0×35 + 0×20 + 1×10 = 55"
+    },
+    "manual_renewal_change": {
+      "from": 25,
+      "to": 50,
+      "settings_revision": 8,
+      "analysis_revision": "a-25",
+      "customer_score": 80,
+      "risk_level": "High",
+      "money_eur": 8,
+      "second_tab_refreshed_without_manual_reload": true
+    },
+    "restored": {
+      "manual_renewal": 25,
+      "extension": 10,
+      "data_revision": 10,
+      "settings_revision": 9,
+      "analysis_revision": "a-26",
+      "customer_score": 55,
+      "money_eur": 5.5,
+      "second_tab_refreshed": true
+    }
+  },
+  "checks": [
+    {
+      "name": "Fresh live product health",
+      "status": "passed",
+      "evidence": "GET /healthz on 127.0.0.1:8360 returned status=ok, stage=product, revision eaed00108459c4f8f66199676d68e4c689d9518f+extension-1696cafdd1ab+etagfix-09be7d48e502."
+    },
+    {
+      "name": "M02 score explanation and money calculation",
+      "status": "passed",
+      "evidence": "In the authenticated product UI, M02 showed 55/100 Medium and €5.50; nearest renewal €10.00, balance €10.00, funding gap €0.00, with visible factor sum 1×20 + 1×25 + 0×35 + 0×20 + 1×10 = 55."
+    },
+    {
+      "name": "Manual coefficient change and second-tab refresh",
+      "status": "passed",
+      "evidence": "Changed manual_renewal from 25 to 50 through settings UI. M02 became 80/100 High and €8.00 at settings=8/analysis=a-25; the other open tab updated without manual reload."
+    },
+    {
+      "name": "Restore accepted default settings",
+      "status": "passed",
+      "evidence": "Restored manual_renewal=25 and extension=10 through UI. Both tabs showed data=10/settings=9/analysis=a-26 and M02 55/100, €5.50."
+    },
+    {
+      "name": "Fresh outage and retry fallback",
+      "status": "not_run",
+      "evidence": "The authorized attempt to stop the task-owned app container was denied by Windows ACL when accessing the Docker API named pipe. B10 A-12 is historical evidence only and is not counted as a B11 pass."
+    },
+    {
+      "name": "B11 viewport, browser console, and network inspection",
+      "status": "not_run",
+      "evidence": "B11 viewport dimensions, console, and network panel were not inspected. The accepted 1440×900 and 360×900 captures remain B10 historical evidence only."
+    },
+    {
+      "name": "Fresh Docker image metadata and clean-room Compose build",
+      "status": "not_run",
+      "evidence": "Docker API access was denied; no fresh B11 image metadata or clean-room Compose build is claimed."
+    },
+    {
+      "name": "Full scripts/check.py suite",
+      "status": "not_run",
+      "evidence": "No full test suite was run in B11. The delivery ZIP contains no tests/ directory and excludes scripts/check.py plus scripts/check_design.py. The earlier B10 full source-checkout run had 194 passed and 8 pytest setup errors from PermissionError [WinError 5] while enumerating temp directories; this is historical context only."
+    },
+    {
+      "name": "Curated ZIP integrity, hashes, and exclusions",
+      "status": "passed",
+      "evidence": "The 110-member ZIP passed CRC and exact-member/hash/size comparison against the adjacent manifest. The archive contains no tests/ directory, scripts/check.py, or scripts/check_design.py; the manifest explicitly records an empty packaged test set. Scans confirmed only data/seed.json is included under data/, all seed emails use @example.test, and there is no WOFF2, font-derived wordmark, photo_8 asset, .env, local state, organizer dataset, root upload, or unrelated artifact. The only two email-pattern matches outside synthetic seed records are generic generator/example placeholders in the bundled Swagger JavaScript; no customer rows were found."
+    },
+    {
+      "name": "Extracted package local app startup",
+      "status": "passed",
+      "evidence": "A bounded Starlette TestClient/ASGI route smoke was run from the extracted ZIP with data/seed.json and ephemeral in-memory local validation config. /healthz, /, /login, /design/tokens.css, /assets/login.js, /assets/app.css and /design/fonts.css returned 200; /customers redirected to login. The omitted proprietary font URL /design/assets/fonts/pp-neue-machina-inktrap-variable.woff2 returned the expected 404 for this delivery ZIP; design/tokens.css declares Arial, sans-serif fallback. This was not a full test suite, server-process/Compose launch, or browser test. The ZIP does not package tests or test runners. TestClient emitted a Starlette deprecation warning about httpx."
+    },
+    {
+      "name": "Packaged design asset integrity checker",
+      "status": "not_run",
+      "evidence": "Not run. scripts/check_design.py and its required tests/ path are not included in this delivery ZIP. The source-checkout design checker also expects intentionally excluded proprietary font metadata/WOFF2 and font-derived wordmarks."
+    },
+    {
+      "name": "Packaged test set matches delivery contents",
+      "status": "passed",
+      "evidence": "The extracted ZIP has no tests/ members and no scripts/check.py or scripts/check_design.py. The companion manifest declares packaged_test_set.status=none and paths=[]. No full test suite is claimed."
+    }
+  ],
+  "package_validation": {
+    "archive": "artifacts/acceptance/b11-submission.zip",
+    "companion_manifest": "artifacts/acceptance/b11-package-manifest.json",
+    "member_count": 110,
+    "extracted_app_startup": "bounded TestClient/ASGI route smoke passed; not server-process, Compose, browser, or full-suite validation",
+    "docker_build": "not_run",
+    "proprietary_woff2_included": false,
+    "only_data_path": "data/seed.json",
+    "historical_b10_evidence_included_separately": true,
+    "packaged_test_set": {
+      "status": "none",
+      "paths": [],
+      "excluded": [
+        "tests/",
+        "scripts/check.py",
+        "scripts/check_design.py"
+      ]
+    },
+    "font_route_in_delivery_zip": {
+      "path": "/design/assets/fonts/pp-neue-machina-inktrap-variable.woff2",
+      "status": 404,
+      "expected": true,
+      "fallback": "Arial, sans-serif"
+    },
+    "full_test_suite": "not_run"
+  },
+  "historical_b10_viewport_evidence": [
+    {
+      "path": "artifacts/acceptance/b10-wide.png",
+      "viewport": "1440x900",
+      "sha256": "f2e5e0c53a85d72ddcc5b4be29b34c6b18de0b675a6aa192fedb9e60f0201809"
+    },
+    {
+      "path": "artifacts/acceptance/b10-narrow.png",
+      "viewport": "360x900",
+      "sha256": "9dce2bee5d452836ee107f059a2739bb3b5d29aaedc1ac9fc7c9ecb7e14ce94f"
+    }
+  ],
+  "delivery_boundary": {
+    "font_woff2_included": false,
+    "safe_seed_included": true,
+    "organizer_dataset_and_root_photos_included": false,
+    "uploaded_or_submitted": false,
+    "q005": "open"
+  }
+}

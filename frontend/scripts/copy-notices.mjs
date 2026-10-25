@@ -1,0 +1,10 @@
+import { cp, mkdir, copyFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const root = fileURLToPath(new URL('../', import.meta.url));
+const target = path.resolve(root, '../design/interaction-lab');
+if (path.dirname(target) !== path.resolve(root, '../design')) throw new Error('Invalid output path');
+await mkdir(target, { recursive: true });
+await cp(path.join(root, 'licenses'), path.join(target, 'licenses'), {recursive:true});
+await copyFile(path.join(root, 'THIRD_PARTY.md'), path.join(target, 'THIRD_PARTY.md'));
+console.log('Copied source notices and license files into the generated specimen.');
