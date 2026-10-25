@@ -7,6 +7,24 @@ const oidcArea = document.querySelector('#oidc-area');
 const oidcLink = document.querySelector('#oidc-login');
 const oidcMessage = document.querySelector('#oidc-message');
 const query = new URLSearchParams(location.search);
+const demo = document.querySelector('#demo-login');
+api('/auth/demo/config').then(({ data }) => {
+  document.querySelector('#demo-access').hidden = !data.enabled;
+}).catch(() => {});
+demo.addEventListener('click', async () => {
+  const notice = document.querySelector('#demo-error');
+  notice.hidden = true; demo.disabled = true; submit.disabled = true;
+  demo.setAttribute('aria-busy', 'true'); demo.textContent = 'Открываем демо…';
+  try {
+    await api('/auth/demo', { method: 'POST' });
+    form.elements.password.value = '';
+    location.replace(loginDestination());
+  } catch (failure) {
+    notice.textContent = failure.status === 429 ? 'Слишком много входов. Подождите минуту и повторите.' : failure.status === 503 ? 'Все демо-песочницы заняты. Попробуйте позже.' : 'Не удалось открыть демо. Проверьте соединение и повторите.';
+    notice.hidden = false;
+    demo.disabled = false; submit.disabled = false; demo.removeAttribute('aria-busy'); demo.textContent = 'Зайти на демо ↗';
+  }
+});
 const oidcErrors = {
   disabled: 'Вход через Keycloak не настроен. Используйте логин и пароль.',
   provider_unavailable: 'Keycloak сейчас недоступен. Повторите позже или используйте логин и пароль.',

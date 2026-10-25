@@ -20,6 +20,17 @@ export function list(items) { const ul = el('ul'); for (const text of items) ul.
 export async function startShell(active) {
   const session = await authenticate();
   document.querySelector('#user-login').textContent = session.user.login;
+  if (session.user.id === 'demo') {
+    const banner = el('aside', undefined, 'demo-banner');
+    banner.setAttribute('aria-label', 'Демонстрационный аккаунт');
+    const text = el('p');
+    text.append(el('strong', 'Демо-песочница. '), 'Учебные данные и изменения видны только в этой сессии. После нового входа демо начнётся заново.');
+    banner.append(text); document.querySelector('header').after(banner);
+  }
+  const navigation = document.querySelector('#product-navigation');
+  if (!navigation.querySelector('[data-nav="lab"]')) {
+    const labLink = el('a', 'Лаборатория'); labLink.href = '/lab'; labLink.dataset.nav = 'lab'; navigation.append(labLink);
+  }
   document.querySelector(`[data-nav="${active}"]`)?.setAttribute('aria-current', 'page');
   const nav = document.querySelector('#product-navigation');
   const sessionArea = document.querySelector('.session');

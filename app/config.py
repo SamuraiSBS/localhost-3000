@@ -19,6 +19,7 @@ class RuntimeConfig:
     revision: str = "local"
     session_ttl_seconds: int = 28800
     max_snapshot_bytes: int = 10 * 1024 * 1024
+    demo_enabled: bool = True
     oidc_enabled: bool = False
     oidc_issuer_url: str = ""
     oidc_metadata_url: str = ""
@@ -37,6 +38,7 @@ class RuntimeConfig:
             password_hash=os.environ.get("APP_PASSWORD_HASH"),
             metrics_token=os.environ.get("METRICS_TOKEN"),
             public_origin=os.environ.get("PUBLIC_ORIGIN", "http://127.0.0.1:8311"),
+            demo_enabled=os.environ.get("DEMO_ENABLED", "true").lower() == "true",
             oidc_enabled=os.environ.get("OIDC_ENABLED", "false").lower() == "true",
             oidc_issuer_url=os.environ.get("OIDC_ISSUER_URL", ""),
             oidc_metadata_url=os.environ.get("OIDC_METADATA_URL", ""),

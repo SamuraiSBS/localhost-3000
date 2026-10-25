@@ -6,11 +6,12 @@ export class ApiError extends Error {
 }
 export function clearSession() {
   csrf = null;
-  document.querySelectorAll('#customer-detail, #summary, #churn-chart, #customers-table tbody, #feature-fields').forEach(node => node.replaceChildren());
+  document.querySelectorAll('#customer-detail, #summary, #churn-chart, #customers-table tbody, #feature-fields, #baseline, #lab-revision, #model-result, #action-result, #action-services').forEach(node => node.replaceChildren());
   document.querySelectorAll('input').forEach(node => { node.value = ''; });
 }
 export function loginDestination() {
   const next = new URLSearchParams(location.search).get('next') || '';
+  if (/^\/lab(?:\?customer_id=[1-9][0-9]*)?$/.test(next)) return next;
   return /^\/customers(?:\/[1-9][0-9]*)?$/.test(next) || next === '/settings' ? next : '/customers';
 }
 export async function api(path, options = {}) {

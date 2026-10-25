@@ -119,6 +119,27 @@ def me(user: AuthenticatedUser = Depends(require_session)) -> AuthResponse:
     )
 
 
+@router.get("/demo/config")
+def demo_config(request: Request) -> dict[str, bool]:
+    return {"enabled": request.app.state.config.demo_enabled}
+
+
+@router.post("/demo", response_model=AuthResponse)
+async def demo_login(request: Request, response: Response) -> AuthResponse:
+    require_same_origin(request)
+    if not request.app.state.config.demo_enabled:
+        raise AuthError(404, "demo_disabled", "Demo access is disabled.")
+    limiter = request.app.state.demo_rate_limiter
+    client = _source_address(request)
+    reservation = limiter.reserve_attempt(client)
+    if reservation is None:
+        raise AuthError(429, "rate_limited", "Too many demo sessions. Try again later.")
+    # Count successful demo creation as well: each creates a separate sandbox.
+    limiter.record_failure(client, reservation)
+    csrf = await run_in_threadpool(issue_session, request, response, auth_method="demo")
+    return AuthResponse(user=UserResponse(id="demo", login="Демо-аккаунт"), csrf_token=csrf)
+
+
 @router.post("/logout", status_code=204, response_class=Response)
 def logout(
     request: Request,
@@ -128,6 +149,8 @@ def logout(
     store: SessionStore = request.app.state.session_store
     method = store.authentication_method(user.session_hash)
     store.revoke_hash(user.session_hash)
+    if method == "demo":
+        request.app.state.demo_workspaces.release(user.session_hash)
     config = request.app.state.config
     response.delete_cookie(
         key=SESSION_COOKIE_NAME,

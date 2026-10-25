@@ -30,6 +30,7 @@ async function readCustomer(background=false,signal) {
     if(shownRevision===data.analysis_revision){announce('Данные клиента актуальны.');return;}
     const scrollY=window.scrollY, fresh=el('div'); document.querySelector('h1').textContent=data.email;
     const overview=el('section',undefined,'customer-overview'); overview.append(el('h2',`Клиент ${data.id}`),el('p',score(data)));
+    const labLink=el('a','Разобрать в лаборатории','ds-button ds-button--secondary');labLink.href='/lab?customer_id='+encodeURIComponent(data.id);overview.append(labLink);
     if (data.risk_score !== null) { const meter=el('meter',`${data.risk_score} из 100`,'risk-meter');meter.min=0;meter.max=100;meter.value=data.risk_score;meter.setAttribute('aria-label','Индекс риска, баллов из 100');overview.append(meter); }
     if (data.risk_score===null) overview.append(el('p',reasons[data.unscored_reason] || data.unscored_reason || 'Нет возобновляемых услуг'));
     overview.append(list(data.top_reasons.map(item=>item.explanation)),metadata(data));
