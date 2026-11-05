@@ -1,4 +1,4 @@
-FROM python:3.13-alpine@sha256:c50ccfb66e5cc97a610dcd0b9597de6ef5b52c96280b51997b353a0fc87a8361
+FROM python:3.15-alpine@sha256:20a82dbc2783112ddb91d1534603f802d222a3e63e593cd002eb2ac534e70211
 ARG VCS_REF=local
 LABEL org.opencontainers.image.source="https://github.com/SamuraiSBS/localhost-3000"
 LABEL org.opencontainers.image.revision=$VCS_REF
